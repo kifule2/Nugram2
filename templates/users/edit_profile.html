@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center py-5">
+        <div class="col-md-10 col-lg-8">
+            <div class="bg-white p-5 rounded shadow wow fadeInUp" data-wow-delay="0.1s">
+                <h1 class="display-6 mb-4">Edit Your Profile</h1>
+                
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label">Profile Picture</label>
+                            <div class="d-flex align-items-center">
+                                <img src="{{ form.instance.profile_picture.url }}" class="rounded-circle me-3" style="width: 80px; height: 80px; object-fit: cover;">
+                                {{ form.profile_picture }}
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label">Cover Photo</label>
+                            <div>
+                                <img src="{{ form.instance.cover_photo.url }}" class="img-fluid mb-2" style="max-height: 100px;">
+                                {{ form.cover_photo }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label">Display Name</label>
+                            {{ form.display_name }}
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label">Gender</label>
+                            {{ form.gender }}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label">Birthday</label>
+                            {{ form.birthday }}
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label">Phone Number</label>
+                            {{ form.phone_number }}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">Work</label>
+                        {{ form.work }}
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">Location</label>
+                        {{ form.location }}
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">Bio</label>
+                        {{ form.bio }}
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h5>Privacy Settings</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-check form-switch">
+                                    {{ form.show_birthday }}
+                                    <label class="form-check-label">Show Birthday</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check form-switch">
+                                    {{ form.show_phone }}
+                                    <label class="form-check-label">Show Phone</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check form-switch">
+                                    {{ form.show_email }}
+                                    <label class="form-check-label">Show Email</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-lg">Update Profile</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

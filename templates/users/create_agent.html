@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center py-5">
+        <div class="col-md-8 col-lg-6">
+            <div class="bg-white p-5 rounded shadow wow fadeInUp" data-wow-delay="0.1s">
+                <h1 class="display-6 mb-4">Create New Agent</h1>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label class="form-label">Email Address</label>
+                        {{ form.email }}
+                        <div class="form-text">Agent will use this to log in</div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">Password</label>
+                        {{ form.password1 }}
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">Confirm Password</label>
+                        {{ form.password2 }}
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-lg w-100">Create Agent</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid" id="nusuDashboard">
+    <div class="container">
+        <div class="row g-0">
+            <div class="col-12 col-lg-3">
+                <div class="dashboard-header bg-light h-100 pt-6 pe-6 pb-6">
+                    <div class="text-start d-flex flex-column justify-content-center wow fadeInUp" data-wow-delay="0.1s">
+                        <p class="text-dark sub-title">User Dashboard</p>
+                        <h1 class="display-6 text-dark mb-0">Welcome, {{ user.username }}</h1>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-lg-9">
+                <div class="dashboard-content h-100 pt-6 ps-6 pb-6">
+                    <div class="row g-5">
+                        <div class="col-xl-5 wow fadeInUp" data-wow-delay="0.1s">
+                            <div class="bg-white p-4 shadow rounded">
+                                <div class="text-center mb-4">
+                                    <img src="{{ user.userprofile.profile_picture.url }}" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;" alt="Profile Picture">
+                                    <h3 class="mb-0">{{ user.userprofile.display_name }}</h3>
+                                    <p class="text-muted">@{{ user.username }}</p>
+                                </div>
+                                
+                                <div class="d-flex mb-2">
+                                    <i class="fas fa-coins text-primary me-3 mt-1"></i>
+                                    <div>
+                                        <h4>Token Balance</h4>
+                                        <p class="mb-0">{{ user.userprofile.token_balance }} NSU</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex mb-2">
+                                    <i class="fas fa-money-bill-wave text-primary me-3 mt-1"></i>
+                                    <div>
+                                        <h4>UGX Value</h4>
+                                        <p class="mb-0">UGX {{ user.userprofile.get_ugx_balance|floatformat:2 }}</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex mb-4">
+                                    <i class="fas fa-users text-primary me-3 mt-1"></i>
+                                    <div>
+                                        <h4>Referrals</h4>
+                                        <p class="mb-0">{{ user.referrals.count }} users</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-center">
+                                    <a href="{% url 'users:edit_profile' %}" class="btn btn-primary me-2">Edit Profile</a>
+                                    <a href="{% url 'users:send_tokens' %}" class="btn btn-outline-primary">Send Tokens</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-7 wow fadeInUp" data-wow-delay="0.3s">
+                            <!-- Mining Section -->
+                            <div class="bg-white p-4 shadow rounded mb-4">
+                                <h4 class="mb-4"><i class="fas fa-digging me-2"></i> Token Mining</h4>
+                                <div class="progress mb-3" style="height: 25px;">
+                                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ state.progress_percentage }}%;" 
+                                         aria-valuenow="{{ state.progress_percentage }}" aria-valuemin="0" aria-valuemax="100"
+                                         id="mining-progress">
+                                        {{ state.progress_percentage|floatformat:0 }}%
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <p><strong>Elapsed:</strong> <span id="elapsed-hours">{{ state.elapsed_hours|floatformat:2 }}</span> hours</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>Remaining:</strong> <span id="remaining-time">{{ state.remaining_time }}</span></p>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <button id="toggle-mining" class="btn btn-{% if state.is_mining %}danger{% else %}success{% endif %}">
+                                        {% if state.is_mining %}<i class="fas fa-stop me-2"></i> Stop Mining{% else %}<i class="fas fa-play me-2"></i> Start Mining{% endif %}
+                                    </button>
+                                    <span class="badge bg-primary p-2" id="mining-tokens">
+                                        <i class="fas fa-coins me-1"></i> {{ state.points_earned_today|floatformat:2 }} NSU
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <!-- Quick Actions -->
+                            <div class="bg-white p-4 shadow rounded">
+                                <h4 class="mb-4"><i class="fas fa-bolt me-2"></i> Quick Actions</h4>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <a href="{% url 'transactions:request_withdrawal' %}" class="btn btn-outline-primary w-100">
+                                            <i class="fas fa-money-check me-2"></i> Withdraw
+                                        </a>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <a href="{% url 'transactions:transfer_tokens' %}" class="btn btn-outline-primary w-100">
+                                            <i class="fas fa-exchange-alt me-2"></i> Transfer
+                                        </a>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <a href="{% url 'users:notifications' %}" class="btn btn-outline-primary w-100">
+                                            <i class="fas fa-bell me-2"></i> Notifications
+                                            {% if unread_notifications %}<span class="badge bg-danger ms-2">{{ unread_notifications.count }}</span>{% endif %}
+                                        </a>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <a href="{% url 'transactions:public_ledger' %}" class="btn btn-outline-primary w-100">
+                                            <i class="fas fa-book me-2"></i> View Ledger
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+$(document).ready(function() {
+    // Toggle mining button
+    $('#toggle-mining').click(function() {
+        $.ajax({
+            url: "{% url 'airdrop:toggle_mining' %}",
+            method: "POST",
+            data: {
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            success: function(data) {
+                if(data.status === 'started') {
+                    $('#toggle-mining')
+                        .removeClass('btn-success')
+                        .addClass('btn-danger')
+                        .html('<i class="fas fa-stop me-2"></i> Stop Mining');
+                } else {
+                    $('#toggle-mining')
+                        .removeClass('btn-danger')
+                        .addClass('btn-success')
+                        .html('<i class="fas fa-play me-2"></i> Start Mining');
+                }
+                updateMiningStatus();
+            }
+        });
+    });
+
+    function updateMiningStatus() {
+        $.ajax({
+            url: "{% url 'airdrop:mining_status' %}",
+            method: "GET",
+            success: function(data) {
+                // Update progress bar
+                $('#mining-progress')
+                    .css('width', data.progress_percentage + '%')
+                    .attr('aria-valuenow', data.progress_percentage)
+                    .text(data.progress_percentage.toFixed(0) + '%');
+                
+                // Update elapsed hours
+                $('#elapsed-hours').text(data.elapsed_hours.toFixed(2));
+                
+                // Update remaining time
+                $('#remaining-time').text(data.remaining_time);
+                
+                // Update tokens earned
+                $('#mining-tokens').html('<i class="fas fa-coins me-1"></i> ' + 
+                    data.session_points.toFixed(2) + ' NSU');
+                
+                // Update button state if needed
+                if (data.is_mining) {
+                    $('#toggle-mining')
+                        .removeClass('btn-success')
+                        .addClass('btn-danger')
+                        .html('<i class="fas fa-stop me-2"></i> Stop Mining');
+                } else {
+                    $('#toggle-mining')
+                        .removeClass('btn-danger')
+                        .addClass('btn-success')
+                        .html('<i class="fas fa-play me-2"></i> Start Mining');
+                }
+            }
+        });
+    }
+    
+    // Periodically update mining status every 15 seconds
+    setInterval(updateMiningStatus, 15000);
+    
+    // Initialize mining status
+    updateMiningStatus();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center py-5">
+        <div class="col-md-8 col-lg-6">
+            <div class="bg-white p-5 rounded shadow wow fadeInUp" data-wow-delay="0.1s">
+                <div class="text-center mb-5">
+                    <h1 class="display-6 mb-4"><i class="fas fa-user-plus text-primary me-2"></i>Join Nusu</h1>
+                    <p class="text-muted">Start your social finance journey</p>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control form-control-lg" id="username" name="username" required>
+                        <small class="form-text">This will be your referral code</small>
+                    </div>
+                    <div class="mb-4">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control form-control-lg" id="email" name="email" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="password1" class="form-label">Password</label>
+                        <input type="password" class="form-control form-control-lg" id="password1" name="password1" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="password2" class="form-label">Confirm Password</label>
+                        <input type="password" class="form-control form-control-lg" id="password2" name="password2" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="referral_code" class="form-label">Referral Code (optional)</label>
+                        <input type="text" class="form-control form-control-lg" id="referral_code" name="referral_code">
+                    </div>
+                    <div class="d-grid mb-4">
+                        <button type="submit" class="btn btn-primary btn-lg">Register</button>
+                    </div>
+                    <div class="text-center">
+                        <p>Already have an account? <a href="{% url 'users:login' %}" class="text-decoration-none">Login</a></p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

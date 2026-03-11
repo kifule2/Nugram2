@@ -1,0 +1,185 @@
+/*** Spinner Start ***/
+#spinner {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .5s ease-out, visibility 0s linear .5s;
+    z-index: 99999;
+}
+
+#spinner.show {
+    transition: opacity .5s ease-out, visibility 0s linear 0s;
+    visibility: visible;
+    opacity: 1;
+}
+/*** Spinner End ***/
+/*** Common CSS Start ***/
+.back-to-top {
+    position: fixed;
+    right: 30px;
+    bottom: 30px;
+    display: flex;
+    width: 45px;
+    height: 45px;
+    align-items: center;
+    justify-content: center;
+    transition: 0.5s;
+    z-index: 99;
+}
+
+p
+.h5,
+.h6 {
+    font-weight: 600;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.display-1,
+.display-2,
+.display-3,
+.display-4,
+.display-5,
+.display-6 {
+    font-weight: 700;
+    font-family: 'Fredoka', sans-serif;
+}
+
+.display-4,
+.display-5,
+.display-6 {
+    font-weight: 600;
+}
+
+.wow,
+.animated {
+    animation-duration: 2s !important;
+}
+/*** Common CSS End ***/
+/*** Common CSS End ***/
+
+
+/*** Button Start ***/
+.btn {
+    font-weight: 600;
+    transition: .5s;
+}
+
+.btn-square {
+    width: 32px;
+    height: 32px;
+}
+
+.btn-sm-square {
+    width: 34px;
+    height: 34px;
+}
+
+.btn-md-square {
+    width: 44px;
+    height: 44px;
+}
+
+.btn-lg-square {
+    width: 56px;
+    height: 56px;
+}
+
+.btn-square,
+.btn-sm-square,
+.btn-md-square,
+.btn-lg-square {
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: normal;
+}
+
+.btn.btn-primary {
+    border: 0;
+    color: var(--bs-white);
+}
+
+.btn.btn-primary:hover {
+    background: var(--bs-secondary);
+    color: var(--bs-primary);
+}
+
+.btn-border-radius {
+    border-radius: 25% 10%;
+}
+
+.img-border-radius {
+    border-radius: 50% 20% / 10% 40%;
+}
+
+.title-border-radius {
+    border-radius: 10% 30%;
+}
+/*** Button End ***/
+
+/*** Programs Start ***/
+.program {
+    background: linear-gradient(rgba(122, 124, 128, 0.1), rgba(155, 120, 128, 0.1));
+}
+
+.program .program-item .program-img .program-rate {
+    position: absolute;
+    width: 100px; 
+    top: -20px; 
+    left: 50%; 
+    margin-left: -50px; 
+    border-radius: 10% / 50%;
+}
+
+.program .program-item .program-text {
+    padding-top: 150px; 
+    margin-top: -125px;
+}
+
+.program .program-item .program-img img,
+.program .program-item .program-teacher img,
+.program .program-item:hover .program-text-inner a.h4 {
+    transition: 0.5s;
+}
+
+.program .program-item:hover .program-img img,
+.program .program-item:hover .program-teacher img {
+    transform: scale(1.2);
+}
+
+.program .program-item:hover .program-text-inner a.h4 {
+    color: var(--bs-primary) !important;
+}
+/*** Programs End ***/
+
+
+/*** testimonial Start ***/
+.testimonial .testimonial-carousel {
+    position: relative;
+    
+}
+
+.testimonial .testimonial-carousel .owl-dots {
+    margin-top: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.testimonial .testimonial-carousel .owl-dot {
+    position: relative;
+    display: inline-block;
+    margin: 0 5px;
+    width: 15px;
+    height: 15px;
+    background: var(--bs-primary);
+    border-radius: 10px;
+    transition: 0.5s;
+}
+
+.testimonial .testimonial-carousel .owl-dot.active {
+    width: 30px;
+    background: var(--bs-secondary);
+}
+/*** testimonial End ***/
+

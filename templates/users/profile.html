@@ -1,0 +1,329 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<!-- Header Start -->
+<div class="container-fluid" id="pigraHome">
+    <div class="container">
+        <div class="row g-0">
+            <div class="col-12 col-lg-3">
+                <div class="header-content bg-dark h-100 pt-6 pe-6 pb-6">
+                    <div class="text-center d-flex flex-column justify-content-center wow fadeInUp" data-wow-delay="0.1s">
+                        <div class="position-relative mb-4">
+                            <img src="{{ profile_user.userprofile.cover_photo.url }}" class="img-fluid w-100 mb-3" style="height: 120px; object-fit: cover;" alt="Cover Photo">
+                            <img src="{{ profile_user.userprofile.profile_picture.url }}" class="rounded-circle position-absolute bottom-0 start-50 translate-middle" style="width: 100px; height: 100px; border: 3px solid white;" alt="Profile Picture">
+                        </div>
+                        <h3 class="mt-4 text-white mb-0">{{ profile_user.userprofile.display_name }}</h3>
+                        <p class="text-light">@{{ profile_user.username }}</p>
+                        
+                        <div class="d-flex justify-content-center mt-3">
+                            <div class="text-center mx-3">
+                                <h4 class="text-white mb-0">{{ profile_user.userprofile.followers.count }}</h4>
+                                <p class="small text-light mb-0">Followers</p>
+                            </div>
+                            <div class="text-center mx-3">
+                                <h4 class="text-white mb-0">{{ profile_user.userprofile.following.count }}</h4>
+                                <p class="small text-light mb-0">Following</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <div class="d-flex justify-content-center">
+                                <a href="#" class="btn btn-primary btn-sm-square me-2">
+                                    <i class="fab fa-facebook-f text-white"></i>
+                                </a>
+                                <a href="#" class="btn btn-primary btn-sm-square me-2">
+                                    <i class="fab fa-twitter text-white"></i>
+                                </a>
+                                <a href="#" class="btn btn-primary btn-sm-square me-2">
+                                    <i class="fab fa-instagram text-white"></i>
+                                </a>
+                                <a href="#" class="btn btn-primary btn-sm-square">
+                                    <i class="fab fa-linkedin-in text-white"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-lg-9">
+                <div class="header-img d-flex h-100 pt-6 ps-6 pb-6">
+                    <div class="row g-5">
+                        <div class="col-xl-6 wow fadeInUp" data-wow-delay="0.1s">
+                            <div class="bg-light p-4 rounded">
+                                <h1 class="display-6 mb-4">{{ profile_user.userprofile.display_name }}'s Profile</h1>
+                                <p class="mb-4">
+                                    {{ profile_user.userprofile.bio|default:"Welcome to my Nusu profile! I'm excited to be part of this social finance community." }}
+                                </p>
+                                
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="fas fa-coins text-primary me-3"></i>
+                                    <div>
+                                        <h5 class="mb-0">Token Balance</h5>
+                                        <p class="mb-0">{{ profile_user.userprofile.token_balance }} NSU</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="fas fa-users text-primary me-3"></i>
+                                    <div>
+                                        <h5 class="mb-0">Referrals</h5>
+                                        <p class="mb-0">{{ profile_user.referrals.count }} users</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="fas fa-calendar-alt text-primary me-3"></i>
+                                    <div>
+                                        <h5 class="mb-0">Member Since</h5>
+                                        <p class="mb-0">{{ profile_user.date_joined|date:"M d, Y" }}</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-user-check text-primary me-3"></i>
+                                    <div>
+                                        <h5 class="mb-0">Status</h5>
+                                        <p class="mb-0">
+                                            {% if profile_user.is_verified %}
+                                            <span class="badge bg-success">Verified</span>
+                                            {% else %}
+                                            <span class="badge bg-secondary">Unverified</span>
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-6 wow fadeInUp" data-wow-delay="0.3s">
+                            <div class="bg-light p-4 rounded">
+                                <h4 class="mb-4">Personal Information</h4>
+                                
+                                {% if profile_user.userprofile.work %}
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="fas fa-briefcase text-primary me-3"></i>
+                                    <p class="mb-0">{{ profile_user.userprofile.work }}</p>
+                                </div>
+                                {% endif %}
+                                
+                                {% if profile_user.userprofile.location %}
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="fas fa-map-marker-alt text-primary me-3"></i>
+                                    <p class="mb-0">{{ profile_user.userprofile.location }}</p>
+                                </div>
+                                {% endif %}
+                                
+                                {% if profile_user.userprofile.birthday and profile_user.userprofile.show_birthday %}
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="fas fa-birthday-cake text-primary me-3"></i>
+                                    <p class="mb-0">{{ profile_user.userprofile.birthday|date:"F d" }}</p>
+                                </div>
+                                {% endif %}
+                                
+                                {% if profile_user.userprofile.phone_number and profile_user.userprofile.show_phone %}
+                                <div class="d-flex align-items-center mb-3">
+                                    <i class="fas fa-phone text-primary me-3"></i>
+                                    <p class="mb-0">{{ profile_user.userprofile.phone_number }}</p>
+                                </div>
+                                {% endif %}
+                                
+                                {% if profile_user.email and profile_user.userprofile.show_email %}
+                                <div class="d-flex align-items-center mb-4">
+                                    <i class="fas fa-envelope text-primary me-3"></i>
+                                    <p class="mb-0">{{ profile_user.email }}</p>
+                                </div>
+                                {% endif %}
+                                
+                                <div class="mt-4">
+                                    {% if is_owner %}
+                                    <a href="{% url 'users:edit_profile' %}" class="btn btn-primary me-2">
+                                        <i class="fas fa-edit me-1"></i> Edit Profile
+                                    </a>
+                                    {% endif %}
+                                    
+                                    {% if not is_owner %}
+                                    <button class="btn btn-outline-primary follow-btn" data-username="{{ profile_user.username }}">
+                                        {% if request.user.userprofile in profile_user.userprofile.followers.all %}
+                                            <i class="fas fa-user-minus me-1"></i> Unfollow
+                                        {% else %}
+                                            <i class="fas fa-user-plus me-1"></i> Follow
+                                        {% endif %}
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Header End -->
+
+<!-- Additional Profile Content -->
+<div class="container-fluid mt-5">
+    <div class="container">
+        <div class="row g-5">
+            <!-- Recent Transactions -->
+            <div class="col-lg-6">
+                <div class="bg-light p-5 rounded shadow wow fadeInUp" data-wow-delay="0.1s">
+                    <h3 class="mb-4"><i class="fas fa-exchange-alt me-2"></i> Recent Transactions</h3>
+                    {% if transactions %}
+                    <div class="list-group">
+                        {% for transaction in transactions|slice:":5" %}
+                        <div class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">
+                                    {{ transaction.get_transaction_type_display }}: 
+                                    {{ transaction.amount }} NSU
+                                </h6>
+                                <small>{{ transaction.timestamp|timesince }} ago</small>
+                            </div>
+                            {% if transaction.agent %}
+                            <p class="mb-1">Agent: {{ transaction.agent.username }}</p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <a href="{% url 'transactions:public_ledger' %}" class="btn btn-outline-primary mt-3">
+                        View All Transactions
+                    </a>
+                    {% else %}
+                    <div class="alert alert-info">
+                        No transactions found
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Mining Activity -->
+            <div class="col-lg-6">
+                <div class="bg-light p-5 rounded shadow wow fadeInUp" data-wow-delay="0.3s">
+                    <h3 class="mb-4"><i class="fas fa-digging me-2"></i> Mining Activity</h3>
+                    {% if mining_state %}
+                    <div class="progress mb-3" style="height: 25px;">
+                        <div class="progress-bar bg-primary" role="progressbar" 
+                             style="width: {{ mining_state.progress_percentage }}%;" 
+                             aria-valuenow="{{ mining_state.progress_percentage }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                            {{ mining_state.progress_percentage|floatformat:0 }}%
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-clock text-primary me-2"></i>
+                                <div>
+                                    <h6 class="mb-0">Time Mined</h6>
+                                    <p class="mb-0">{{ mining_state.elapsed_hours|floatformat:2 }} hours</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-hourglass-half text-primary me-2"></i>
+                                <div>
+                                    <h6 class="mb-0">Time Remaining</h6>
+                                    <p class="mb-0">{{ mining_state.remaining_time.0 }}h {{ mining_state.remaining_time.1 }}m</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex align-items-center mb-4">
+                        <i class="fas fa-coins text-warning me-2"></i>
+                        <div>
+                            <h6 class="mb-0">Tokens Earned</h6>
+                            <p class="mb-0">{{ mining_state.points_earned_today|floatformat:2 }} NSU</p>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-bolt text-primary me-2"></i>
+                        <div>
+                            <h6 class="mb-0">Mining Status</h6>
+                            <p class="mb-0">
+                                {% if mining_state.is_mining %}
+                                <span class="badge bg-success">Active</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Inactive</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        No mining data available
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+$(document).ready(function() {
+    // Follow/unfollow functionality
+    $('.follow-btn').click(function() {
+        var username = $(this).data('username');
+        var btn = $(this);
+        $.ajax({
+            url: "{% url 'users:follow_user' username='replace' %}".replace('replace', username),
+            method: "POST",
+            data: {
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            success: function(data) {
+                if (data.status === 'followed') {
+                    btn.html('<i class="fas fa-user-minus me-1"></i> Unfollow');
+                } else if (data.status === 'unfollowed') {
+                    btn.html('<i class="fas fa-user-plus me-1"></i> Follow');
+                }
+            }
+        });
+    });
+    
+    // Function to update mining status
+    function updateMiningStatus() {
+        $.ajax({
+            url: "{% url 'airdrop:mining_status' %}",
+            method: "GET",
+            success: function(data) {
+                // Update progress bar
+                $('.progress-bar').css('width', data.progress_percentage + '%')
+                                  .attr('aria-valuenow', data.progress_percentage)
+                                  .text(data.progress_percentage.toFixed(0) + '%';
+                
+                // Update time mined
+                $('.fa-clock').closest('.col-md-6').find('p').text(data.elapsed_hours.toFixed(2) + ' hours');
+                
+                // Update time remaining
+                const hours = Math.floor(data.remaining_time.split(':')[0]);
+                const minutes = data.remaining_time.split(':')[1];
+                $('.fa-hourglass-half').closest('.col-md-6').find('p').text(hours + 'h ' + minutes + 'm');
+                
+                // Update tokens earned
+                $('.fa-coins').closest('.d-flex').find('p').text(data.session_points.toFixed(2) + ' NSU');
+                
+                // Update mining status
+                const statusElement = $('.fa-bolt').closest('.d-flex').find('.badge');
+                if (data.is_mining) {
+                    statusElement.removeClass('bg-secondary').addClass('bg-success').text('Active');
+                } else {
+                    statusElement.removeClass('bg-success').addClass('bg-secondary').text('Inactive');
+                }
+            }
+        });
+    }
+    
+    // Periodically update mining status every 15 seconds
+    setInterval(updateMiningStatus, 15000);
+});
+</script>
+{% endblock %}
