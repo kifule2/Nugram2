@@ -1,0 +1,201 @@
+<!-- templates/social/notifications.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Notifications | NUSU{% endblock %}
+
+{% block content %}
+<style>
+    .notifications-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px 0;
+    }
+
+    .notifications-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+
+    .notifications-header h2 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--text-main), var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .notification-item {
+        background: var(--card);
+        border-radius: 20px;
+        padding: 16px;
+        margin-bottom: 12px;
+        border: 1px solid var(--card-border);
+        box-shadow: var(--shadow);
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        animation: slideIn 0.3s ease;
+    }
+
+    .notification-item:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-hover);
+    }
+
+    .notification-item.unread {
+        background: var(--accent-light);
+        border-left: 4px solid var(--accent);
+    }
+
+    .notification-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .icon-like { background: var(--danger-light); color: var(--danger); }
+    .icon-repost { background: var(--success-light); color: var(--success); }
+    .icon-reply { background: var(--accent-light); color: var(--accent); }
+    .icon-follow { background: var(--warning-light); color: var(--warning); }
+    .icon-mention { background: #f3e8ff; color: #8b5cf6; }
+    .icon-post { background: #e0f2fe; color: #0284c7; }
+
+    .notification-content {
+        flex: 1;
+    }
+
+    .notification-text {
+        font-size: 0.95rem;
+        color: var(--text-main);
+        margin-bottom: 5px;
+    }
+
+    .notification-text strong {
+        color: var(--accent);
+        font-weight: 700;
+    }
+
+    .notification-time {
+        font-size: 0.8rem;
+        color: var(--text-dim);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .empty-notifications {
+        text-align: center;
+        padding: 60px 20px;
+        background: var(--card);
+        border-radius: 30px;
+        border: 1px solid var(--card-border);
+    }
+
+    .empty-notifications i {
+        font-size: 4rem;
+        color: var(--text-light);
+        margin-bottom: 20px;
+    }
+</style>
+
+<div class="notifications-container">
+    <div class="notifications-header">
+        <h2><i class="fa-regular fa-bell me-2"></i>Notifications</h2>
+    </div>
+
+    {% if notifications %}
+        {% for notification in notifications %}
+        <div class="notification-item {% if not notification.is_read %}unread{% endif %}">
+            <div class="notification-icon icon-{{ notification.notification_type }}">
+                {% if notification.notification_type == 'like' %}
+                    <i class="fas fa-heart"></i>
+                {% elif notification.notification_type == 'repost' %}
+                    <i class="fas fa-retweet"></i>
+                {% elif notification.notification_type == 'reply' %}
+                    <i class="fas fa-reply"></i>
+                {% elif notification.notification_type == 'follow' %}
+                    <i class="fas fa-user-plus"></i>
+                {% elif notification.notification_type == 'mention' %}
+                    <i class="fas fa-at"></i>
+                {% elif notification.notification_type == 'post' %}
+                    <i class="fas fa-pen"></i>
+                {% endif %}
+            </div>
+
+            <div class="notification-content">
+                <div class="notification-text">
+                    {% if notification.notification_type == 'like' %}
+                        <strong>{{ notification.sender.username }}</strong> liked your post
+                    {% elif notification.notification_type == 'repost' %}
+                        <strong>{{ notification.sender.username }}</strong> reposted your post
+                    {% elif notification.notification_type == 'reply' %}
+                        <strong>{{ notification.sender.username }}</strong> replied to your post
+                    {% elif notification.notification_type == 'follow' %}
+                        <strong>{{ notification.sender.username }}</strong> started following you
+                    {% elif notification.notification_type == 'mention' %}
+                        <strong>{{ notification.sender.username }}</strong> mentioned you in a post
+                    {% elif notification.notification_type == 'post' %}
+                        <strong>{{ notification.sender.username }}</strong> created a new post
+                    {% endif %}
+                </div>
+
+                <div class="notification-time">
+                    <i class="fa-regular fa-clock"></i>
+                    <span>{{ notification.created_at|timesince }} ago</span>
+                </div>
+            </div>
+
+            {% if notification.post %}
+            <a href="{% url 'social:post_detail' notification.post.id %}" class="btn btn-sm btn-outline-primary rounded-pill">
+                View
+            </a>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <!-- Pagination -->
+        {% if notifications.has_other_pages %}
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if notifications.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ notifications.previous_page_number }}">Previous</a>
+                </li>
+                {% endif %}
+
+                {% for num in notifications.paginator.page_range %}
+                <li class="page-item {% if notifications.number == num %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+                {% endfor %}
+
+                {% if notifications.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ notifications.next_page_number }}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+    {% else %}
+    <div class="empty-notifications">
+        <i class="fa-regular fa-bell-slash"></i>
+        <h3>No notifications yet</h3>
+        <p class="text-dim">When someone interacts with your posts or follows you, you'll see it here.</p>
+        <a href="{% url 'social:feed' %}" class="btn btn-primary rounded-pill mt-3">
+            <i class="fas fa-home me-2"></i>Go to Feed
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,340 +1,363 @@
 {% extends "base.html" %}
+{% load static %}
 
-   {% block content %}
-   <div class="container-fluid">
-      <h2>Welcome to the Savings App!</h2>
-      <p>Start managing your savings today.</p>
-      
-        <!-- menu pick -->
-         <section class="explore-section section-padding" id="section_2">
-                <div class="container">
-                    <div class="row">
+{% block title %}Home{% endblock %}
 
-                        <div class="col-12 text-center">
-                            <h2 class="mb-4">Browse Topics</h1>
+{% block content %}
+<!-- Balance Overview (for authenticated users) -->
+{% if user.is_authenticated %}
+<div class="balance-card">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="balance-label">Total Balance</span>
+        <span class="badge-live">NSU Token</span>
+    </div>
+    <div class="balance-amount" id="tokenBalance">{{ user.userprofile.token_balance|floatformat:2 }}</div>
+    <div class="d-flex justify-content-between mt-2">
+        <span class="text-dim" id="ugxBalance">≈ UGX {{ user.userprofile.get_ugx_balance|floatformat:2 }}</span>
+        <span class="text-success">
+            <i class="fa-regular fa-circle-check"></i> Active
+        </span>
+    </div>
+</div>
+
+<!-- Quick Stats with Live Data -->
+<div class="stats-grid">
+    <div class="stat-item">
+        <div class="stat-value" id="followersCount">{{ user.userprofile.get_followers_count }}</div>
+        <div class="stat-label">Followers</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-value" id="followingCount">{{ user.userprofile.get_following_count }}</div>
+        <div class="stat-label">Following</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-value" id="referralsCount">{{ user.referrals.count }}</div>
+        <div class="stat-label">Referrals</div>
+    </div>
+</div>
+
+<!-- Mining Widget -->
+{% if mining_state %}
+<div class="mining-widget">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="mb-0 fw-bold">Mining Session</h6>
+        <span class="badge bg-{% if mining_state.is_mining %}success{% else %}secondary{% endif %}" id="miningStatus">
+            {% if mining_state.is_mining %}ACTIVE{% else %}INACTIVE{% endif %}
+        </span>
+    </div>
+    
+    <div class="progress mb-2">
+        <div class="progress-bar" id="miningProgress" style="width: {{ mining_state.progress_percentage }}%"></div>
+    </div>
+    
+    <div class="d-flex justify-content-between small">
+        <span class="text-dim" id="miningTime">{{ mining_state.elapsed_hours|floatformat:1 }} / 24 hours</span>
+        <span class="fw-bold" id="miningPoints">{{ mining_state.points_earned_today|floatformat:2 }} NSU</span>
+    </div>
+    
+    <div class="d-flex gap-2 mt-3">
+        {% if mining_state.is_mining %}
+        <button class="btn btn-outline-danger w-50 rounded-pill" onclick="toggleMining()">
+            <i class="fa-solid fa-stop"></i> Stop
+        </button>
+        {% else %}
+        <button class="btn btn-outline-success w-50 rounded-pill" onclick="toggleMining()">
+            <i class="fa-solid fa-play"></i> Start
+        </button>
+        {% endif %}
+        <a href="{% url 'airdrop:dashboard' %}" class="btn btn-primary w-50 rounded-pill">
+            Details <i class="fa-solid fa-arrow-right ms-2"></i>
+        </a>
+    </div>
+</div>
+{% endif %}
+{% endif %}
+
+<!-- Quick Actions -->
+<div class="action-row">
+    <a href="{% if user.is_authenticated %}{% url 'transactions:transfer_tokens' %}{% else %}#{% endif %}" 
+       class="pill {% if not user.is_authenticated %}disabled-link{% endif %}"
+       {% if not user.is_authenticated %}data-bs-toggle="modal" data-bs-target="#loginModal"{% endif %}>
+        <i class="fa-solid fa-paper-plane"></i> Send
+    </a>
+    <a href="{% if user.is_authenticated %}{% url 'transactions:request_withdrawal' %}{% else %}#{% endif %}" 
+       class="pill {% if not user.is_authenticated %}disabled-link{% endif %}"
+       {% if not user.is_authenticated %}data-bs-toggle="modal" data-bs-target="#loginModal"{% endif %}>
+        <i class="fa-solid fa-arrow-down"></i> Withdraw
+    </a>
+    <a href="{% url 'transactions:public_ledger' %}" class="pill">
+        <i class="fa-solid fa-chart-line"></i> Ledger
+    </a>
+    <a href="{% if user.is_authenticated %}{% url 'airdrop:dashboard' %}{% else %}#{% endif %}" 
+       class="pill {% if not user.is_authenticated %}disabled-link{% endif %}"
+       {% if not user.is_authenticated %}data-bs-toggle="modal" data-bs-target="#loginModal"{% endif %}>
+        <i class="fa-solid fa-bolt"></i> Mine
+    </a>
+</div>
+
+<!-- Recent Transactions Feed -->
+<div class="feed">
+    <h5 class="px-4 mb-3 fw-bold">Recent Activity</h5>
+    
+    {% if recent_transactions %}
+        {% for tx in recent_transactions %}
+        <a href="{% url 'transactions:transaction_detail' tx.id %}" class="text-decoration-none">
+            <div class="tx-card">
+                <div class="tx-header">
+                    <img src="{% if tx.user.userprofile.profile_picture %}{{ tx.user.userprofile.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ tx.user.username|first }}&background=3b82f6&color=fff{% endif %}" 
+                         style="width: 40px; height: 40px; border-radius: 12px; object-fit: cover;">
+                    <div class="flex-grow-1">
+                        <div class="user-name">{{ tx.user.userprofile.display_name|default:tx.user.username }}</div>
+                        <div class="text-dim small" style="font-size: 0.7rem;">{{ tx.timestamp|timesince }} ago</div>
+                    </div>
+                    <span class="badge bg-{% if tx.transaction_type == 'deposit' %}success{% elif tx.transaction_type == 'withdrawal' %}warning{% else %}info{% endif %}">
+                        {{ tx.get_transaction_type_display }}
+                    </span>
+                </div>
+                
+                <div class="tx-bubble" style="border-left-color: {% if tx.amount > 0 %}var(--success){% else %}var(--warning){% endif %};">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-coins" style="color: {% if tx.amount > 0 %}var(--success){% else %}var(--warning){% endif %};"></i>
+                        <div>
+                            <span class="small fw-bold d-block">{{ tx.amount }} NSU</span>
+                            {% if tx.agent %}
+                            <span class="small text-dim">Agent: {{ tx.agent.username }}</span>
+                            {% endif %}
                         </div>
-
                     </div>
+                    <i class="fa-solid fa-chevron-right text-dim"></i>
                 </div>
-
-                <div class="container-fluid">
-                    <div class="row">
-                        <ul class="nav nav-tabs" id="myTab" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="design-tab" data-bs-toggle="tab" data-bs-target="#design-tab-pane" type="button" role="tab" aria-controls="design-tab-pane" aria-selected="true">Design</button>
-                            </li>
-
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="marketing-tab" data-bs-toggle="tab" data-bs-target="#marketing-tab-pane" type="button" role="tab" aria-controls="marketing-tab-pane" aria-selected="false">Marketing</button>
-                            </li>
-
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="finance-tab" data-bs-toggle="tab" data-bs-target="#finance-tab-pane" type="button" role="tab" aria-controls="finance-tab-pane" aria-selected="false">Finance</button>
-                            </li>
-
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="music-tab" data-bs-toggle="tab" data-bs-target="#music-tab-pane" type="button" role="tab" aria-controls="music-tab-pane" aria-selected="false">Music</button>
-                            </li>
-
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="education-tab" data-bs-toggle="tab" data-bs-target="#education-tab-pane" type="button" role="tab" aria-controls="education-tab-pane" aria-selected="false">Education</button>
-                            </li>
-                        </ul>
-                    </div>
+                
+                <div class="d-flex gap-4 mt-3 text-dim small">
+                    <span><i class="fa-regular fa-clock me-1"></i> {{ tx.timestamp|date:"M d, H:i" }}</span>
+                    {% if tx.status %}
+                    <span class="ms-auto">
+                        <i class="fa-regular fa-circle-check text-success me-1"></i> {{ tx.get_status_display }}
+                    </span>
+                    {% endif %}
                 </div>
+            </div>
+        </a>
+        {% endfor %}
 
-                <div class="container">
-                    <div class="row">
+        <!-- View All Link -->
+        <div class="text-center mt-3 mb-4">
+            <a href="{% url 'transactions:public_ledger' %}" class="btn btn-outline-primary rounded-pill px-5">
+                View All Transactions <i class="fa-solid fa-arrow-right ms-2"></i>
+            </a>
+        </div>
+    {% else %}
+        <!-- Empty State -->
+        <div class="text-center mt-4">
+            <div class="mb-3">
+                <i class="fa-regular fa-clock text-dim" style="font-size: 4rem;"></i>
+            </div>
+            <h5>No transactions yet</h5>
+            <p class="text-dim">Start mining or make your first transaction!</p>
+            {% if user.is_authenticated %}
+            <div class="d-flex gap-2 justify-content-center">
+                <a href="{% url 'airdrop:dashboard' %}" class="btn btn-primary rounded-pill px-4">
+                    <i class="fa-solid fa-pickaxe me-2"></i>Start Mining
+                </a>
+                <a href="{% url 'transactions:transfer_tokens' %}" class="btn btn-outline-primary rounded-pill px-4">
+                    <i class="fa-solid fa-paper-plane me-2"></i>Send Tokens
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
 
-                        <div class="col-12">
-                            <div class="tab-content" id="myTabContent">
-                                <div class="tab-pane fade show active" id="design-tab-pane" role="tabpanel" aria-labelledby="design-tab" tabindex="0">
-                                    <div class="row">
-                                        <div class="col-lg-4 col-md-6 col-12 mb-4 mb-lg-0">
-                                            <div class="custom-block bg-white shadow-lg">
-                                                <a href="topics-detail.html">
-                                                    <div class="d-flex">
-                                                        <div>
-                                                            <h5 class="mb-2">Web Design</h5>
+<!-- Global Stats -->
+<div class="stats-grid mt-4">
+    <div class="stat-item">
+        <div class="stat-value" id="globalMiningRate">{{ global_stats.current_multiplier|default:"1.0" }}x</div>
+        <div class="stat-label">Mining Rate</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-value" id="globalUgxRate">UGX {{ global_stats.ugx_rate|default:"3800" }}</div>
+        <div class="stat-label">Token Value</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-value" id="globalTotalUsers">{{ global_stats.total_users|default:"0" }}</div>
+        <div class="stat-label">Total Users</div>
+    </div>
+</div>
 
-                                                            <p class="mb-0">Topic Listing Template based on Bootstrap 5</p>
-                                                        </div>
+<!-- Hidden CSRF Token for AJAX -->
+{% csrf_token %}
+{% endblock %}
 
-                                                        <span class="badge bg-design rounded-pill ms-auto">14</span>
-                                                    </div>
+{% block extra_scripts %}
+<script>
+// Mining Toggle Function
+function toggleMining() {
+    fetch("{% url 'airdrop:toggle_mining' %}", {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'started' || data.status === 'stopped') {
+            // Update mining status badge
+            const statusBadge = document.getElementById('miningStatus');
+            const progressBar = document.getElementById('miningProgress');
+            const timeDisplay = document.getElementById('miningTime');
+            const pointsDisplay = document.getElementById('miningPoints');
+            const miningButton = document.querySelector('.mining-widget .btn-outline-danger, .mining-widget .btn-outline-success');
+            
+            if (data.is_mining) {
+                statusBadge.textContent = 'ACTIVE';
+                statusBadge.className = 'badge bg-success';
+                if (miningButton) {
+                    miningButton.className = 'btn btn-outline-danger w-50 rounded-pill';
+                    miningButton.innerHTML = '<i class="fa-solid fa-stop"></i> Stop';
+                }
+            } else {
+                statusBadge.textContent = 'INACTIVE';
+                statusBadge.className = 'badge bg-secondary';
+                if (miningButton) {
+                    miningButton.className = 'btn btn-outline-success w-50 rounded-pill';
+                    miningButton.innerHTML = '<i class="fa-solid fa-play"></i> Start';
+                }
+            }
+            
+            // Update progress
+            if (progressBar) progressBar.style.width = data.progress_percentage + '%';
+            if (timeDisplay) timeDisplay.textContent = data.elapsed_hours.toFixed(1) + ' / 24 hours';
+            if (pointsDisplay) pointsDisplay.textContent = data.session_points.toFixed(2) + ' NSU';
+            
+            // Show success message
+            showToast(data.status === 'started' ? 'Mining started!' : 'Mining stopped');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Error toggling mining', 'error');
+    });
+}
 
-                                                    <img src="images/topics/undraw_Remote_design_team_re_urdx.png" class="custom-block-image img-fluid" alt="">
-                                                </a>
-                                            </div>
-                                        </div>
-
-                                        <div class="col-lg-4 col-md-6 col-12 mb-4 mb-lg-0">
-                                            <div class="custom-block bg-white shadow-lg">
-                                                <a href="topics-detail.html">
-                                                    <div class="d-flex">
-                                                        <div>
-                                                            <h5 class="mb-2">Graphic</h5>
-
-                                                                <p class="mb-0">Lorem Ipsum dolor sit amet consectetur</p>
-                                                        </div>
-
-                                                        <span class="badge bg-design rounded-pill ms-auto">75</span>
-                                                    </div>
-
-                                                    <img src="images/topics/undraw_Redesign_feedback_re_jvm0.png" class="custom-block-image img-fluid" alt="">
-                                                </a>
-                                            </div>
-                                        </div>
-
-                                        <div class="col-lg-4 col-md-6 col-12">
-                                            <div class="custom-block bg-white shadow-lg">
-                                                <a href="topics-detail.html">
-                                                    <div class="d-flex">
-                                                        <div>
-                                                            <h5 class="mb-2">Logo Design</h5>
-
-                                                                <p class="mb-0">Lorem Ipsum dolor sit amet consectetur</p>
-                                                        </div>
-
-                                                        <span class="badge bg-design rounded-pill ms-auto">100</span>
-                                                    </div>
-
-                                                    <img src="images/topics/colleagues-working-cozy-office-medium-shot.png" class="custom-block-image img-fluid" alt="">
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="tab-pane fade" id="marketing-tab-pane" role="tabpanel" aria-labelledby="marketing-tab" tabindex="0">
-                                    <div class="row">
-                                        <div class="col-lg-4 col-md-6 col-12 mb-4 mb-lg-3">
-                                                <div class="custom-block bg-white shadow-lg">
-                                                    <a href="topics-detail.html">
-                                                        <div class="d-flex">
-                                                            <div>
-                                                                <h5 class="mb-2">Advertising</h5>
-
-                                                                <p class="mb-0">Lorem Ipsum dolor sit amet consectetur</p>
-                                                            </div>
-
-                                                            <span class="badge bg-advertising rounded-pill ms-auto">30</span>
-                                                        </div>
-
-                                                        <img src="images/topics/undraw_online_ad_re_ol62.png" class="custom-block-image img-fluid" alt="">
-                                                    </a>
-                                                </div>
-                                            </div>
-
-                                            <div class="col-lg-4 col-md-6 col-12 mb-4 mb-lg-3">
-                                                <div class="custom-block bg-white shadow-lg">
-                                                    <a href="topics-detail.html">
-                                                        <div class="d-flex">
-                                                            <div>
-                                                                <h5 class="mb-2">Video Content</h5>
-
-                                                                <p class="mb-0">Lorem Ipsum dolor sit amet consectetur</p>
-                                                            </div>
-
-                                                            <span class="badge bg-advertising rounded-pill ms-auto">65</span>
-                                                        </div>
-
-                                                        <img src="images/topics/undraw_Group_video_re_btu7.png" class="custom-block-image img-fluid" alt="">
-                                                    </a>
-                                                </div>
-                                            </div>
-
-                                            <div class="col-lg-4 col-md-6 col-12">
-                                                <div class="custom-block bg-white shadow-lg">
-                                                    <a href="topics-detail.html">
-                                                        <div class="d-flex">
-                                                            <div>
-                                                                <h5 class="mb-2">Viral Tweet</h5>
-
-                                                                <p class="mb-0">Lorem Ipsum dolor sit amet consectetur</p>
-                                                            </div>
-
-                                                            <span class="badge bg-advertising rounded-pill ms-auto">50</span>
-                                                        </div>
-
-                                                        <img src="images/topics/undraw_viral_tweet_gndb.png" class="custom-block-image img-fluid" alt="">
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                  </div>
-
-                                <div class="tab-pane fade" id="finance-tab-pane" role="tabpanel" aria-labelledby="finance-tab" tabindex="0">   <div class="row">
-                                        <div class="col-lg-6 col-md-6 col-12 mb-4 mb-lg-0">
-                                            <div class="custom-block bg-white shadow-lg">
-                                                <a href="topics-detail.html">
-                                                    <div class="d-flex">
-                                                        <div>
-                                                            <h5 class="mb-2">Investment</h5>
-
-                                                            <p class="mb-0">Lorem Ipsum dolor sit amet consectetur</p>
-                                                        </div>
-
-                                                        <span class="badge bg-finance rounded-pill ms-auto">30</span>
-                                                    </div>
-
-                                                    <img src="images/topics/undraw_Finance_re_gnv2.png" class="custom-block-image img-fluid" alt="">
-                                                </a>
-                                            </div>
-                                        </div>
-
-                                        <div class="col-lg-6 col-md-6 col-12">
-                                            <div class="custom-block custom-block-overlay">
-                                                <div class="d-flex flex-column h-100">
-                                                    <img src="images/businesswoman-using-tablet-analysis-graph-company-finance-strategy-statistics-success-concept-planning-future-office-room.jpg" class="custom-block-image img-fluid" alt="">
-
-                                                    <div class="custom-block-overlay-text d-flex">
-                                                        <div>
-                                                            <h5 class="text-white mb-2">Finance</h5>
-
-                                                            <p class="text-white">Lorem ipsum dolor, sit amet consectetur adipisicing elit. Sint animi necessitatibus aperiam repudiandae nam omnis</p>
-
-                                                            <a href="topics-detail.html" class="btn custom-btn mt-2 mt-lg-3">Learn More</a>
-                                                        </div>
-
-                                                        <span class="badge bg-finance rounded-pill ms-auto">25</span>
-                                                    </div>
-
-                                                    <div class="social-share d-flex">
-                                                        <p class="text-white me-4">Share:</p>
-
-                                                        <ul class="social-icon">
-                                                            <li class="social-icon-item">
-                                                                <a href="#" class="social-icon-link bi-twitter"></a>
-                                                            </li>
-
-                                                            <li class="social-icon-item">
-                                                                <a href="#" class="social-icon-link bi-facebook"></a>
-                                                            </li>
-
-                                                            <li class="social-icon-item">
-                                                                <a href="#" class="social-icon-link bi-pinterest"></a>
-                                                            </li>
-                                                        </ul>
-
-                                                        <a href="#" class="custom-icon bi-bookmark ms-auto"></a>
-                                                    </div>
-
-                                                    <div class="section-overlay"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="tab-pane fade" id="music-tab-pane" role="tabpanel" aria-labelledby="music-tab" tabindex="0">
-                                    <div class="row">
-                                        <div class="col-lg-4 col-md-6 col-12 mb-4 mb-lg-3">
-                                            <div class="custom-block bg-white shadow-lg">
-                                                <a href="topics-detail.html">
-                                                    <div class="d-flex">
-                                                        <div>
-                                                            <h5 class="mb-2">Composing Song</h5>
-
-                                                            <p class="mb-0">Lorem Ipsum dolor sit amet consectetur</p>
-                                                        </div>
-
-                                                        <span class="badge bg-music rounded-pill ms-auto">45</span>
-                                                    </div>
-
-                                                    <img src="images/topics/undraw_Compose_music_re_wpiw.png" class="custom-block-image img-fluid" alt="">
-                                                </a>
-                                            </div>
-                                        </div>
-
-                                        <div class="col-lg-4 col-md-6 col-12 mb-4 mb-lg-3">
-                                            <div class="custom-block bg-white shadow-lg">
-                                                <a href="topics-detail.html">
-                                                    <div class="d-flex">
-                                                        <div>
-                                                            <h5 class="mb-2">Online Music</h5>
-
-                                                            <p class="mb-0">Lorem Ipsum dolor sit amet consectetur</p>
-                                                        </div>
-
-                                                        <span class="badge bg-music rounded-pill ms-auto">45</span>
-                                                    </div>
-
-                                                    <img src="images/topics/undraw_happy_music_g6wc.png" class="custom-block-image img-fluid" alt="">
-                                                </a>
-                                            </div>
-                                        </div>
-
-                                        <div class="col-lg-4 col-md-6 col-12">
-                                            <div class="custom-block bg-white shadow-lg">
-                                                <a href="topics-detail.html">
-                                                    <div class="d-flex">
-                                                        <div>
-                                                            <h5 class="mb-2">Podcast</h5>
-
-                                                            <p class="mb-0">Lorem Ipsum dolor sit amet consectetur</p>
-                                                        </div>
-
-                                                        <span class="badge bg-music rounded-pill ms-auto">20</span>
-                                                    </div>
-
-                                                    <img src="images/topics/undraw_Podcast_audience_re_4i5q.png" class="custom-block-image img-fluid" alt="">
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="tab-pane fade" id="education-tab-pane" role="tabpanel" aria-labelledby="education-tab" tabindex="0">
-                                    <div class="row">
-                                        <div class="col-lg-6 col-md-6 col-12 mb-4 mb-lg-3">
-                                            <div class="custom-block bg-white shadow-lg">
-                                                <a href="topics-detail.html">
-                                                    <div class="d-flex">
-                                                        <div>
-                                                            <h5 class="mb-2">Graduation</h5>
-
-                                                            <p class="mb-0">Lorem Ipsum dolor sit amet consectetur</p>
-                                                        </div>
-
-                                                        <span class="badge bg-education rounded-pill ms-auto">80</span>
-                                                    </div>
-
-                                                    <img src="images/topics/undraw_Graduation_re_gthn.png" class="custom-block-image img-fluid" alt="">
-                                                </a>
-                                            </div>
-                                        </div>
-
-                                        <div class="col-lg-6 col-md-6 col-12">
-                                            <div class="custom-block bg-white shadow-lg">
-                                                <a href="topics-detail.html">
-                                                    <div class="d-flex">
-                                                        <div>
-                                                            <h5 class="mb-2">Educator</h5>
-
-                                                            <p class="mb-0">Lorem Ipsum dolor sit amet consectetur</p>
-                                                        </div>
-
-                                                        <span class="badge bg-education rounded-pill ms-auto">75</span>
-                                                    </div>
-
-                                                    <img src="images/topics/undraw_Educator_re_ju47.png" class="custom-block-image img-fluid" alt="">
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                    </div>
-                </div>
-            </section>
-        <!-- menu pick end--
-   </div>
-   
-   
-
+// Update mining display function
+function updateMiningDisplay() {
+    {% if mining_state and mining_state.is_mining %}
+    fetch("{% url 'airdrop:mining_status' %}")
+    .then(response => response.json())
+    .then(data => {
+        const progressBar = document.getElementById('miningProgress');
+        const timeDisplay = document.getElementById('miningTime');
+        const pointsDisplay = document.getElementById('miningPoints');
         
-   
+        if (progressBar && timeDisplay && pointsDisplay) {
+            progressBar.style.width = data.progress_percentage + '%';
+            timeDisplay.textContent = data.elapsed_hours.toFixed(1) + ' / 24 hours';
+            pointsDisplay.textContent = data.session_points.toFixed(2) + ' NSU';
+        }
+    })
+    .catch(error => {
+        console.error('Error updating mining status:', error);
+    });
+    {% endif %}
+}
 
-   {% endblock %}
+// Update user stats function
+function updateUserStats() {
+    {% if user.is_authenticated %}
+    fetch("{% url 'user_stats_api' %}")
+    .then(response => response.json())
+    .then(data => {
+        // Update follower counts
+        document.getElementById('followersCount').textContent = data.followers;
+        document.getElementById('followingCount').textContent = data.following;
+        document.getElementById('referralsCount').textContent = data.referrals;
+        
+        // Update token balance
+        const balanceEl = document.getElementById('tokenBalance');
+        if (balanceEl) {
+            balanceEl.textContent = data.token_balance.toFixed(2);
+        }
+        
+        // Update UGX balance
+        const ugxEl = document.getElementById('ugxBalance');
+        if (ugxEl) {
+            ugxEl.textContent = '≈ UGX ' + data.ugx_balance.toFixed(2);
+        }
+    })
+    .catch(error => {
+        console.error('Error updating user stats:', error);
+    });
+    {% endif %}
+}
+
+// Update global stats function
+function updateGlobalStats() {
+    fetch("{% url 'global_stats' %}")
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('globalMiningRate').textContent = data.current_multiplier + 'x';
+        document.getElementById('globalUgxRate').textContent = 'UGX ' + data.ugx_rate;
+        document.getElementById('globalTotalUsers').textContent = data.total_users;
+    })
+    .catch(error => {
+        console.error('Error updating global stats:', error);
+    });
+}
+
+// Show toast message
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = 'coming-soon-toast show';
+    toast.innerHTML = `<i class="fa-regular fa-${type === 'success' ? 'check-circle' : 'circle-xmark'}"></i>${message}`;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 2000);
+}
+
+// Animate balance on load
+document.addEventListener('DOMContentLoaded', function() {
+    const balanceElement = document.querySelector('.balance-amount');
+    if (balanceElement) {
+        const finalValue = parseFloat(balanceElement.textContent);
+        if (!isNaN(finalValue) && finalValue > 0) {
+            let current = 0;
+            const increment = finalValue / 50;
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= finalValue) {
+                    balanceElement.textContent = finalValue.toFixed(2);
+                    clearInterval(timer);
+                } else {
+                    balanceElement.textContent = current.toFixed(2);
+                }
+            }, 20);
+        }
+    }
+    
+    // Start auto-refresh intervals
+    {% if mining_state and mining_state.is_mining %}
+    // Update mining every 30 seconds if active
+    setInterval(updateMiningDisplay, 30000);
+    {% endif %}
+    
+    // Update user stats every 30 seconds
+    setInterval(updateUserStats, 30000);
+    
+    // Update global stats every 60 seconds
+    setInterval(updateGlobalStats, 60000);
+});
+
+// Handle visibility change (refresh data when tab becomes visible)
+document.addEventListener('visibilitychange', function() {
+    if (!document.hidden) {
+        updateUserStats();
+        updateGlobalStats();
+        updateMiningDisplay();
+    }
+});
+</script>
+{% endblock %}

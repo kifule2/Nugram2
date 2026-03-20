@@ -1,0 +1,194 @@
+<!-- templates/users/follow_list.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ list_title }} | NUSU{% endblock %}
+
+{% block content %}
+<style>
+    .follow-list-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px 16px;
+    }
+
+    .follow-list-header {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 25px;
+    }
+
+    .back-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: var(--card);
+        border: 1px solid var(--card-border);
+        color: var(--text-dim);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .back-btn:hover {
+        background: var(--accent);
+        color: white;
+        transform: translateX(-3px);
+    }
+
+    .follow-list-header h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+        background: linear-gradient(135deg, var(--text-main), var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .user-card {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 15px;
+        background: var(--card);
+        border-radius: 20px;
+        border: 1px solid var(--card-border);
+        box-shadow: var(--shadow);
+        margin-bottom: 12px;
+        transition: all 0.2s ease;
+    }
+
+    .user-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-hover);
+    }
+
+    .user-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 18px;
+        object-fit: cover;
+        border: 2px solid var(--accent);
+    }
+
+    .user-info {
+        flex: 1;
+    }
+
+    .user-name {
+        font-weight: 700;
+        color: var(--text-main);
+        margin-bottom: 3px;
+    }
+
+    .user-username {
+        color: var(--text-dim);
+        font-size: 0.9rem;
+    }
+
+    .follow-btn-small {
+        padding: 8px 16px;
+        border-radius: 50px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .follow-btn-small.follow {
+        background: var(--accent);
+        color: white;
+    }
+
+    .follow-btn-small.following {
+        background: var(--success);
+        color: white;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: var(--card);
+        border-radius: 30px;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: var(--text-light);
+        margin-bottom: 20px;
+    }
+</style>
+
+<div class="follow-list-container">
+    <div class="follow-list-header">
+        <a href="{% url 'users:user_profile' profile_user.username %}" class="back-btn">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <h2>{{ list_title }}</h2>
+    </div>
+
+    {% if users %}
+        {% for user in users %}
+        <div class="user-card">
+            <a href="{% url 'users:user_profile' user.username %}">
+                {% if user.userprofile.profile_picture %}
+                <img src="{{ user.userprofile.profile_picture.url }}" class="user-avatar">
+                {% else %}
+                <img src="https://ui-avatars.com/api/?name={{ user.username|first }}&background=3b82f6&color=fff&size=60" class="user-avatar">
+                {% endif %}
+            </a>
+            
+            <div class="user-info">
+                <a href="{% url 'users:user_profile' user.username %}" class="text-decoration-none">
+                    <div class="user-name">{{ user.userprofile.display_name|default:user.username }}</div>
+                    <div class="user-username">@{{ user.username }}</div>
+                </a>
+            </div>
+
+            {% if user != request.user %}
+            <button class="follow-btn-small {% if user.id in current_user_following %}following{% else %}follow{% endif %}"
+                    onclick="toggleFollow('{{ user.username }}', this)">
+                {% if user.id in current_user_following %}
+                <i class="fas fa-check me-1"></i>Following
+                {% else %}
+                <i class="fas fa-plus me-1"></i>Follow
+                {% endif %}
+            </button>
+            {% endif %}
+        </div>
+        {% endfor %}
+    {% else %}
+    <div class="empty-state">
+        <i class="far fa-frown"></i>
+        <h3>No users found</h3>
+        <p>This list is empty</p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    function toggleFollow(username, btn) {
+        fetch(`/social/follow/${username}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'followed') {
+                btn.innerHTML = '<i class="fas fa-check me-1"></i>Following';
+                btn.className = 'follow-btn-small following';
+            } else if (data.status === 'unfollowed') {
+                btn.innerHTML = '<i class="fas fa-plus me-1"></i>Follow';
+                btn.className = 'follow-btn-small follow';
+            }
+        });
+    }
+</script>
+{% endblock %}

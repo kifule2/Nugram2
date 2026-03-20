@@ -1,0 +1,354 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Post by @{{ post.user.username }} - NUSU Social{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background: #000;
+        color: white;
+    }
+    
+    .post-detail-container {
+        max-width: 500px;
+        margin: 0 auto;
+        min-height: 100vh;
+        background: #000;
+        position: relative;
+    }
+    
+    .back-btn {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(0,0,0,0.5);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.2);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+        text-decoration: none;
+        transition: 0.2s;
+    }
+    
+    .back-btn:hover {
+        background: #3b82f6;
+    }
+    
+    .post-card {
+        background: #111;
+        border-radius: 20px;
+        overflow: hidden;
+        margin: 60px 15px 20px;
+    }
+    
+    .post-header {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        gap: 10px;
+    }
+    
+    .post-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    
+    .post-user-info {
+        flex: 1;
+    }
+    
+    .post-username {
+        font-weight: bold;
+        color: white;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .post-time {
+        font-size: 0.8rem;
+        color: #999;
+    }
+    
+    .post-content {
+        padding: 0 15px 15px;
+    }
+    
+    .post-media {
+        width: 100%;
+        max-height: 400px;
+        object-fit: contain;
+        background: #000;
+    }
+    
+    .post-stats {
+        padding: 15px;
+        border-top: 1px solid #222;
+        border-bottom: 1px solid #222;
+        display: flex;
+        gap: 20px;
+    }
+    
+    .stat {
+        color: #999;
+    }
+    
+    .stat strong {
+        color: white;
+        margin-right: 5px;
+    }
+    
+    .post-actions {
+        display: flex;
+        padding: 10px 15px;
+        gap: 20px;
+    }
+    
+    .action-btn {
+        flex: 1;
+        background: transparent;
+        border: none;
+        color: #999;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 8px;
+        border-radius: 50px;
+    }
+    
+    .action-btn:hover {
+        background: #222;
+        color: white;
+    }
+    
+    .action-btn.active {
+        color: #ef4444;
+    }
+    
+    .action-btn.bookmark.active {
+        color: #3b82f6;
+    }
+    
+    .replies-section {
+        padding: 20px 15px;
+    }
+    
+    .reply-item {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        padding: 10px;
+        background: #111;
+        border-radius: 10px;
+    }
+    
+    .reply-avatar {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    
+    .reply-content {
+        flex: 1;
+    }
+    
+    .reply-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 5px;
+    }
+    
+    .reply-author {
+        font-weight: bold;
+        color: white;
+        text-decoration: none;
+    }
+    
+    .reply-time {
+        font-size: 0.7rem;
+        color: #666;
+    }
+    
+    .reply-text {
+        color: #ddd;
+        font-size: 0.9rem;
+        margin-bottom: 5px;
+    }
+    
+    .reply-form {
+        padding: 15px;
+        background: #111;
+        border-radius: 10px;
+        margin-top: 20px;
+    }
+    
+    .reply-form textarea {
+        width: 100%;
+        padding: 10px;
+        border-radius: 10px;
+        border: 1px solid #333;
+        background: #222;
+        color: white;
+        resize: none;
+        margin-bottom: 10px;
+    }
+    
+    .reply-form button {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 50px;
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<a href="{% url 'social:feed' %}" class="back-btn">
+    <i class="fas fa-arrow-left"></i>
+</a>
+
+<div class="post-detail-container">
+    <div class="post-card">
+        <div class="post-header">
+            <img src="{% if post.user.userprofile.profile_picture %}{{ post.user.userprofile.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ post.user.username }}{% endif %}" class="post-avatar">
+            <div class="post-user-info">
+                <a href="{% url 'users:user_profile' post.user.username %}" class="post-username">
+                    @{{ post.user.username }}
+                    {% if post.user.userprofile.verified %}
+                        <i class="fas fa-check-circle verified" style="color: #3b82f6;"></i>
+                    {% endif %}
+                </a>
+                <div class="post-time">{{ post.created_at|timesince }} ago</div>
+            </div>
+        </div>
+        
+        {% if post.media_items.all %}
+            {% with media=post.media_items.first %}
+                {% if media.media_type == 'video' %}
+                    <video class="post-media" controls>
+                        <source src="{{ media.url }}" type="video/webm">
+                        <source src="{{ media.url }}" type="video/mp4">
+                    </video>
+                {% else %}
+                    <img src="{{ media.url }}" class="post-media">
+                {% endif %}
+            {% endwith %}
+        {% endif %}
+        
+        <div class="post-content">
+            {{ post.content|linebreaksbr }}
+        </div>
+        
+        <div class="post-stats">
+            <div class="stat"><strong>{{ post.likes_count }}</strong> likes</div>
+            <div class="stat"><strong>{{ post.replies_count }}</strong> comments</div>
+            <div class="stat"><strong>{{ post.views_count }}</strong> views</div>
+        </div>
+        
+        <div class="post-actions">
+            <button class="action-btn {% if post.is_liked %}active{% endif %}" onclick="likePost('{{ post.id }}', this)">
+                <i class="{% if post.is_liked %}fas{% else %}far{% endif %} fa-heart"></i>
+                Like
+            </button>
+            <button class="action-btn" onclick="focusComment()">
+                <i class="far fa-comment"></i>
+                Comment
+            </button>
+            <button class="action-btn" onclick="sharePost('{{ post.id }}')">
+                <i class="far fa-share-square"></i>
+                Share
+            </button>
+        </div>
+    </div>
+    
+    <div class="replies-section">
+        <h5>Comments ({{ post.replies_count }})</h5>
+        
+        <div class="reply-form">
+            <form method="POST">
+                {% csrf_token %}
+                <textarea name="content" rows="2" placeholder="Write a comment..." required></textarea>
+                <button type="submit">Post Comment</button>
+            </form>
+        </div>
+        
+        {% for reply in replies %}
+        <div class="reply-item">
+            <img src="{% if reply.user.userprofile.profile_picture %}{{ reply.user.userprofile.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ reply.user.username }}{% endif %}" class="reply-avatar">
+            <div class="reply-content">
+                <div class="reply-header">
+                    <a href="{% url 'users:user_profile' reply.user.username %}" class="reply-author">
+                        @{{ reply.user.username }}
+                        {% if reply.user.userprofile.verified %}
+                            <i class="fas fa-check-circle verified" style="color: #3b82f6;"></i>
+                        {% endif %}
+                    </a>
+                    <span class="reply-time">{{ reply.created_at|timesince }} ago</span>
+                </div>
+                <div class="reply-text">{{ reply.content }}</div>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-center text-muted">No comments yet. Be the first to comment!</p>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    function likePost(postId, btn) {
+        fetch(`/social/post/${postId}/like/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            const icon = btn.querySelector('i');
+            if (data.liked) {
+                btn.classList.add('active');
+                icon.className = 'fas fa-heart';
+            } else {
+                btn.classList.remove('active');
+                icon.className = 'far fa-heart';
+            }
+            // Update like count in stats
+            document.querySelector('.stat strong').textContent = data.likes_count;
+        });
+    }
+    
+    function sharePost(postId) {
+        const url = window.location.href;
+        if (navigator.share) {
+            navigator.share({
+                title: 'Check out this post on NUSU!',
+                url: url
+            });
+        } else {
+            navigator.clipboard.writeText(url);
+            alert('Link copied to clipboard!');
+        }
+    }
+    
+    function focusComment() {
+        document.querySelector('textarea[name="content"]').focus();
+    }
+</script>
+{% endblock %}

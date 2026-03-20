@@ -1,194 +1,1276 @@
+<!-- templates/users/dashboard.html -->
 {% extends "base.html" %}
 {% load static %}
 
+{% block title %}Dashboard | NUSU{% endblock %}
+
 {% block content %}
-<div class="container-fluid" id="nusuDashboard">
-    <div class="container">
-        <div class="row g-0">
-            <div class="col-12 col-lg-3">
-                <div class="dashboard-header bg-light h-100 pt-6 pe-6 pb-6">
-                    <div class="text-start d-flex flex-column justify-content-center wow fadeInUp" data-wow-delay="0.1s">
-                        <p class="text-dark sub-title">User Dashboard</p>
-                        <h1 class="display-6 text-dark mb-0">Welcome, {{ user.username }}</h1>
+<style>
+    /* Dashboard Variables */
+    :root {
+        --dashboard-primary: #3b82f6;
+        --dashboard-success: #10b981;
+        --dashboard-warning: #f59e0b;
+        --dashboard-danger: #ef4444;
+        --dashboard-dark: #1e293b;
+        --dashboard-light: #f8fafc;
+        --dashboard-gray: #64748b;
+        --dashboard-card: #ffffff;
+        --dashboard-border: #e2e8f0;
+        --dashboard-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+        --dashboard-shadow-hover: 0 20px 30px -10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Dashboard Container */
+    .dashboard-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    /* Welcome Section */
+    .welcome-section {
+        background: linear-gradient(135deg, var(--dashboard-primary), #2563eb);
+        border-radius: 30px;
+        padding: 30px;
+        margin-bottom: 30px;
+        color: white;
+        box-shadow: var(--dashboard-shadow);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .welcome-section::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: rotate 20s linear infinite;
+    }
+
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .welcome-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .welcome-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 10px;
+        line-height: 1.2;
+    }
+
+    .welcome-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin-bottom: 20px;
+    }
+
+    .welcome-stats {
+        display: flex;
+        gap: 30px;
+        flex-wrap: wrap;
+    }
+
+    .welcome-stat {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .welcome-stat i {
+        font-size: 1.5rem;
+        opacity: 0.9;
+    }
+
+    .welcome-stat span {
+        font-weight: 600;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .stat-card {
+        background: var(--dashboard-card);
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: var(--dashboard-shadow);
+        border: 1px solid var(--dashboard-border);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--dashboard-shadow-hover);
+    }
+
+    .stat-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(135deg, transparent 50%, rgba(59,130,246,0.1) 100%);
+        border-radius: 50%;
+    }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        margin-bottom: 15px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .stat-icon.followers { background: rgba(59,130,246,0.1); color: var(--dashboard-primary); }
+    .stat-icon.following { background: rgba(16,185,129,0.1); color: var(--dashboard-success); }
+    .stat-icon.referrals { background: rgba(245,158,11,0.1); color: var(--dashboard-warning); }
+    .stat-icon.tokens { background: rgba(139,92,246,0.1); color: #8b5cf6; }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--dashboard-dark);
+        line-height: 1.2;
+        margin-bottom: 5px;
+    }
+
+    .stat-label {
+        color: var(--dashboard-gray);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .stat-change {
+        display: inline-block;
+        margin-top: 10px;
+        font-size: 0.85rem;
+        color: var(--dashboard-success);
+        background: rgba(16,185,129,0.1);
+        padding: 4px 8px;
+        border-radius: 50px;
+    }
+
+    /* Main Content Grid */
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    /* Profile Card */
+    .profile-card {
+        background: var(--dashboard-card);
+        border-radius: 30px;
+        padding: 25px;
+        box-shadow: var(--dashboard-shadow);
+        border: 1px solid var(--dashboard-border);
+    }
+
+    .profile-header {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 30px;
+        border: 4px solid var(--dashboard-primary);
+        box-shadow: 0 10px 20px rgba(59,130,246,0.2);
+        object-fit: cover;
+        margin: 0 auto 15px;
+    }
+
+    .profile-name {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--dashboard-dark);
+        margin-bottom: 5px;
+    }
+
+    .profile-username {
+        color: var(--dashboard-gray);
+        font-size: 0.95rem;
+        margin-bottom: 15px;
+    }
+
+    .profile-username i {
+        color: var(--dashboard-primary);
+        margin-right: 5px;
+    }
+
+    .profile-bio {
+        color: var(--dashboard-gray);
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 20px;
+        padding: 15px;
+        background: var(--dashboard-light);
+        border-radius: 15px;
+    }
+
+    .profile-details {
+        margin-bottom: 20px;
+    }
+
+    .detail-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 15px;
+        background: var(--dashboard-light);
+        border-radius: 15px;
+        margin-bottom: 10px;
+        transition: all 0.2s ease;
+    }
+
+    .detail-item:hover {
+        transform: translateX(5px);
+        background: rgba(59,130,246,0.1);
+    }
+
+    .detail-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: var(--dashboard-card);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--dashboard-primary);
+        margin-right: 15px;
+    }
+
+    .detail-content {
+        flex: 1;
+    }
+
+    .detail-label {
+        font-size: 0.8rem;
+        color: var(--dashboard-gray);
+        margin-bottom: 2px;
+    }
+
+    .detail-value {
+        font-weight: 600;
+        color: var(--dashboard-dark);
+    }
+
+    .profile-actions {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .profile-action-btn {
+        padding: 12px;
+        border-radius: 15px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        text-decoration: none;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .profile-action-btn.primary {
+        background: linear-gradient(135deg, var(--dashboard-primary), #2563eb);
+        color: white;
+        border: none;
+    }
+
+    .profile-action-btn.secondary {
+        background: var(--dashboard-light);
+        color: var(--dashboard-primary);
+        border: 2px solid transparent;
+    }
+
+    .profile-action-btn.secondary:hover {
+        border-color: var(--dashboard-primary);
+        background: white;
+    }
+
+    /* Mining Card */
+    .mining-card {
+        background: linear-gradient(135deg, var(--dashboard-card), var(--dashboard-light));
+        border-radius: 30px;
+        padding: 25px;
+        box-shadow: var(--dashboard-shadow);
+        border: 1px solid var(--dashboard-border);
+        margin-bottom: 20px;
+    }
+
+    .mining-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .mining-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--dashboard-dark);
+    }
+
+    .mining-title i {
+        color: var(--dashboard-primary);
+        margin-right: 10px;
+    }
+
+    .mining-badge {
+        background: rgba(59,130,246,0.1);
+        color: var(--dashboard-primary);
+        padding: 8px 15px;
+        border-radius: 50px;
+        font-weight: 600;
+    }
+
+    .progress-container {
+        margin-bottom: 20px;
+    }
+
+    .progress-info {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        color: var(--dashboard-gray);
+        font-size: 0.95rem;
+    }
+
+    .progress-bar-custom {
+        height: 12px;
+        background: var(--dashboard-light);
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--dashboard-primary), var(--dashboard-success));
+        border-radius: 10px;
+        transition: width 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .progress-fill::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        animation: shimmer 2s infinite;
+    }
+
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+
+    .mining-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .mining-stat {
+        text-align: center;
+        padding: 15px;
+        background: var(--dashboard-light);
+        border-radius: 15px;
+    }
+
+    .mining-stat-label {
+        font-size: 0.8rem;
+        color: var(--dashboard-gray);
+        margin-bottom: 5px;
+    }
+
+    .mining-stat-value {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--dashboard-dark);
+    }
+
+    .mining-btn {
+        width: 100%;
+        padding: 15px;
+        border: none;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .mining-btn.start {
+        background: linear-gradient(135deg, var(--dashboard-success), #059669);
+        color: white;
+    }
+
+    .mining-btn.stop {
+        background: linear-gradient(135deg, var(--dashboard-danger), #dc2626);
+        color: white;
+    }
+
+    .mining-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+
+    .mining-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    /* Activity Card */
+    .activity-card {
+        background: var(--dashboard-card);
+        border-radius: 30px;
+        padding: 25px;
+        box-shadow: var(--dashboard-shadow);
+        border: 1px solid var(--dashboard-border);
+    }
+
+    .activity-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .activity-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--dashboard-dark);
+    }
+
+    .activity-title i {
+        color: var(--dashboard-primary);
+        margin-right: 10px;
+    }
+
+    .activity-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .activity-section {
+        background: var(--dashboard-light);
+        border-radius: 20px;
+        padding: 15px;
+    }
+
+    .section-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--dashboard-dark);
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--dashboard-border);
+    }
+
+    .activity-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .activity-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px;
+        background: var(--dashboard-card);
+        border-radius: 12px;
+        transition: all 0.2s ease;
+    }
+
+    .activity-item:hover {
+        transform: translateX(5px);
+        box-shadow: var(--dashboard-shadow);
+    }
+
+    .activity-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        object-fit: cover;
+    }
+
+    .activity-info {
+        flex: 1;
+    }
+
+    .activity-name {
+        font-weight: 600;
+        color: var(--dashboard-dark);
+        font-size: 0.95rem;
+        text-decoration: none;
+    }
+
+    .activity-name:hover {
+        color: var(--dashboard-primary);
+    }
+
+    .activity-meta {
+        font-size: 0.8rem;
+        color: var(--dashboard-gray);
+    }
+
+    .empty-activity {
+        text-align: center;
+        padding: 30px 0;
+        color: var(--dashboard-gray);
+    }
+
+    .empty-activity i {
+        font-size: 2rem;
+        margin-bottom: 10px;
+        opacity: 0.5;
+    }
+
+    /* Transactions Card */
+    .transactions-card {
+        background: var(--dashboard-card);
+        border-radius: 30px;
+        padding: 25px;
+        box-shadow: var(--dashboard-shadow);
+        border: 1px solid var(--dashboard-border);
+        margin-top: 20px;
+    }
+
+    .transactions-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .transactions-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--dashboard-dark);
+    }
+
+    .transactions-title i {
+        color: var(--dashboard-primary);
+        margin-right: 10px;
+    }
+
+    .view-all-link {
+        color: var(--dashboard-primary);
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+
+    .view-all-link:hover {
+        transform: translateX(3px);
+    }
+
+    .transaction-item {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        background: var(--dashboard-light);
+        border-radius: 15px;
+        margin-bottom: 10px;
+        transition: all 0.2s ease;
+    }
+
+    .transaction-item:hover {
+        transform: translateX(5px);
+        background: rgba(59,130,246,0.1);
+    }
+
+    .transaction-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 12px;
+        background: var(--dashboard-card);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--dashboard-primary);
+        margin-right: 15px;
+    }
+
+    .transaction-details {
+        flex: 1;
+    }
+
+    .transaction-type {
+        font-weight: 600;
+        color: var(--dashboard-dark);
+        margin-bottom: 3px;
+    }
+
+    .transaction-time {
+        font-size: 0.8rem;
+        color: var(--dashboard-gray);
+    }
+
+    .transaction-amount {
+        font-weight: 700;
+        color: var(--dashboard-success);
+    }
+
+    .transaction-amount.negative {
+        color: var(--dashboard-danger);
+    }
+
+    /* Responsive Breakpoints */
+    @media (max-width: 1200px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 992px) {
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .welcome-title {
+            font-size: 2rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-container {
+            padding: 15px;
+        }
+
+        .welcome-section {
+            padding: 20px;
+        }
+
+        .welcome-title {
+            font-size: 1.5rem;
+        }
+
+        .welcome-stats {
+            gap: 15px;
+        }
+
+        .stats-grid {
+            gap: 15px;
+        }
+
+        .stat-card {
+            padding: 15px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+        }
+
+        .mining-stats {
+            grid-template-columns: 1fr;
+        }
+
+        .activity-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .profile-actions {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .welcome-stat {
+            width: 100%;
+        }
+
+        .mining-header {
+            flex-direction: column;
+            gap: 10px;
+            align-items: flex-start;
+        }
+
+        .transaction-item {
+            flex-wrap: wrap;
+        }
+
+        .transaction-amount {
+            margin-top: 10px;
+            width: 100%;
+        }
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .stat-card, .profile-card, .mining-card, .activity-card, .transactions-card {
+        animation: fadeInUp 0.5s ease forwards;
+    }
+
+    .stat-card:nth-child(1) { animation-delay: 0.1s; }
+    .stat-card:nth-child(2) { animation-delay: 0.2s; }
+    .stat-card:nth-child(3) { animation-delay: 0.3s; }
+    .stat-card:nth-child(4) { animation-delay: 0.4s; }
+</style>
+
+<div class="dashboard-container">
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+        <div class="welcome-content">
+            <h1 class="welcome-title">Welcome back, {{ user.username }}! 👋</h1>
+            <p class="welcome-subtitle">Here's what's happening with your account today.</p>
+            <div class="welcome-stats">
+                <div class="welcome-stat">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Member since {{ user.date_joined|date:"F d, Y" }}</span>
+                </div>
+                <div class="welcome-stat">
+                    <i class="fas fa-coins"></i>
+                    <span>{{ user.userprofile.token_balance|floatformat:2 }} NSU Tokens</span>
+                </div>
+                {% if current_rate %}
+                <div class="welcome-stat">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <span>1 NSU = UGX {{ current_rate.rate|floatformat:2 }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <!-- Followers Card -->
+        <div class="stat-card">
+            <div class="stat-icon followers">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-value" id="followersCount">{{ followers_count }}</div>
+            <div class="stat-label">Total Followers</div>
+            <div class="stat-change">
+                <i class="fas fa-arrow-up me-1"></i>Live
+            </div>
+        </div>
+
+        <!-- Following Card -->
+        <div class="stat-card">
+            <div class="stat-icon following">
+                <i class="fas fa-user-plus"></i>
+            </div>
+            <div class="stat-value" id="followingCount">{{ following_count }}</div>
+            <div class="stat-label">Following</div>
+            <div class="stat-change">
+                <i class="fas fa-user-check me-1"></i>Active
+            </div>
+        </div>
+
+        <!-- Referrals Card -->
+        <div class="stat-card">
+            <div class="stat-icon referrals">
+                <i class="fas fa-gift"></i>
+            </div>
+            <div class="stat-value">{{ referrals_count }}</div>
+            <div class="stat-label">Referrals</div>
+            <div class="stat-change">
+                <i class="fas fa-code me-1"></i>{{ user.username }}
+            </div>
+        </div>
+
+        <!-- Tokens Card -->
+        <div class="stat-card">
+            <div class="stat-icon tokens">
+                <i class="fas fa-coins"></i>
+            </div>
+            <div class="stat-value">{{ user.userprofile.token_balance|floatformat:0 }}</div>
+            <div class="stat-label">NSU Balance</div>
+            <div class="stat-change">
+                <i class="fas fa-money-bill-wave me-1"></i>
+                UGX {{ user.userprofile.get_ugx_balance|floatformat:0 }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="dashboard-grid">
+        <!-- Profile Card -->
+        <div class="profile-card">
+            <div class="profile-header">
+                {% if user.userprofile.profile_picture %}
+                <img src="{{ user.userprofile.profile_picture.url }}" class="profile-avatar">
+                {% else %}
+                <img src="https://ui-avatars.com/api/?name={{ user.username|first }}&background=3b82f6&color=fff&size=120" class="profile-avatar">
+                {% endif %}
+                
+                <h2 class="profile-name">{{ user.userprofile.display_name|default:user.username }}</h2>
+                <div class="profile-username">
+                    <i class="fas fa-at"></i>{{ user.username }}
+                </div>
+                
+                {% if user.userprofile.bio %}
+                <div class="profile-bio">
+                    {{ user.userprofile.bio }}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="profile-details">
+                {% if user.email %}
+                <div class="detail-item">
+                    <div class="detail-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div class="detail-content">
+                        <div class="detail-label">Email</div>
+                        <div class="detail-value">{{ user.email }}</div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if user.userprofile.location %}
+                <div class="detail-item">
+                    <div class="detail-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <div class="detail-content">
+                        <div class="detail-label">Location</div>
+                        <div class="detail-value">{{ user.userprofile.location }}</div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if user.userprofile.work %}
+                <div class="detail-item">
+                    <div class="detail-icon">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+                    <div class="detail-content">
+                        <div class="detail-label">Work</div>
+                        <div class="detail-value">{{ user.userprofile.work }}</div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="detail-item">
+                    <div class="detail-icon">
+                        <i class="fas fa-calendar"></i>
+                    </div>
+                    <div class="detail-content">
+                        <div class="detail-label">Joined</div>
+                        <div class="detail-value">{{ user.date_joined|date:"M d, Y" }}</div>
                     </div>
                 </div>
             </div>
-            <div class="col-12 col-lg-9">
-                <div class="dashboard-content h-100 pt-6 ps-6 pb-6">
-                    <div class="row g-5">
-                        <div class="col-xl-5 wow fadeInUp" data-wow-delay="0.1s">
-                            <div class="bg-white p-4 shadow rounded">
-                                <div class="text-center mb-4">
-                                    <img src="{{ user.userprofile.profile_picture.url }}" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;" alt="Profile Picture">
-                                    <h3 class="mb-0">{{ user.userprofile.display_name }}</h3>
-                                    <p class="text-muted">@{{ user.username }}</p>
-                                </div>
-                                
-                                <div class="d-flex mb-2">
-                                    <i class="fas fa-coins text-primary me-3 mt-1"></i>
-                                    <div>
-                                        <h4>Token Balance</h4>
-                                        <p class="mb-0">{{ user.userprofile.token_balance }} NSU</p>
-                                    </div>
-                                </div>
-                                
-                                <div class="d-flex mb-2">
-                                    <i class="fas fa-money-bill-wave text-primary me-3 mt-1"></i>
-                                    <div>
-                                        <h4>UGX Value</h4>
-                                        <p class="mb-0">UGX {{ user.userprofile.get_ugx_balance|floatformat:2 }}</p>
-                                    </div>
-                                </div>
-                                
-                                <div class="d-flex mb-4">
-                                    <i class="fas fa-users text-primary me-3 mt-1"></i>
-                                    <div>
-                                        <h4>Referrals</h4>
-                                        <p class="mb-0">{{ user.referrals.count }} users</p>
-                                    </div>
-                                </div>
-                                
-                                <div class="d-flex justify-content-center">
-                                    <a href="{% url 'users:edit_profile' %}" class="btn btn-primary me-2">Edit Profile</a>
-                                    <a href="{% url 'users:send_tokens' %}" class="btn btn-outline-primary">Send Tokens</a>
-                                </div>
-                            </div>
+
+            <div class="profile-actions">
+                <a href="{% url 'users:edit_profile' %}" class="profile-action-btn primary">
+                    <i class="fas fa-edit me-2"></i>Edit Profile
+                </a>
+                <a href="{% url 'social:feed' %}" class="profile-action-btn secondary">
+                    <i class="fas fa-users me-2"></i>Social Feed
+                </a>
+                <a href="{% url 'users:followers_list' user.username %}" class="profile-action-btn secondary">
+                    <i class="fas fa-heart me-2"></i>Followers
+                </a>
+                <a href="{% url 'users:following_list' user.username %}" class="profile-action-btn secondary">
+                    <i class="fas fa-user-friends me-2"></i>Following
+                </a>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div>
+            <!-- Mining Card -->
+            <div class="mining-card">
+                <div class="mining-header">
+                    <h3 class="mining-title">
+                        <i class="fas fa-digging"></i>
+                        Token Mining
+                    </h3>
+                    <span class="mining-badge" id="miningRate">
+                        <i class="fas fa-bolt me-1"></i>{{ mining_state.current_rate|floatformat:1 }}x
+                    </span>
+                </div>
+
+                <div class="progress-container">
+                    <div class="progress-info">
+                        <span>Daily Progress</span>
+                        <span id="progressPercent">{{ mining_state.progress_percentage|floatformat:1 }}%</span>
+                    </div>
+                    <div class="progress-bar-custom">
+                        <div class="progress-fill" id="miningProgress" style="width: {{ mining_state.progress_percentage }}%;"></div>
+                    </div>
+                </div>
+
+                <div class="mining-stats">
+                    <div class="mining-stat">
+                        <div class="mining-stat-label">Elapsed</div>
+                        <div class="mining-stat-value" id="elapsedHours">{{ mining_state.elapsed_hours|floatformat:1 }}h</div>
+                    </div>
+                    <div class="mining-stat">
+                        <div class="mining-stat-label">Remaining</div>
+                        <div class="mining-stat-value" id="remainingTime">
+                            {% with hours=mining_state.remaining_time.0 minutes=mining_state.remaining_time.1 %}
+                            {{ hours }}h {{ minutes }}m
+                            {% endwith %}
                         </div>
-                        <div class="col-xl-7 wow fadeInUp" data-wow-delay="0.3s">
-                            <!-- Mining Section -->
-                            <div class="bg-white p-4 shadow rounded mb-4">
-                                <h4 class="mb-4"><i class="fas fa-digging me-2"></i> Token Mining</h4>
-                                <div class="progress mb-3" style="height: 25px;">
-                                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ state.progress_percentage }}%;" 
-                                         aria-valuenow="{{ state.progress_percentage }}" aria-valuemin="0" aria-valuemax="100"
-                                         id="mining-progress">
-                                        {{ state.progress_percentage|floatformat:0 }}%
-                                    </div>
-                                </div>
-                                <div class="row mb-3">
-                                    <div class="col-md-6">
-                                        <p><strong>Elapsed:</strong> <span id="elapsed-hours">{{ state.elapsed_hours|floatformat:2 }}</span> hours</p>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <p><strong>Remaining:</strong> <span id="remaining-time">{{ state.remaining_time }}</span></p>
-                                    </div>
-                                </div>
-                                <div class="d-flex justify-content-between">
-                                    <button id="toggle-mining" class="btn btn-{% if state.is_mining %}danger{% else %}success{% endif %}">
-                                        {% if state.is_mining %}<i class="fas fa-stop me-2"></i> Stop Mining{% else %}<i class="fas fa-play me-2"></i> Start Mining{% endif %}
-                                    </button>
-                                    <span class="badge bg-primary p-2" id="mining-tokens">
-                                        <i class="fas fa-coins me-1"></i> {{ state.points_earned_today|floatformat:2 }} NSU
-                                    </span>
-                                </div>
-                            </div>
-                            
-                            <!-- Quick Actions -->
-                            <div class="bg-white p-4 shadow rounded">
-                                <h4 class="mb-4"><i class="fas fa-bolt me-2"></i> Quick Actions</h4>
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <a href="{% url 'transactions:request_withdrawal' %}" class="btn btn-outline-primary w-100">
-                                            <i class="fas fa-money-check me-2"></i> Withdraw
-                                        </a>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <a href="{% url 'transactions:transfer_tokens' %}" class="btn btn-outline-primary w-100">
-                                            <i class="fas fa-exchange-alt me-2"></i> Transfer
-                                        </a>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <a href="{% url 'users:notifications' %}" class="btn btn-outline-primary w-100">
-                                            <i class="fas fa-bell me-2"></i> Notifications
-                                            {% if unread_notifications %}<span class="badge bg-danger ms-2">{{ unread_notifications.count }}</span>{% endif %}
-                                        </a>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <a href="{% url 'transactions:public_ledger' %}" class="btn btn-outline-primary w-100">
-                                            <i class="fas fa-book me-2"></i> View Ledger
-                                        </a>
-                                    </div>
-                                </div>
+                    </div>
+                    <div class="mining-stat">
+                        <div class="mining-stat-label">Today's Earnings</div>
+                        <div class="mining-stat-value" id="todayEarnings">{{ mining_state.points_earned_today|floatformat:2 }}</div>
+                    </div>
+                </div>
+
+                <button id="toggleMining" class="mining-btn {% if mining_state.is_mining %}stop{% else %}start{% endif %}">
+                    {% if mining_state.is_mining %}
+                    <i class="fas fa-stop-circle"></i>
+                    <span>Stop Mining</span>
+                    {% else %}
+                    <i class="fas fa-play-circle"></i>
+                    <span>Start Mining</span>
+                    {% endif %}
+                </button>
+            </div>
+
+            <!-- Referral Card (Mobile only) -->
+            <div class="mining-card d-block d-lg-none">
+                <h3 class="mining-title">
+                    <i class="fas fa-gift"></i>
+                    Your Referral Code
+                </h3>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" value="{{ user.username }}" id="mobileReferralCode" readonly>
+                    <button class="btn btn-primary" type="button" onclick="copyMobileReferralCode()">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+                {% if user.referrals.count > 0 %}
+                <p class="text-dim mb-0">
+                    <strong>{{ user.referrals.count }}</strong> people joined using your code
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Section -->
+    <div class="activity-card">
+        <div class="activity-header">
+            <h3 class="activity-title">
+                <i class="fas fa-history"></i>
+                Recent Activity
+            </h3>
+            <a href="{% url 'social:notifications' %}" class="view-all-link">
+                View All <i class="fas fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+
+        <div class="activity-grid">
+            <!-- Recent Followers -->
+            <div class="activity-section">
+                <div class="section-title">
+                    <i class="fas fa-user-plus me-2 text-success"></i>
+                    Recent Followers
+                </div>
+                <div class="activity-list" id="recentFollowersList">
+                    {% for follow in recent_followers %}
+                    <div class="activity-item">
+                        <a href="{% url 'users:user_profile' follow.follower.username %}">
+                            {% if follow.follower.userprofile.profile_picture %}
+                            <img src="{{ follow.follower.userprofile.profile_picture.url }}" class="activity-avatar">
+                            {% else %}
+                            <img src="https://ui-avatars.com/api/?name={{ follow.follower.username|first }}&background=3b82f6&color=fff&size=40" class="activity-avatar">
+                            {% endif %}
+                        </a>
+                        <div class="activity-info">
+                            <a href="{% url 'users:user_profile' follow.follower.username %}" class="activity-name">
+                                {{ follow.follower.userprofile.display_name|default:follow.follower.username }}
+                            </a>
+                            <div class="activity-meta">
+                                @{{ follow.follower.username }} • {{ follow.created_at|timesince }} ago
                             </div>
                         </div>
                     </div>
+                    {% empty %}
+                    <div class="empty-activity">
+                        <i class="fas fa-user-slash"></i>
+                        <p>No recent followers</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Recent Referrals -->
+            <div class="activity-section">
+                <div class="section-title">
+                    <i class="fas fa-gift me-2 text-warning"></i>
+                    Recent Referrals
+                </div>
+                <div class="activity-list">
+                    {% for referral in user.referrals.all|slice:":5" %}
+                    <div class="activity-item">
+                        <div class="activity-avatar" style="background: rgba(59,130,246,0.1); display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-user text-primary"></i>
+                        </div>
+                        <div class="activity-info">
+                            <span class="activity-name">{{ referral.username }}</span>
+                            <div class="activity-meta">
+                                Joined {{ referral.date_joined|timesince }} ago
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="empty-activity">
+                        <i class="fas fa-gift"></i>
+                        <p>No referrals yet</p>
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>
     </div>
-</div>
-{% endblock %}
 
-{% block extra_scripts %}
+    <!-- Recent Transactions -->
+    {% if recent_transactions %}
+    <div class="transactions-card">
+        <div class="transactions-header">
+            <h3 class="transactions-title">
+                <i class="fas fa-exchange-alt"></i>
+                Recent Transactions
+            </h3>
+            <a href="{% url 'transactions:public_ledger' %}" class="view-all-link">
+                View Ledger <i class="fas fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+
+        <div class="transactions-list">
+            {% for transaction in recent_transactions %}
+            <div class="transaction-item">
+                <div class="transaction-icon">
+                    {% if transaction.transaction_type == 'deposit' %}
+                    <i class="fas fa-arrow-down text-success"></i>
+                    {% elif transaction.transaction_type == 'withdrawal' %}
+                    <i class="fas fa-arrow-up text-danger"></i>
+                    {% else %}
+                    <i class="fas fa-exchange-alt text-primary"></i>
+                    {% endif %}
+                </div>
+                <div class="transaction-details">
+                    <div class="transaction-type">{{ transaction.get_transaction_type_display }}</div>
+                    <div class="transaction-time">{{ transaction.timestamp|timesince }} ago</div>
+                </div>
+                <div class="transaction-amount {% if transaction.transaction_type == 'withdrawal' %}negative{% endif %}">
+                    {{ transaction.amount }} NSU
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Hidden CSRF Token -->
+{% csrf_token %}
+
 <script>
-$(document).ready(function() {
-    // Toggle mining button
-    $('#toggle-mining').click(function() {
-        $.ajax({
-            url: "{% url 'airdrop:toggle_mining' %}",
-            method: "POST",
-            data: {
-                csrfmiddlewaretoken: '{{ csrf_token }}'
-            },
-            success: function(data) {
-                if(data.status === 'started') {
-                    $('#toggle-mining')
-                        .removeClass('btn-success')
-                        .addClass('btn-danger')
-                        .html('<i class="fas fa-stop me-2"></i> Stop Mining');
-                } else {
-                    $('#toggle-mining')
-                        .removeClass('btn-danger')
-                        .addClass('btn-success')
-                        .html('<i class="fas fa-play me-2"></i> Start Mining');
-                }
-                updateMiningStatus();
+    // Toggle Mining
+    document.getElementById('toggleMining')?.addEventListener('click', function() {
+        const btn = this;
+        const wasMining = btn.classList.contains('stop');
+        
+        fetch('{% url "airdrop:toggle_mining" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'X-Requested-With': 'XMLHttpRequest'
             }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'started') {
+                btn.className = 'mining-btn stop';
+                btn.innerHTML = '<i class="fas fa-stop-circle"></i><span>Stop Mining</span>';
+            } else {
+                btn.className = 'mining-btn start';
+                btn.innerHTML = '<i class="fas fa-play-circle"></i><span>Start Mining</span>';
+            }
+            updateMiningStatus();
+            showToast(wasMining ? 'Mining stopped' : 'Mining started');
         });
     });
 
+    // Update Mining Status
     function updateMiningStatus() {
-        $.ajax({
-            url: "{% url 'airdrop:mining_status' %}",
-            method: "GET",
-            success: function(data) {
-                // Update progress bar
-                $('#mining-progress')
-                    .css('width', data.progress_percentage + '%')
-                    .attr('aria-valuenow', data.progress_percentage)
-                    .text(data.progress_percentage.toFixed(0) + '%');
-                
-                // Update elapsed hours
-                $('#elapsed-hours').text(data.elapsed_hours.toFixed(2));
-                
-                // Update remaining time
-                $('#remaining-time').text(data.remaining_time);
-                
-                // Update tokens earned
-                $('#mining-tokens').html('<i class="fas fa-coins me-1"></i> ' + 
-                    data.session_points.toFixed(2) + ' NSU');
-                
-                // Update button state if needed
-                if (data.is_mining) {
-                    $('#toggle-mining')
-                        .removeClass('btn-success')
-                        .addClass('btn-danger')
-                        .html('<i class="fas fa-stop me-2"></i> Stop Mining');
-                } else {
-                    $('#toggle-mining')
-                        .removeClass('btn-danger')
-                        .addClass('btn-success')
-                        .html('<i class="fas fa-play me-2"></i> Start Mining');
-                }
+        fetch('{% url "airdrop:mining_status" %}', {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('miningProgress').style.width = data.progress_percentage + '%';
+            document.getElementById('progressPercent').textContent = data.progress_percentage.toFixed(1) + '%';
+            document.getElementById('elapsedHours').textContent = data.elapsed_hours.toFixed(1) + 'h';
+            document.getElementById('remainingTime').textContent = data.remaining_time;
+            document.getElementById('todayEarnings').textContent = data.session_points.toFixed(2);
+            document.getElementById('miningRate').innerHTML = '<i class="fas fa-bolt me-1"></i>' + data.current_rate.toFixed(1) + 'x';
+        });
+    }
+
+    // Update Dashboard Stats
+    function updateDashboardStats() {
+        fetch('{% url "users:dashboard_stats" %}', {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('followersCount').textContent = data.followers;
+            document.getElementById('followingCount').textContent = data.following;
+            
+            // Update recent followers list
+            const followersList = document.getElementById('recentFollowersList');
+            if (data.recent_followers.length > 0) {
+                let html = '';
+                data.recent_followers.forEach(follower => {
+                    html += `
+                        <div class="activity-item">
+                            <a href="/users/profile/${follower.username}/">
+                                <img src="${follower.avatar}" class="activity-avatar">
+                            </a>
+                            <div class="activity-info">
+                                <a href="/users/profile/${follower.username}/" class="activity-name">
+                                    ${follower.display_name || follower.username}
+                                </a>
+                                <div class="activity-meta">
+                                    @${follower.username} • just now
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                followersList.innerHTML = html;
             }
         });
     }
-    
-    // Periodically update mining status every 15 seconds
-    setInterval(updateMiningStatus, 15000);
-    
-    // Initialize mining status
-    updateMiningStatus();
-});
+
+    // Copy Referral Code
+    function copyMobileReferralCode() {
+        const code = document.getElementById('mobileReferralCode');
+        code.select();
+        code.setSelectionRange(0, 99999);
+        document.execCommand('copy');
+        
+        const btn = event.currentTarget;
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check"></i>';
+        setTimeout(() => {
+            btn.innerHTML = originalHtml;
+        }, 2000);
+        
+        showToast('Referral code copied!');
+    }
+
+    // Show Toast Message
+    function showToast(message) {
+        const toast = document.createElement('div');
+        toast.className = 'coming-soon-toast show';
+        toast.innerHTML = `<i class="fas fa-check-circle"></i>${message}`;
+        toast.style.cssText = `
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            z-index: 9999;
+            animation: fadeInOut 2s ease;
+        `;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.remove();
+        }, 2000);
+    }
+
+    // Auto-refresh every 30 seconds
+    setInterval(() => {
+        if (!document.hidden) {
+            updateMiningStatus();
+            updateDashboardStats();
+        }
+    }, 30000);
+
+    // Initial updates
+    document.addEventListener('DOMContentLoaded', function() {
+        updateMiningStatus();
+        updateDashboardStats();
+    });
+
+    // Add animation to stats
+    document.querySelectorAll('.stat-value').forEach(stat => {
+        const value = stat.textContent;
+        if (!isNaN(value)) {
+            let current = 0;
+            const target = parseInt(value);
+            const increment = target / 20;
+            
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    stat.textContent = target;
+                    clearInterval(timer);
+                } else {
+                    stat.textContent = Math.floor(current);
+                }
+            }, 50);
+        }
+    });
 </script>
 {% endblock %}

@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Request Withdrawal{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex align-items-center gap-3 mb-4 px-3">
+        <a href="{% url 'users:dashboard' %}" class="text-dim">
+            <i class="fa-solid fa-arrow-left fa-xl"></i>
+        </a>
+        <h1 class="h3 mb-0 fw-bold">Request Withdrawal</h1>
+    </div>
+
+    <!-- Balance Card -->
+    <div class="balance-card mb-4">
+        <div class="balance-label mb-1">Available Balance</div>
+        <div class="balance-amount">{{ user.userprofile.token_balance|floatformat:2 }} NSU</div>
+        <div class="text-dim small mt-2">
+            <i class="fa-regular fa-circle-info me-1"></i>
+            Min withdrawal: 100 NSU
+        </div>
+    </div>
+
+    <!-- Withdrawal Form -->
+    <div class="tx-card">
+        <form method="POST" id="withdrawalForm">
+            {% csrf_token %}
+            
+            <div class="mb-4">
+                <label class="form-label fw-bold">Amount (NSU)</label>
+                <div class="post-input-box p-0 border-0">
+                    <input type="number" name="amount" id="amount" class="form-control form-control-lg rounded-4" 
+                           placeholder="Enter amount" step="0.01" min="100" 
+                           max="{{ user.userprofile.token_balance }}" required>
+                </div>
+                <div class="form-text text-dim mt-2">
+                    You will receive UGX {{ user.userprofile.get_ugx_balance|floatformat:2 }} at current rate
+                </div>
+            </div>
+
+            <!-- Quick Amount Selector -->
+            <div class="d-flex gap-2 mb-4 flex-wrap">
+                <button type="button" class="pill" onclick="setAmount(100)">100 NSU</button>
+                <button type="button" class="pill" onclick="setAmount(500)">500 NSU</button>
+                <button type="button" class="pill" onclick="setAmount(1000)">1000 NSU</button>
+                <button type="button" class="pill" onclick="setAmount(5000)">5000 NSU</button>
+            </div>
+
+            <!-- Fee Info -->
+            <div class="bg-light rounded-4 p-3 mb-4">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-dim">Network Fee</span>
+                    <span class="fw-bold">1% (min 1 NSU)</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span class="text-dim">Processing Time</span>
+                    <span class="fw-bold text-success">~10 minutes</span>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary w-100 rounded-pill py-3 fw-bold">
+                Request Withdrawal
+            </button>
+        </form>
+    </div>
+
+    <!-- Important Notes -->
+    <div class="mt-4 px-3">
+        <h6 class="fw-bold mb-3">Important Notes</h6>
+        <ul class="list-unstyled text-dim small">
+            <li class="mb-2">
+                <i class="fa-regular fa-circle-check text-success me-2"></i>
+                A 6-digit PIN will be generated for verification
+            </li>
+            <li class="mb-2">
+                <i class="fa-regular fa-circle-check text-success me-2"></i>
+                PIN expires in 10 minutes
+            </li>
+            <li class="mb-2">
+                <i class="fa-regular fa-circle-check text-success me-2"></i>
+                Present the PIN to any agent to complete withdrawal
+            </li>
+            <li class="mb-2">
+                <i class="fa-regular fa-circle-exclamation me-2"></i>
+                Minimum withdrawal: 100 NSU
+            </li>
+        </ul>
+    </div>
+</div>
+
+<script>
+function setAmount(amount) {
+    document.getElementById('amount').value = amount;
+}
+
+// Form validation
+document.getElementById('withdrawalForm').addEventListener('submit', function(e) {
+    const amount = parseFloat(document.getElementById('amount').value);
+    const balance = {{ user.userprofile.token_balance }};
+    
+    if (amount < 100) {
+        e.preventDefault();
+        alert('Minimum withdrawal amount is 100 NSU');
+    } else if (amount > balance) {
+        e.preventDefault();
+        alert('Insufficient balance');
+    }
+});
+</script>
+{% endblock %}

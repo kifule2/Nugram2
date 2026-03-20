@@ -1,0 +1,1362 @@
+
+=== airdrop/middleware.py ===
+from django.utils import timezone
+from .models import UserMiningState
+class MiningIntegrityMiddleware:
+def __init__(self, get_response):
+self.get_response = get_response
+def __call__(self, request):
+response = self.get_response(request)
+if request.user.is_authenticated:
+try:
+state = UserMiningState.objects.get(user=request.user)
+if state.last_tap and state.last_tap > timezone.now():
+state.last_tap = timezone.now()
+state.save()
+except UserMiningState.DoesNotExist:
+pass
+return response
+
+=== airdrop/models.py ===
+from django.db import models
+from django.utils import timezone
+from datetime import timedelta
+from users.models import CustomUser
+class UserMiningState(models.Model):
+user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+is_mining = models.BooleanField(default=False)
+last_tap = models.DateTimeField(null=True, blank=True)
+total_points = models.FloatField(default=0.0)
+current_rate = models.FloatField(default=1.0)
+session_start = models.DateTimeField(null=True, blank=True)
+@property
+def elapsed_hours(self):
+return max(24 - self.elapsed_hours, 0)
+@property
+def remaining_time(self):
+return min((self.elapsed_hours / 24) * 100, 100)
+@property
+def points_earned_today(self):
+now = timezone.now()
+if self.is_mining and self.session_start:
+elapsed = (now - self.session_start).total_seconds() / 3600
+if elapsed >= 24:
+self.stop_mining()
+self.is_mining = True
+self.session_start = now
+self.last_tap = now
+self.save()
+def stop_mining(self):
+if self.is_mining and self.session_start:
+elapsed = (timezone.now() - self.session_start).total_seconds() / 3600
+if elapsed >= 24:
+self.stop_mining()
+return True
+return False
+
+=== airdrop/templatetags/airdrop_filters.py ===
+from django import template
+register = template.Library()
+@register.filter
+def divide(value, arg):
+try:
+return float(value) / float(arg)
+except (ValueError, ZeroDivisionError):
+return 0
+@register.filter
+def multiply(value, arg):
+try:
+return float(value) * float(arg)
+except ValueError:
+return 0
+@register.filter
+def percentage(value, arg):
+try:
+return (float(value) / float(arg)) * 100
+except (ValueError, ZeroDivisionError):
+return 0
+
+=== airdrop/urls.py ===
+from django.urls import path
+from . import views
+app_name = 'airdrop'
+urlpatterns = [
+path('dashboard/', views.dashboard, name='dashboard'),
+path('toggle/', views.toggle_mining, name='toggle_mining'),
+path('status/', views.mining_status, name='mining_status'),
+]
+
+=== airdrop/views.py ===
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.utils import timezone
+from .models import UserMiningState
+from django.shortcuts import render
+@login_required
+def dashboard(request):
+state, created = UserMiningState.objects.get_or_create(user=request.user)
+session_completed = state.check_session_completion()
+hours, minutes, seconds = state.remaining_time
+remaining_time_str = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+context = {
+'state': state,
+'elapsed_hours': state.elapsed_hours,
+'remaining_time': remaining_time_str,
+'progress_percentage': state.progress_percentage,
+'session_completed': session_completed,
+}
+return render(request, 'airdrop/dashboard.html', context)
+@login_required
+@require_POST
+def toggle_mining(request):
+state, created = UserMiningState.objects.get_or_create(user=request.user)
+if state.is_mining:
+state.stop_mining()
+status = 'stopped'
+else:
+state.start_mining()
+status = 'started'
+hours, minutes, seconds = state.remaining_time
+return JsonResponse({
+'status': status,
+'is_mining': state.is_mining,
+'elapsed_hours': state.elapsed_hours,
+'remaining_time': f"{hours:02d}:{minutes:02d}:{seconds:02d}",
+'progress_percentage': state.progress_percentage,
+'total_points': state.total_points,
+'session_points': state.points_earned_today,
+'current_rate': state.current_rate,
+})
+@login_required
+def mining_status(request):
+state, created = UserMiningState.objects.get_or_create(user=request.user)
+session_completed = state.check_session_completion()
+hours, minutes, seconds = state.remaining_time
+return JsonResponse({
+'is_mining': state.is_mining,
+'elapsed_hours': state.elapsed_hours,
+'remaining_time': f"{hours:02d}:{minutes:02d}:{seconds:02d}",
+'progress_percentage': state.progress_percentage,
+'total_points': state.total_points,
+'session_points': state.points_earned_today,
+'current_rate': state.current_rate,
+'session_completed': session_completed,
+})
+
+=== nusu/urls.py ===
+from django.urls import path, include
+from . import views
+from django.conf import settings
+from django.conf.urls.static import static
+urlpatterns = [
+path('admin/', admin.site.urls),
+path('users/', include('users.urls')),
+path('transactions/', include('transactions.urls')),
+path('', views.home, name='home'),
+path('tokens/', include('tokens.urls')),
+path('airdrop/', include('airdrop.urls')),
+]
+if settings.DEBUG:
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+=== nusu/views.py ===
+from django.shortcuts import render
+from users.models import Notification
+def home(request):
+if request.user.is_authenticated:
+unread_notifications = request.user.notifications.filter(is_read=False).order_by('-created_at')[:5]
+else:
+unread_notifications = []
+context = {
+'unread_notifications': unread_notifications,
+}
+return render(request, 'home.html', context)
+
+=== repo2.py ===
+import subprocess, sys, os, re
+OUTPUT_FILE = "project.txt"
+SPECFILE_OUTPUT = "specfile.txt"
+SPECFOL_OUTPUT = "specfol.txt"
+EXCLUDE_PATHS = re.compile(
+r"(__pycache__|migrations|tests|static|media|venv|env)"
+)
+EXCLUDE_FILES = re.compile(
+r"(admin|apps|asgi|wsgi|settings|manage|__init__)\.py$"
+)
+ALLOWED_EXT = (".py", ".html")
+DJANGO_NOISE = re.compile(
+)
+def git_ls_files():
+try:
+return subprocess.check_output(
+["git", "ls-files"], text=True
+).splitlines()
+except subprocess.CalledProcessError:
+sys.exit("❌ Not a git repository")
+def relevant(path):
+if EXCLUDE_PATHS.search(path): return False
+if EXCLUDE_FILES.search(path): return False
+return path.endswith(ALLOWED_EXT)
+def dynamic_html(path):
+try:
+c = open(path, encoding="utf-8", errors="ignore").read()
+return "{{" in c or "{%" in c
+except:
+return False
+def compress_py(code):
+out, skip = [], False
+for l in code.splitlines():
+s = l.strip()
+if not s or s.startswith("
+continue
+if s.startswith(('"""', "'''")):
+skip = not skip
+continue
+if skip or DJANGO_NOISE.search(s):
+continue
+if s.startswith("from django.contrib"):
+continue
+l = re.sub(r"
+out.append(re.sub(r"\s+", " ", l.strip()))
+return "\n".join(out)
+def compress_html(code):
+out = []
+for l in code.splitlines():
+s = l.strip()
+if not s or s.startswith("<!--"):
+continue
+if "{{" in s or "{%" in s:
+out.append(re.sub(r"\s+", " ", s))
+return "\n".join(out)
+def compress(code, ext):
+if ext == ".py":
+return compress_py(code)
+if ext == ".html":
+return compress_html(code)
+return ""
+def write(files, target, append=False):
+mode = "a" if append else "w"
+with open(target, mode, encoding="utf-8") as out:
+for f in files:
+if not os.path.exists(f): continue
+ext = os.path.splitext(f)[1]
+raw = open(f, encoding="utf-8", errors="ignore").read()
+cmp = compress(raw, ext)
+if cmp.strip():
+out.write(f"\n=== {f} ===\n{cmp}\n")
+print(f"✅ Written → {target}")
+def opt_django(files):
+selected = [
+f for f in files
+if relevant(f) and (not f.endswith(".html") or dynamic_html(f))
+]
+write(selected, OUTPUT_FILE)
+def opt_files(files):
+for i, f in enumerate(files):
+print(f"{i}: {f}")
+idx = input("Files: ").split(",")
+write([files[int(i)] for i in idx if i.isdigit()], SPECFILE_OUTPUT)
+def opt_folders(files):
+folders = sorted({f.split("/")[0] for f in files if "/" in f})
+for i, f in enumerate(folders):
+print(f"{i}: {f}")
+idx = input("Folders: ").split(",")
+chosen = [folders[int(i)] for i in idx if i.isdigit()]
+selected = [
+f for f in files
+if any(f.startswith(c + "/") for c in chosen) and relevant(f)
+]
+write(selected, SPECFOL_OUTPUT, append=True)
+def menu():
+files = git_ls_files()
+while True:
+print("""
+1) Core Django logic (ultra-compressed)
+2) Select specific files
+3) Select folders
+4) Exit
+
+=== templates/airdrop/dashboard.html ===
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+{% include 'airdrop/mining_widget.html' %}
+<span class="badge bg-dark">{{ multiplier.current|floatformat:2 }}x</span>
+<div class="progress-bar bg-dark" style="width: {{ multiplier.progress }}%"></div>
+<small class="text-muted">Next level at {{ multiplier.next_level|floatformat:2 }}x</small>
+<span class="fw-bold">{{ total_mined|floatformat:2 }} NSU</span>
+<span class="fw-bold">{{ sessions_completed }}</span>
+<span>Badge Bonus ({{ badge_level }})</span>
+<span>{{ badge_multiplier|floatformat:2 }}x</span>
+<span>{{ streak_multiplier|floatformat:2 }}x</span>
+<span>{{ referral_multiplier|floatformat:2 }}x</span>
+<span>{{ multiplier.current|floatformat:2 }}x</span>
+{% for session in recent_sessions %}
+<span class="fw-bold">{{ session.date|date:"M d" }}</span>
+<span class="text-muted ms-2">{{ session.duration }} hours</span>
+<span class="fw-bold">{{ session.points|floatformat:2 }} NSU</span>
+<span class="text-muted ms-2">{{ session.multiplier|floatformat:2 }}x</span>
+{% empty %}
+{% endfor %}
+{% endblock %}
+{% block extra_css %}
+{% endblock %}
+
+=== templates/airdrop/mining_widget.html ===
+<span class="badge bg-{% if state.is_mining %}dark{% else %}secondary{% endif %}" id="miningStatusBadge">
+{% if state.is_mining %}ACTIVE{% else %}READY{% endif %}
+<span id="progressText">{{ state.elapsed_hours|floatformat:1 }} / 24 hours</span>
+<div id="progressBar" class="progress-bar bg-dark {% if state.is_mining %}progress-bar-striped progress-bar-animated{% endif %}"
+style="width: {{ state.progress_percentage }}%"
+aria-valuenow="{{ state.elapsed_hours }}"
+<span class="fw-bold" id="rateText">{{ state.current_rate|floatformat:2 }}x</span>
+<span class="fw-bold" id="todayPoints">{{ state.points_earned_today|floatformat:2 }}</span>
+<span class="fw-bold" id="totalPoints">{{ state.total_points|floatformat:2 }}</span>
+{% if state.progress_percentage >= 100 %}disabled{% endif %}>
+{% if state.is_mining %}
+{% else %}
+{% endif %}
+{% if state.is_mining %}
+<i class="bi bi-clock"></i> <span id="countdown">{{ state.remaining_hours|floatformat:1 }}</span> hours remaining
+{% elif state.progress_percentage >= 100 %}
+{% else %}
+{% endif %}
+fetch("{% url 'airdrop:mining_status' %}")
+fetch("{% url 'airdrop:toggle_mining' %}", {
+'X-CSRFToken': "{{ csrf_token }}",
+{% if state.is_mining %}
+{% endif %}
+
+=== templates/base.html ===
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/lib/animate/animate.min.css' %}">
+<link rel="stylesheet" href="{% static 'css/lib/lightbox/css/lightbox.min.css' %}">
+<link rel="stylesheet" href="{% static 'css/lib/owlcarousel/assets/owl.carousel.min.css' %}">
+<link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+<link rel="stylesheet" href="{% static 'css/style1.css' %}">
+<link rel="stylesheet" href="{% static 'css/style3.css' %}">
+<link rel="stylesheet" href="{% static 'css/custom.css' %}"> <!-- Custom styles -->
+<a href="{% url 'home' %}" class="nav-item nav-link active"><span class="fa fa-home"></span> Home</a>
+{% if user.is_authenticated %}
+<a href="{% url 'users:dashboard' %}" class="nav-item nav-link"><span class="fas fa-tachometer-alt"></span> Dashboard</a>
+<a href="{% url 'airdrop:dashboard' %}" class="nav-item nav-link"><span class="fas fa-digging"></span> Mining</a>
+<a href="{% url 'transactions:public_ledger' %}" class="nav-item nav-link"><span class="fas fa-book"></span> Ledger</a>
+<a href="{% url 'users:user_profile' user.username %}" class="nav-item nav-link"><span class="fas fa-user"></span> Profile</a>
+{% if user.is_superuser %}
+<a href="{% url 'users:admin_balances' %}" class="nav-item nav-link"><span class="fas fa-coins"></span> Admin</a>
+<a href="{% url 'users:create_agent' %}" class="nav-item nav-link"><span class="fas fa-user-plus"></span> Create Agent</a>
+{% endif %}
+<a href="{% url 'users:logout' %}" class="nav-item nav-link"><span class="fas fa-sign-out-alt"></span> Logout</a>
+{% else %}
+<a href="{% url 'users:login' %}" class="nav-item nav-link"><span class="fas fa-sign-in-alt"></span> Login</a>
+<a href="{% url 'users:register' %}" class="nav-item nav-link"><span class="fas fa-user-plus"></span> Register</a>
+{% endif %}
+{% block content %}{% endblock %}
+<script src="{% static 'css/lib/wow/wow.min.js' %}"></script>
+<script src="{% static 'css/lib/easing/easing.min.js' %}"></script>
+<script src="{% static 'css/lib/waypoints/waypoints.min.js' %}"></script>
+<script src="{% static 'css/lib/counterup/counterup.min.js' %}"></script>
+<script src="{% static 'css/lib/lightbox/js/lightbox.min.js' %}"></script>
+<script src="{% static 'css/lib/owlcarousel/owl.carousel.min.js' %}"></script>
+<script src="{% static 'js/main1.js' %}"></script>
+{% block extra_scripts %}{% endblock %}
+
+=== templates/home.html ===
+{% extends "base.html" %}
+{% block content %}
+{% endblock %}
+
+=== templates/users/create_agent.html ===
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+{% csrf_token %}
+{{ form.email }}
+{{ form.password1 }}
+{{ form.password2 }}
+{% endblock %}
+
+=== templates/users/dashboard.html ===
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<h1 class="display-6 text-dark mb-0">Welcome, {{ user.username }}</h1>
+<img src="{{ user.userprofile.profile_picture.url }}" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;" alt="Profile Picture">
+<h3 class="mb-0">{{ user.userprofile.display_name }}</h3>
+<p class="text-muted">@{{ user.username }}</p>
+<p class="mb-0">{{ user.userprofile.token_balance }} NSU</p>
+<p class="mb-0">UGX {{ user.userprofile.get_ugx_balance|floatformat:2 }}</p>
+<p class="mb-0">{{ user.referrals.count }} users</p>
+<a href="{% url 'users:edit_profile' %}" class="btn btn-primary me-2">Edit Profile</a>
+<a href="{% url 'users:send_tokens' %}" class="btn btn-outline-primary">Send Tokens</a>
+<div class="progress-bar bg-primary" role="progressbar" style="width: {{ state.progress_percentage }}%;"
+aria-valuenow="{{ state.progress_percentage }}" aria-valuemin="0" aria-valuemax="100"
+{{ state.progress_percentage|floatformat:0 }}%
+<p><strong>Elapsed:</strong> <span id="elapsed-hours">{{ state.elapsed_hours|floatformat:2 }}</span> hours</p>
+<p><strong>Remaining:</strong> <span id="remaining-time">{{ state.remaining_time }}</span></p>
+<button id="toggle-mining" class="btn btn-{% if state.is_mining %}danger{% else %}success{% endif %}">
+{% if state.is_mining %}<i class="fas fa-stop me-2"></i> Stop Mining{% else %}<i class="fas fa-play me-2"></i> Start Mining{% endif %}
+<i class="fas fa-coins me-1"></i> {{ state.points_earned_today|floatformat:2 }} NSU
+<a href="{% url 'transactions:request_withdrawal' %}" class="btn btn-outline-primary w-100">
+<a href="{% url 'transactions:transfer_tokens' %}" class="btn btn-outline-primary w-100">
+<a href="{% url 'users:notifications' %}" class="btn btn-outline-primary w-100">
+{% if unread_notifications %}<span class="badge bg-danger ms-2">{{ unread_notifications.count }}</span>{% endif %}
+<a href="{% url 'transactions:public_ledger' %}" class="btn btn-outline-primary w-100">
+{% endblock %}
+{% block extra_scripts %}
+url: "{% url 'airdrop:toggle_mining' %}",
+csrfmiddlewaretoken: '{{ csrf_token }}'
+url: "{% url 'airdrop:mining_status' %}",
+{% endblock %}
+
+=== templates/users/edit_profile.html ===
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+{% csrf_token %}
+<img src="{{ form.instance.profile_picture.url }}" class="rounded-circle me-3" style="width: 80px; height: 80px; object-fit: cover;">
+{{ form.profile_picture }}
+<img src="{{ form.instance.cover_photo.url }}" class="img-fluid mb-2" style="max-height: 100px;">
+{{ form.cover_photo }}
+{{ form.display_name }}
+{{ form.gender }}
+{{ form.birthday }}
+{{ form.phone_number }}
+{{ form.work }}
+{{ form.location }}
+{{ form.bio }}
+{{ form.show_birthday }}
+{{ form.show_phone }}
+{{ form.show_email }}
+{% endblock %}
+
+=== templates/users/login.html ===
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+{% if error %}
+<div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+{% csrf_token %}
+<a href="{% url 'users:password_reset' %}" class="text-decoration-none">Forgot Password?</a>
+<p class="mt-3">Don't have an account? <a href="{% url 'users:register' %}" class="text-decoration-none">Register</a></p>
+{% endblock %}
+
+=== templates/users/profile.html ===
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<img src="{{ profile_user.userprofile.cover_photo.url }}" class="img-fluid w-100 mb-3" style="height: 120px; object-fit: cover;" alt="Cover Photo">
+<img src="{{ profile_user.userprofile.profile_picture.url }}" class="rounded-circle position-absolute bottom-0 start-50 translate-middle" style="width: 100px; height: 100px; border: 3px solid white;" alt="Profile Picture">
+<h3 class="mt-4 text-white mb-0">{{ profile_user.userprofile.display_name }}</h3>
+<p class="text-light">@{{ profile_user.username }}</p>
+<h4 class="text-white mb-0">{{ profile_user.userprofile.followers.count }}</h4>
+<h4 class="text-white mb-0">{{ profile_user.userprofile.following.count }}</h4>
+<h1 class="display-6 mb-4">{{ profile_user.userprofile.display_name }}'s Profile</h1>
+{{ profile_user.userprofile.bio|default:"Welcome to my Nusu profile! I'm excited to be part of this social finance community." }}
+<p class="mb-0">{{ profile_user.userprofile.token_balance }} NSU</p>
+<p class="mb-0">{{ profile_user.referrals.count }} users</p>
+<p class="mb-0">{{ profile_user.date_joined|date:"M d, Y" }}</p>
+{% if profile_user.is_verified %}
+{% else %}
+{% endif %}
+{% if profile_user.userprofile.work %}
+<p class="mb-0">{{ profile_user.userprofile.work }}</p>
+{% endif %}
+{% if profile_user.userprofile.location %}
+<p class="mb-0">{{ profile_user.userprofile.location }}</p>
+{% endif %}
+{% if profile_user.userprofile.birthday and profile_user.userprofile.show_birthday %}
+<p class="mb-0">{{ profile_user.userprofile.birthday|date:"F d" }}</p>
+{% endif %}
+{% if profile_user.userprofile.phone_number and profile_user.userprofile.show_phone %}
+<p class="mb-0">{{ profile_user.userprofile.phone_number }}</p>
+{% endif %}
+{% if profile_user.email and profile_user.userprofile.show_email %}
+<p class="mb-0">{{ profile_user.email }}</p>
+{% endif %}
+{% if is_owner %}
+<a href="{% url 'users:edit_profile' %}" class="btn btn-primary me-2">
+{% endif %}
+{% if not is_owner %}
+<button class="btn btn-outline-primary follow-btn" data-username="{{ profile_user.username }}">
+{% if request.user.userprofile in profile_user.userprofile.followers.all %}
+{% else %}
+{% endif %}
+{% endif %}
+{% if transactions %}
+{% for transaction in transactions|slice:":5" %}
+{{ transaction.get_transaction_type_display }}:
+{{ transaction.amount }} NSU
+<small>{{ transaction.timestamp|timesince }} ago</small>
+{% if transaction.agent %}
+<p class="mb-1">Agent: {{ transaction.agent.username }}</p>
+{% endif %}
+{% endfor %}
+<a href="{% url 'transactions:public_ledger' %}" class="btn btn-outline-primary mt-3">
+{% else %}
+{% endif %}
+{% if mining_state %}
+style="width: {{ mining_state.progress_percentage }}%;"
+aria-valuenow="{{ mining_state.progress_percentage }}"
+{{ mining_state.progress_percentage|floatformat:0 }}%
+<p class="mb-0">{{ mining_state.elapsed_hours|floatformat:2 }} hours</p>
+<p class="mb-0">{{ mining_state.remaining_time.0 }}h {{ mining_state.remaining_time.1 }}m</p>
+<p class="mb-0">{{ mining_state.points_earned_today|floatformat:2 }} NSU</p>
+{% if mining_state.is_mining %}
+{% else %}
+{% endif %}
+{% else %}
+{% endif %}
+{% endblock %}
+{% block extra_scripts %}
+url: "{% url 'users:follow_user' username='replace' %}".replace('replace', username),
+csrfmiddlewaretoken: '{{ csrf_token }}'
+url: "{% url 'airdrop:mining_status' %}",
+{% endblock %}
+
+=== templates/users/receipt.html ===
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<span>{{ transaction.id }}</span>
+<span>{{ transaction.timestamp }}</span>
+<span>{{ transaction.get_transaction_type_display }}</span>
+<span class="fw-bold">{{ transaction.amount }} NSU</span>
+{% if transaction.agent %}
+<span>{{ transaction.agent.username }}</span>
+{% endif %}
+<span class="badge bg-success">{{ transaction.get_status_display }}</span>
+<a href="{% url 'dashboard' %}" class="btn btn-outline-primary ms-2">
+{% endblock %}
+
+=== templates/users/register.html ===
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+{% csrf_token %}
+<p>Already have an account? <a href="{% url 'users:login' %}" class="text-decoration-none">Login</a></p>
+{% endblock %}
+
+=== templates/users/send_tokens.html ===
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+{% csrf_token %}
+{{ form.username }}
+{{ form.amount }}
+<div class="form-text">Current balance: {{ request.user.userprofile.token_balance }} NSU</div>
+{% endblock %}
+
+=== tokens/forms.py ===
+from django import forms
+from .models import TokenRate
+class TokenRateForm(forms.ModelForm):
+model = TokenRate
+fields = ['rate']
+widgets = {
+'rate': forms.NumberInput(attrs={'step': '0.01'})
+}
+
+=== tokens/models.py ===
+from django.db import models
+from users.models import CustomUser
+class TokenRate(models.Model):
+rate = models.DecimalField(max_digits=10, decimal_places=2)
+effective_date = models.DateTimeField(auto_now_add=True)
+set_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+return f"Rate: {self.rate} (Set by {self.set_by.username})"
+class TokenAllocation(models.Model):
+user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+amount = models.DecimalField(max_digits=15, decimal_places=2)
+allocated_by = models.ForeignKey(CustomUser, related_name='allocations', on_delete=models.CASCADE)
+created_at = models.DateTimeField(auto_now_add=True)
+return f"{self.amount} Tokens to {self.user.username}"
+
+=== tokens/urls.py ===
+from django.urls import path
+from . import views
+app_name = 'tokens'
+urlpatterns = [
+path('set-rate/', views.set_rate, name='set_rate'),
+]
+
+=== tokens/views.py ===
+from django.shortcuts import render, redirect
+from .models import TokenRate
+from .forms import TokenRateForm
+@login_required
+def set_rate(request):
+if not request.user.is_superuser:
+return redirect('users:dashboard')
+if request.method == 'POST':
+form = TokenRateForm(request.POST)
+if form.is_valid():
+TokenRate.objects.create(
+rate=form.cleaned_data['rate'],
+set_by=request.user
+)
+messages.success(request, "Exchange rate updated successfully")
+return redirect('users:dashboard')
+else:
+form = TokenRateForm()
+return render(request, 'tokens/set_rate.html', {'form': form})
+
+=== transactions/forms.py ===
+from django import forms
+from users.models import CustomUser
+from .models import Transaction
+class AgentWithdrawForm(forms.Form):
+user_identifier = forms.CharField(label="Username or ID", max_length=150)
+amount = forms.DecimalField(label="Amount (Tokens)", max_digits=12, decimal_places=2)
+class AgentDepositForm(forms.Form):
+user_identifier = forms.CharField(
+label="Username or ID",
+max_length=150,
+)
+amount = forms.DecimalField(
+label="Cash Amount (UGX)",
+min_value=1000,
+max_digits=12,
+decimal_places=2
+)
+class AgentWithdrawForm(forms.Form):
+user_identifier = forms.CharField(
+label="Username or ID",
+max_length=150,
+)
+amount = forms.DecimalField(
+label="Token Amount",
+min_value=1,
+max_digits=12,
+decimal_places=2
+)
+
+=== transactions/models.py ===
+from django.db import models
+from django.utils import timezone
+from django.core.exceptions import ValidationError
+import hashlib
+User = get_user_model()
+class WithdrawalRequest(models.Model):
+STATUS_CHOICES = [
+('pending', 'Pending'),
+('completed', 'Completed'),
+('expired', 'Expired'),
+('failed', 'Failed'),
+]
+user = models.ForeignKey(User, on_delete=models.CASCADE)
+amount = models.DecimalField(max_digits=12, decimal_places=2)
+pin_hash = models.CharField(max_length=128)
+expiry = models.DateTimeField()
+status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+created_at = models.DateTimeField(auto_now_add=True)
+def clean(self):
+if self.amount <= 0:
+raise ValidationError("Amount must be positive.")
+if self.user.userprofile.token_balance < self.amount:
+raise ValidationError("Insufficient balance.")
+def is_expired(self):
+return timezone.now() > self.expiry
+return f"Withdrawal Request
+class Transaction(models.Model):
+user = models.ForeignKey(
+User,
+on_delete=models.CASCADE,
+related_name='user_transactions'
+)
+agent = models.ForeignKey(
+User,
+on_delete=models.SET_NULL,
+null=True,
+blank=True,
+related_name='agent_transactions'
+)
+amount = models.DecimalField(max_digits=12, decimal_places=2)
+transaction_type = models.CharField(max_length=20, default='withdrawal')
+timestamp = models.DateTimeField(auto_now_add=True)
+hashed_detail = models.CharField(max_length=64, blank=True, null=True)
+previous_hash = models.CharField(max_length=64, blank=True, null=True)
+def save(self, *args, **kwargs):
+if not self.hashed_detail:
+detail = f"{self.user.username}{self.amount}{self.transaction_type}{self.timestamp}"
+self.hashed_detail = hashlib.sha256(detail.encode()).hexdigest()
+super().save(*args, **kwargs)
+return f"Transaction
+
+=== transactions/signals.py ===
+from django.db.models.signals import Signal
+from django.dispatch import receiver
+from django.utils import timezone
+from django.apps import apps
+pin_verified = Signal()
+@receiver(pin_verified)
+def handle_pin_verification(sender, transaction_id, pin, **kwargs):
+Transaction = apps.get_model('transactions', 'Transaction')
+try:
+tx = Transaction.objects.get(id=transaction_id, status='pending')
+if pin == tx.verification_code:
+if tx.expiry and tx.expiry < timezone.now():
+tx.status = 'expired'
+tx.save()
+return False, "PIN has expired."
+if tx.user.userprofile.token_balance < tx.amount:
+return False, "Insufficient balance."
+tx.user.userprofile.token_balance -= tx.amount
+tx.user.userprofile.save()
+tx.status = 'completed'
+tx.save()
+return True, "Withdrawal processed successfully."
+else:
+return False, "Invalid PIN."
+except Transaction.DoesNotExist:
+return False, "Transaction not found."
+
+=== transactions/urls.py ===
+from django.urls import path
+from .views import (
+request_withdrawal,
+process_withdrawal,
+TransactionReceiptView,
+agent_deposit,
+public_ledger,
+transfer_tokens,
+transaction_detail,
+public_ledger_autocomplete,
+)
+app_name = 'transactions'
+urlpatterns = [
+path('request-withdrawal/', request_withdrawal, name='request_withdrawal'),
+path('process-withdrawal/', process_withdrawal, name='process_withdrawal'),
+path('receipt/<int:pk>/', TransactionReceiptView.as_view(), name='transaction_receipt'),
+path('agent/deposit/', agent_deposit, name='agent_deposit'),
+path('ledger/', public_ledger, name='public_ledger'),
+path('transfer/', transfer_tokens, name='transfer_tokens'),
+path('ledger/transaction/<int:pk>/', transaction_detail, name='transaction_detail'),
+path('ledger/autocomplete/', public_ledger_autocomplete, name='public_ledger_autocomplete'),
+]
+
+=== transactions/views.py ===
+from django.shortcuts import render, redirect, get_object_or_404
+from django.utils import timezone
+from datetime import timedelta
+from django.db.models import Q
+from django.core.paginator import Paginator
+from django.core.exceptions import ValidationError
+from .models import Transaction
+from .forms import AgentDepositForm, AgentWithdrawForm
+from users.models import CustomUser, UserProfile,Notification
+from tokens.models import TokenRate
+from django.views.generic.detail import DetailView
+import random
+from decimal import Decimal
+import logging
+import hashlib
+import secrets
+from .models import WithdrawalRequest, Transaction, User
+from django.db import transaction
+from django.http import JsonResponse
+def public_ledger_autocomplete(request):
+query = request.GET.get('term', '')
+transactions = Transaction.objects.filter(
+Q(id__icontains=query) |
+Q(user__username__icontains=query) |
+Q(agent__username__icontains=query)
+).values_list('id', flat=True)[:10]
+return JsonResponse(list(transactions), safe=False)
+@login_required
+def request_withdrawal(request):
+if request.method == 'POST':
+amount = request.POST.get('amount')
+try:
+amount = float(amount)
+if amount <= 0:
+raise ValueError("Invalid amount")
+pin = ''.join(secrets.choice('0123456789') for _ in range(6))
+pin_hash = hashlib.sha256(pin.encode()).hexdigest()
+expiry = timezone.now() + timedelta(minutes=10)
+withdrawal = WithdrawalRequest.objects.create(
+user=request.user,
+amount=amount,
+pin_hash=pin_hash,
+expiry=expiry
+)
+return render(request, 'transactions/withdrawal_pin.html', {
+'pin': pin,
+'expiry': expiry,
+})
+except (ValueError, ValidationError) as e:
+messages.error(request, str(e))
+return render(request, 'transactions/request_withdrawal.html')
+@user_passes_test(lambda u: u.is_agent or u.is_superuser)
+def process_withdrawal(request):
+if request.method == 'POST':
+username = request.POST.get('username')
+amount = request.POST.get('amount')
+pin = request.POST.get('pin')
+try:
+user = User.objects.get(username=username)
+amount = float(amount)
+pin_hash = hashlib.sha256(pin.encode()).hexdigest()
+withdrawal = WithdrawalRequest.objects.filter(
+user=user,
+amount=amount,
+pin_hash=pin_hash,
+status='pending'
+).first()
+if not withdrawal:
+messages.error(request, "Invalid PIN, amount, or username.")
+return redirect('transactions:process_withdrawal')
+with transaction.atomic():
+if withdrawal.is_expired():
+withdrawal.status = 'expired'
+withdrawal.save()
+messages.error(request, "PIN expired.")
+return redirect('transactions:process_withdrawal')
+if user.userprofile.token_balance < withdrawal.amount:
+messages.error(request, "Insufficient balance.")
+return redirect('transactions:process_withdrawal')
+user.userprofile.token_balance -= withdrawal.amount
+user.userprofile.save()
+withdrawal.status = 'completed'
+withdrawal.save()
+tx = Transaction.objects.create(
+user=user,
+agent=request.user,
+amount=withdrawal.amount
+)
+Notification.objects.create(
+user=user,
+message=f"Withdrawal of {withdrawal.amount} tokens processed",
+transaction=tx
+)
+Notification.objects.create(
+user=request.user,
+message=f"Processed withdrawal for {user.username}",
+transaction=tx
+)
+messages.success(request, "Withdrawal processed successfully!")
+return redirect('transactions:transaction_receipt', pk=tx.id)
+except User.DoesNotExist:
+messages.error(request, "User not found.")
+except (ValueError, ValidationError) as e:
+messages.error(request, str(e))
+return render(request, 'transactions/process_withdrawal.html')
+class TransactionReceiptView(DetailView):
+model = Transaction
+template_name = 'transactions/receipt.html'
+context_object_name = 'transaction'
+def get_context_data(self, **kwargs):
+context = super().get_context_data(**kwargs)
+context['printable'] = self.request.GET.get('print', False)
+return context
+def get_template_names(self):
+if self.request.GET.get('print'):
+return ['transactions/receipt_print.html']
+return [self.template_name]
+@user_passes_test(lambda u: u.is_agent or u.is_superuser)
+def agent_deposit(request):
+query = request.GET.get('q')
+transactions = Transaction.objects.all().order_by('-timestamp')
+if query:
+transactions = transactions.filter(
+Q(id__icontains=query) |
+Q(user__username__icontains=query) |
+Q(agent__username__icontains=query)
+)
+paginator = Paginator(transactions, 20)
+page_number = request.GET.get('page')
+transactions = paginator.get_page(page_number)
+return render(request, 'transactions/public_ledger.html', {'transactions': transactions})
+@login_required
+def transfer_tokens(request):
+if request.method == 'POST':
+username = request.POST.get('username')
+amount = request.POST.get('amount')
+try:
+amount = float(amount)
+if amount <= 0:
+raise ValueError("Amount must be positive")
+recipient = CustomUser.objects.get(username=username)
+sender_profile = request.user.userprofile
+recipient_profile = recipient.userprofile
+if sender_profile.token_balance >= amount:
+sender_profile.token_balance -= amount
+recipient_profile.token_balance += amount
+transaction = Transaction.objects.create(
+user=request.user,
+amount=amount,
+transaction_type='transfer',
+status='completed',
+recipient=recipient
+)
+sender_profile.save()
+recipient_profile.save()
+Notification.objects.create(
+user=request.user,
+message=f"You sent {amount} tokens to {recipient.username}.",
+transaction=transaction
+)
+Notification.objects.create(
+user=recipient,
+message=f"You received {amount} tokens from {request.user.username}.",
+transaction=transaction
+)
+messages.success(request, f"Transferred {amount} tokens to {username}")
+else:
+messages.error(request, "Insufficient balance")
+except CustomUser.DoesNotExist:
+messages.error(request, "User not found")
+except ValueError:
+messages.error(request, "Invalid amount")
+return render(request, 'transactions/transfer_tokens.html')
+def transaction_detail(request, pk):
+
+=== users/context_processors.py ===
+from .models import CustomUser
+def referral_info(request):
+if request.user.is_authenticated:
+return {
+'referral_code': request.user.username,
+'referrals': CustomUser.objects.filter(referred_by=request.user)
+}
+return {}
+
+=== users/forms.py ===
+from django import forms
+from .models import CustomUser,UserProfile
+class CustomUserCreationForm(UserCreationForm):
+referral_code = forms.CharField(
+required=False,
+label='Referral Code (optional)',
+)
+model = CustomUser
+fields = ['username', 'email', 'password1', 'password2']
+class ProfileUpdateForm(forms.ModelForm):
+model = UserProfile
+fields = [
+'cover_photo',
+'profile_picture', 'display_name', 'gender',
+'birthday', 'work', 'location', 'phone_number',
+'bio', 'show_birthday', 'show_phone', 'show_email'
+]
+widgets = {
+'birthday': forms.DateInput(attrs={'type': 'date'}),
+'show_birthday': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+'show_phone': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+'show_email': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+}
+class CreateAgentForm(forms.Form):
+email = forms.EmailField()
+password1 = forms.CharField(widget=forms.PasswordInput)
+password2 = forms.CharField(widget=forms.PasswordInput)
+class SendTokensForm(forms.Form):
+username = forms.CharField()
+amount = forms.DecimalField(max_digits=12, decimal_places=2, min_value=1)
+
+=== users/middleware.py ===
+from django.http import JsonResponse
+from django.utils.deprecation import MiddlewareMixin
+class AjaxAuthenticationMiddleware(MiddlewareMixin):
+def process_request(self, request):
+pass
+def process_view(self, request, view_func, view_args, view_kwargs):
+if request.headers.get('X-Requested-With') == 'XMLHttpRequest' and not request.user.is_authenticated:
+return JsonResponse({
+'status': 'auth_required',
+'message': 'Please log in or register to perform this action.',
+'login_url': '/users/login/',
+'register_url': '/users/register/'
+}, status=401)
+return None
+def process_response(self, request, response):
+response['X-Frame-Options'] = 'SAMEORIGIN'
+return response
+
+=== users/models.py ===
+from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+class CustomUser(AbstractUser):
+is_agent = models.BooleanField(default=False)
+is_verified = models.BooleanField(default=False)
+email = models.EmailField(null=True,unique=True)
+referred_by = models.ForeignKey(
+'self',
+on_delete=models.SET_NULL,
+null=True,
+blank=True,
+related_name='referrals'
+)
+return self.username
+class UserProfile(models.Model):
+user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+profile_picture = models.ImageField(
+upload_to='profile_pics/',
+default='profile_pics/default.png'
+)
+bio = models.TextField(blank=True)
+followers = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='following')
+verified = models.BooleanField(default=False)
+token_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+ugx_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+GENDER_CHOICES = [
+('M', 'Male'),
+('F', 'Female'),
+('N', 'Prefer not to say')
+]
+display_name = models.CharField(max_length=50,null=True,blank=True)
+gender = models.CharField(max_length=12, choices=GENDER_CHOICES, blank=True)
+birthday = models.DateField(null=True, blank=True)
+work = models.CharField(max_length=100, blank=True)
+phone_number = models.CharField(max_length=20, blank=True)
+location = models.CharField(max_length=100, blank=True)
+show_birthday = models.BooleanField(default=False)
+show_phone = models.BooleanField(default=False)
+show_email = models.BooleanField(default=False)
+cover_photo = models.ImageField(
+upload_to='cover_photos/',
+default='cover_photos/default_cover.webp'
+)
+return f"{self.display_name or self.user.username}'s Profile"
+def get_followers_count(self):
+return self.followers.count()
+def get_following_count(self):
+return self.following.count()
+def get_ugx_balance(self):
+from tokens.models import TokenRate
+rate = TokenRate.objects.last()
+if rate:
+return self.token_balance * rate.rate
+return 0
+def save(self, *args, **kwargs):
+if not self.display_name:
+self.display_name = self.user.username
+super().save(*args, **kwargs)
+class Notification(models.Model):
+user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='notifications')
+message = models.CharField(max_length=255)
+is_read = models.BooleanField(default=False)
+created_at = models.DateTimeField(auto_now_add=True)
+return f"Notification for {self.user.username}: {self.message}"
+@receiver(post_save, sender=CustomUser)
+def create_user_profile(sender, instance, created, **kwargs):
+if created:
+profile = UserProfile.objects.create(user=instance)
+profile.save()
+
+=== users/urls.py ===
+from django.urls import path
+from . import views
+from django.urls import path, reverse_lazy
+from django.urls import path, reverse_lazy
+PasswordResetDoneView,
+PasswordResetConfirmView,
+PasswordResetCompleteView
+)
+app_name = 'users'
+urlpatterns = [
+path('admin-balances/', views.admin_balances, name='admin_balances'),
+path('login/', views.user_login, name='login'),
+path('logout/', views.user_logout, name='logout'),
+path('dashboard/', views.dashboard, name='dashboard'),
+path('register/', views.register, name='register'),
+path('profile/edit/', views.edit_profile, name='edit_profile'),
+path('password-reset/', views.ConsolePasswordResetView.as_view(),
+name='password_reset'),
+path('password-reset/done/', PasswordResetDoneView.as_view(
+template_name='users/password_reset_done.html'
+), name='password_reset_done'),
+path('password-reset-confirm/<uidb64>/<token>/',
+PasswordResetConfirmView.as_view(
+success_url=reverse_lazy('users:password_reset_complete')
+), name='password_reset_confirm'),
+path('password-reset-complete/', PasswordResetCompleteView.as_view(
+template_name='users/password_reset_complete.html'
+), name='password_reset_complete'),
+path('create-agent/', views.create_agent, name='create_agent'),
+path('send-tokens/', views.send_tokens, name='send_tokens'),
+path('transaction/<int:tx_id>/receipt/', views.transaction_receipt, name='transaction_receipt'),
+path('notifications/', views.notifications, name='notifications'),
+path('notifications/<int:notification_id>/read/',
+views.mark_notification_as_read, name='mark_notification_as_read'),
+path('notifications/<int:notification_id>/delete/',
+views.delete_notification, name='delete_notification'),
+path('profile/<str:username>/', views.user_profile, name='user_profile'),
+path('follow/<str:username>/', views.follow_user, name='follow_user'),
+path('profile/<str:username>/<str:list_type>/', views.follow_list, name='follow_list'),
+path('unfollow/<str:username>/', views.unfollow_user, name='unfollow_user'),
+]
+
+=== users/views.py ===
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views.decorators.http import require_POST
+from django.http import JsonResponse
+from django.db.models import Sum
+from django.urls import reverse
+from .forms import CustomUserCreationForm, ProfileUpdateForm, CreateAgentForm, SendTokensForm
+from .models import CustomUser, UserProfile, Notification
+from tokens.models import TokenRate
+from transactions.models import Transaction
+from django.urls import reverse_lazy
+from airdrop.models import UserMiningState
+from django.db.models import Q
+@login_required
+def user_profile(request, username):
+user = get_object_or_404(CustomUser, username=username)
+is_owner = (request.user == user)
+mining_state = None
+if is_owner:
+mining_state, created = UserMiningState.objects.get_or_create(user=user)
+transactions = Transaction.objects.filter(user=user).order_by('-timestamp')[:5]
+context = {
+'profile_user': user,
+'is_owner': is_owner,
+'mining_state': mining_state,
+'transactions': transactions,
+}
+return render(request, 'users/profile.html', context)
+@login_required
+def dashboard(request):
+user = request.user
+context = {}
+try:
+profile = user.userprofile
+except UserProfile.DoesNotExist:
+profile = UserProfile.objects.create(user=user)
+profile.profile_picture.save(
+f'{user.username}_profile.png',
+create_default_profile_picture(user.username)
+)
+profile.save()
+current_rate = TokenRate.objects.last().rate if TokenRate.objects.exists() else 3800
+if user.is_superuser:
+context.update({
+'total_users': CustomUser.objects.count(),
+'total_agents': CustomUser.objects.filter(is_agent=True).count(),
+'total_tokens': UserProfile.objects.aggregate(
+total=Sum('token_balance')
+)['total'] or 0,
+'recent_transactions': Transaction.objects.all()[:10],
+'send_tokens_url': reverse('users:send_tokens'),
+'current_rate': current_rate,
+})
+else:
+context.update({
+'profile': user.userprofile,
+'transactions': Transaction.objects.filter(user=user).order_by('-timestamp')[:5],
+'token_balance': user.userprofile.token_balance,
+'ugx_balance': user.userprofile.get_ugx_balance(),
+'request_withdrawal_url': reverse('transactions:request_withdrawal'),
+'current_rate': current_rate,
+})
+if user.is_agent:
+context.update({
+'pending_withdrawals': Transaction.objects.filter(
+agent=user,
+status='pending',
+transaction_type='withdrawal'
+),
+'process_withdrawal_url': reverse('transactions:process_withdrawal'),
+})
+return render(request, 'users/dashboard.html', context)
+def register(request):
+if request.method == 'POST':
+form = CustomUserCreationForm(request.POST)
+if form.is_valid():
+user = form.save()
+referral_code = form.cleaned_data.get('referral_code')
+if referral_code:
+try:
+referrer = CustomUser.objects.get(username=referral_code)
+user.referred_by = referrer
+user.save()
+except CustomUser.DoesNotExist:
+pass
+login(request, user)
+messages.success(request, "Registration successful!")
+return redirect('home')
+else:
+form = CustomUserCreationForm()
+return render(request, 'users/register.html', {'form': form})
+@login_required
+def edit_profile(request):
+if request.method == 'POST':
+form = ProfileUpdateForm(
+request.POST,
+request.FILES,
+instance=request.user.userprofile
+)
+if form.is_valid():
+form.save()
+messages.success(request, "Profile updated!")
+return redirect('users:user_profile', username=request.user.username)
+else:
+form = ProfileUpdateForm(instance=request.user.userprofile)
+return render(request, 'users/edit_profile.html', {'form': form})
+class ConsolePasswordResetView(PasswordResetView):
+success_url = reverse_lazy('users:password_reset_done')
+def user_login(request):
+if request.method == 'POST':
+username = request.POST['username']
+password = request.POST['password']
+user = authenticate(request, username=username, password=password)
+if user is not None:
+login(request, user)
+return redirect('home')
+else:
+return render(request, 'users/login.html', {'error': 'Invalid credentials'})
+return render(request, 'users/login.html')
+@login_required
+def create_agent(request):
+if not request.user.is_superuser:
+return redirect('dashboard')
+if request.method == 'POST':
+form = CreateAgentForm(request.POST)
+if form.is_valid():
+email = form.cleaned_data['email']
+password = form.cleaned_data['password1']
+user = CustomUser.objects.create(
+email=email,
+password=make_password(password),
+is_agent=True
+)
+UserProfile.objects.create(user=user)
+messages.success(request, f"Agent {email} created successfully")
+return redirect('dashboard')
+else:
+form = CreateAgentForm()
+return render(request, 'users/create_agent.html', {'form': form})
+@login_required
+def admin_balances(request):
+if not request.user.is_superuser:
+return redirect('dashboard')
+total_tokens = UserProfile.objects.aggregate(Sum('token_balance'))['token_balance__sum'] or 0
+token_rate = TokenRate.objects.last()
+total_ugx = total_tokens * token_rate.rate if token_rate else 0
+user_count = CustomUser.objects.count()
+agent_count = CustomUser.objects.filter(is_agent=True).count()
+transactions = Transaction.objects.all().order_by('-timestamp')[:50]
+users = CustomUser.objects.all().prefetch_related('userprofile')
+for user in users:
+user.recommended_badge = BadgeManager.calculate_badge(user.userprofile)
+context = {
+'total_tokens': total_tokens,
+'total_ugx': total_ugx,
+'current_rate': token_rate.rate if token_rate else None,
+'user_count': user_count,
+'agent_count': agent_count,
+'transactions': transactions,
+'users': users,
+'badge_choices': UserProfile.BADGE_CHOICES,
+}
+return render(request, 'users/admin_balances.html', context)
+@login_required
+def send_tokens(request):
+if not request.user.is_superuser:
+return redirect('dashboard')
+if request.method == 'POST':
+form = SendTokensForm(request.POST)
+if form.is_valid():
+username = form.cleaned_data['username']
+amount = form.cleaned_data['amount']
+try:
+user = CustomUser.objects.get(username=username)
+profile = user.userprofile
+profile.token_balance += amount
+profile.save()
+transaction = Transaction.objects.create(
+user=user,
+agent=request.user,
+amount=amount,
+transaction_type='deposit'
+)
+Notification.objects.create(
+user=user,
+message=f"You received {amount} tokens from {request.user.username}.",
+transaction=transaction
+)
+Notification.objects.create(
+user=request.user,
+message=f"You sent {amount} tokens to {user.username}.",
+transaction=transaction
+)
+messages.success(request, f"Sent {amount} tokens to {username}")
+return redirect('transactions:transaction_receipt', pk=transaction.id)
+except CustomUser.DoesNotExist:
+messages.error(request, "User not found")
+else:
+form = SendTokensForm()
+return render(request, 'users/send_tokens.html', {'form': form})
+@login_required
+def transaction_receipt(request, tx_id):
+transaction = get_object_or_404(Transaction, id=tx_id, user=request.user)
+return render(request, 'users/receipt.html', {'transaction': transaction})
+def user_logout(request):
+logout(request)
+return redirect('home')
+@login_required
+def notifications(request):
+all_notifications = request.user.notifications.order_by('-created_at')
+return render(request, 'users/notifications.html', {
+'notifications': all_notifications
+})
+@login_required
+def delete_notification(request, notification_id):
+notification = get_object_or_404(
+Notification,
+id=notification_id,
+user=request.user
+)
+notification.delete()
+messages.success(request, "Notification deleted successfully")
+return redirect('users:notifications')
+@login_required
+def mark_notification_as_read(request, notification_id):
+notification = get_object_or_404(
+Notification,
+id=notification_id,
+user=request.user
+)
+notification.is_read = True
+notification.save()
+messages.success(request, "Notification marked as read")
+return redirect('users:notifications')
+@login_required
+@require_POST
+def follow_user(request, username):
+user_to_follow = get_object_or_404(CustomUser, username=username)
+profile_to_follow = user_to_follow.userprofile
+current_profile = request.user.userprofile
+if request.user != user_to_follow:
+if current_profile not in profile_to_follow.followers.all():
+profile_to_follow.followers.add(current_profile)
+return JsonResponse({'status': 'followed', 'count': profile_to_follow.get_followers_count()})
+else:
+profile_to_follow.followers.remove(current_profile)
+return JsonResponse({'status': 'unfollowed', 'count': profile_to_follow.get_followers_count()})
+return JsonResponse({'status': 'error'}, status=400)
+@login_required
+def follow_list(request, username, list_type):
+user = get_object_or_404(CustomUser, username=username)
+profiles = user.userprofile.followers.all() if list_type == 'followers' else user.userprofile.following.all()
+return render(request, 'users/follow_list.html', {
+'profiles': profiles,
+'list_type': list_type,
+'profile_user': user
+})
+@login_required
+@require_POST
+def unfollow_user(request, username):
+user_to_unfollow = get_object_or_404(CustomUser, username=username)
+profile = user_to_unfollow.userprofile
+current_profile = request.user.userprofile
+if request.user != user_to_unfollow:
+current_profile.following.remove(profile)
+return JsonResponse({
+'status': 'success',
+'is_following': False,
+'follower_count': profile.followers.count(),
+'message': f'You have unfollowed {username}'
+})
+return JsonResponse({'status': 'error', 'message': 'Cannot unfollow yourself'})

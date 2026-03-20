@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Receipt #{{ transaction.id }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Receipt Card -->
+    <div class="tx-card" id="receipt">
+        <!-- Header -->
+        <div class="text-center mb-4">
+            <div class="brand mb-2">NUSU<span style="color:var(--accent);">.</span></div>
+            <h5 class="text-dim mb-1">Transaction Receipt</h5>
+            <div class="small text-dim">#{{ transaction.id }}</div>
+        </div>
+
+        <!-- Date -->
+        <div class="text-center mb-4">
+            <div class="small text-dim">{{ transaction.timestamp|date:"F d, Y" }}</div>
+            <div class="small text-dim">{{ transaction.timestamp|date:"H:i:s" }}</div>
+        </div>
+
+        <!-- Amount -->
+        <div class="text-center mb-4">
+            <div class="balance-label mb-1">Amount</div>
+            <div class="display-6 fw-bold {% if transaction.amount > 0 %}text-success{% endif %}">
+                {{ transaction.amount }} NSU
+            </div>
+        </div>
+
+        <!-- Details -->
+        <div class="tx-bubble">
+            <table class="table table-borderless small">
+                <tr>
+                    <td class="text-dim ps-0">Type</td>
+                    <td class="fw-bold text-end">
+                        <span class="badge bg-{% if transaction.transaction_type == 'deposit' %}success{% elif transaction.transaction_type == 'withdrawal' %}warning{% else %}info{% endif %}">
+                            {{ transaction.get_transaction_type_display }}
+                        </span>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="text-dim ps-0">Status</td>
+                    <td class="fw-bold text-end text-success">✓ {{ transaction.get_status_display|upper }}</td>
+                </tr>
+                <tr>
+                    <td class="text-dim ps-0">User</td>
+                    <td class="fw-bold text-end">{{ transaction.user.username }}</td>
+                </tr>
+                {% if transaction.agent %}
+                <tr>
+                    <td class="text-dim ps-0">Agent</td>
+                    <td class="fw-bold text-end">{{ transaction.agent.username }}</td>
+                </tr>
+                {% endif %}
+                <tr>
+                    <td class="text-dim ps-0">Time</td>
+                    <td class="fw-bold text-end">{{ transaction.timestamp|date:"H:i:s" }}</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Hash -->
+        <div class="bg-light rounded-4 p-3 mb-4">
+            <div class="small">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-dim">Transaction Hash</span>
+                </div>
+                <div class="font-monospace small bg-white p-2 rounded-3">
+                    {{ transaction.hashed_detail }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center text-dim small">
+            <p>This is an official receipt from NUSU Network</p>
+            <p class="mb-0">Thank you for using NUSU!</p>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="d-flex gap-2 mt-4">
+        <button onclick="window.print()" class="btn btn-outline-primary w-50 rounded-pill">
+            <i class="fa-regular fa-print me-2"></i>Print
+        </button>
+        <a href="{% url 'transactions:public_ledger' %}" class="btn btn-primary w-50 rounded-pill">
+            <i class="fa-regular fa-circle-check me-2"></i>Done
+        </a>
+    </div>
+</div>
+
+<style>
+@media print {
+    body { background: white; }
+    .top-bar, .dock-container, .btn { display: none; }
+    #receipt { box-shadow: none; border: 1px solid #ddd; }
+}
+</style>
+{% endblock %}

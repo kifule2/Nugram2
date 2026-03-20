@@ -1,0 +1,218 @@
+<!-- templates/social/search_users.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Search Users | NUSU{% endblock %}
+
+{% block content %}
+<style>
+    .search-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px 0;
+    }
+
+    .search-box {
+        background: var(--card);
+        border-radius: 50px;
+        padding: 5px;
+        display: flex;
+        align-items: center;
+        margin-bottom: 30px;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--card-border);
+    }
+
+    .search-box input {
+        flex: 1;
+        padding: 15px 20px;
+        border: none;
+        background: transparent;
+        font-size: 1rem;
+    }
+
+    .search-box input:focus {
+        outline: none;
+    }
+
+    .search-box button {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: none;
+        background: var(--accent);
+        color: white;
+        margin-right: 5px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .search-box button:hover {
+        transform: scale(1.05);
+        background: var(--accent-dark);
+    }
+
+    .user-card {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 15px;
+        background: var(--card);
+        border-radius: 20px;
+        border: 1px solid var(--card-border);
+        box-shadow: var(--shadow);
+        margin-bottom: 12px;
+        transition: all 0.2s ease;
+    }
+
+    .user-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-hover);
+    }
+
+    .user-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 18px;
+        object-fit: cover;
+    }
+
+    .user-info {
+        flex: 1;
+    }
+
+    .user-name {
+        font-weight: 700;
+        color: var(--text-main);
+        margin-bottom: 3px;
+    }
+
+    .user-username {
+        color: var(--text-dim);
+        font-size: 0.9rem;
+    }
+
+    .user-bio {
+        font-size: 0.9rem;
+        color: var(--text-dim);
+        margin-top: 5px;
+    }
+
+    .follow-btn {
+        padding: 8px 20px;
+        border-radius: 50px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .follow-btn.follow {
+        background: var(--accent);
+        color: white;
+    }
+
+    .follow-btn.following {
+        background: var(--success);
+        color: white;
+    }
+
+    .no-results {
+        text-align: center;
+        padding: 60px 20px;
+        background: var(--card);
+        border-radius: 30px;
+    }
+
+    .no-results i {
+        font-size: 4rem;
+        color: var(--text-light);
+        margin-bottom: 20px;
+    }
+</style>
+
+<div class="search-container">
+    <form method="get" action="{% url 'social:search_users' %}">
+        <div class="search-box">
+            <input type="text" name="q" placeholder="Search users by username or name..." value="{{ query }}">
+            <button type="submit">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+    </form>
+
+    {% if query %}
+        <h5 class="mb-3">Results for "{{ query }}"</h5>
+        
+        {% if users %}
+            {% for user in users %}
+            <div class="user-card">
+                <a href="{% url 'users:user_profile' user.username %}">
+                    {% if user.userprofile.profile_picture %}
+                    <img src="{{ user.userprofile.profile_picture.url }}" class="user-avatar">
+                    {% else %}
+                    <img src="https://ui-avatars.com/api/?name={{ user.username|first }}&background=3b82f6&color=fff&size=60" class="user-avatar">
+                    {% endif %}
+                </a>
+                
+                <div class="user-info">
+                    <a href="{% url 'users:user_profile' user.username %}" class="text-decoration-none">
+                        <div class="user-name">{{ user.userprofile.display_name|default:user.username }}</div>
+                        <div class="user-username">@{{ user.username }}</div>
+                        {% if user.userprofile.bio %}
+                        <div class="user-bio">{{ user.userprofile.bio|truncatechars:60 }}</div>
+                        {% endif %}
+                    </a>
+                </div>
+
+                {% if user != request.user %}
+                <button class="follow-btn {% if user.is_following %}following{% else %}follow{% endif %}"
+                        onclick="toggleFollow('{{ user.username }}', this)">
+                    {% if user.is_following %}
+                    <i class="fas fa-check me-1"></i>Following
+                    {% else %}
+                    <i class="fas fa-plus me-1"></i>Follow
+                    {% endif %}
+                </button>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+        <div class="no-results">
+            <i class="fas fa-user-slash"></i>
+            <h3>No users found</h3>
+            <p class="text-dim">Try searching with a different name</p>
+        </div>
+        {% endif %}
+    {% else %}
+    <div class="no-results">
+        <i class="fas fa-search"></i>
+        <h3>Search for users</h3>
+        <p class="text-dim">Find people to follow and connect with</p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    function toggleFollow(username, btn) {
+        fetch(`/social/follow/${username}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'followed') {
+                btn.innerHTML = '<i class="fas fa-check me-1"></i>Following';
+                btn.className = 'follow-btn following';
+            } else {
+                btn.innerHTML = '<i class="fas fa-plus me-1"></i>Follow';
+                btn.className = 'follow-btn follow';
+            }
+        });
+    }
+</script>
+{% endblock %}

@@ -1,48 +1,218 @@
-{% extends "base.html" %}
+<!-- templates/users/register.html -->
+{% extends 'base.html' %}
 {% load static %}
 
+{% block title %}Register | NUSU{% endblock %}
+
 {% block content %}
-<div class="container">
-    <div class="row justify-content-center py-5">
-        <div class="col-md-8 col-lg-6">
-            <div class="bg-white p-5 rounded shadow wow fadeInUp" data-wow-delay="0.1s">
-                <div class="text-center mb-5">
-                    <h1 class="display-6 mb-4"><i class="fas fa-user-plus text-primary me-2"></i>Join Nusu</h1>
-                    <p class="text-muted">Start your social finance journey</p>
-                </div>
-                
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="mb-4">
-                        <label for="username" class="form-label">Username</label>
-                        <input type="text" class="form-control form-control-lg" id="username" name="username" required>
-                        <small class="form-text">This will be your referral code</small>
-                    </div>
-                    <div class="mb-4">
-                        <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control form-control-lg" id="email" name="email" required>
-                    </div>
-                    <div class="mb-4">
-                        <label for="password1" class="form-label">Password</label>
-                        <input type="password" class="form-control form-control-lg" id="password1" name="password1" required>
-                    </div>
-                    <div class="mb-4">
-                        <label for="password2" class="form-label">Confirm Password</label>
-                        <input type="password" class="form-control form-control-lg" id="password2" name="password2" required>
-                    </div>
-                    <div class="mb-4">
-                        <label for="referral_code" class="form-label">Referral Code (optional)</label>
-                        <input type="text" class="form-control form-control-lg" id="referral_code" name="referral_code">
-                    </div>
-                    <div class="d-grid mb-4">
-                        <button type="submit" class="btn btn-primary btn-lg">Register</button>
-                    </div>
-                    <div class="text-center">
-                        <p>Already have an account? <a href="{% url 'users:login' %}" class="text-decoration-none">Login</a></p>
-                    </div>
-                </form>
-            </div>
-        </div>
+<style>
+    .register-container {
+        max-width: 500px;
+        margin: 40px auto;
+        padding: 30px;
+        background: var(--card);
+        border-radius: 30px;
+        border: 1px solid var(--card-border);
+        box-shadow: var(--shadow);
+    }
+
+    .register-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .register-header h2 {
+        font-size: 2rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--text-main), var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 10px;
+    }
+
+    .register-header p {
+        color: var(--text-dim);
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: var(--text-main);
+    }
+
+    .form-group label i {
+        color: var(--accent);
+        margin-right: 8px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid var(--card-border);
+        border-radius: 15px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 4px var(--accent-light);
+        outline: none;
+    }
+
+    .referral-info {
+        background: var(--accent-light);
+        border-radius: 12px;
+        padding: 10px 15px;
+        margin-top: 5px;
+        font-size: 0.9rem;
+        color: var(--accent);
+    }
+
+    .referral-info i {
+        margin-right: 8px;
+    }
+
+    .btn-register {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+        color: white;
+        border: none;
+        border-radius: 50px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 20px;
+    }
+
+    .btn-register:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-hover);
+    }
+
+    .login-link {
+        text-align: center;
+        margin-top: 20px;
+        color: var(--text-dim);
+    }
+
+    .login-link a {
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .login-link a:hover {
+        text-decoration: underline;
+    }
+
+    .errorlist {
+        list-style: none;
+        padding: 0;
+        margin: 5px 0 0;
+        color: var(--danger);
+        font-size: 0.9rem;
+    }
+</style>
+
+<div class="register-container">
+    <div class="register-header">
+        <h2>Create Account</h2>
+        <p>Join the NUSU community today!</p>
     </div>
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="{{ form.username.id_for_label }}">
+                <i class="fas fa-user"></i>Username
+            </label>
+            {{ form.username }}
+            {% if form.username.errors %}
+            <ul class="errorlist">
+                {% for error in form.username.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.email.id_for_label }}">
+                <i class="fas fa-envelope"></i>Email
+            </label>
+            {{ form.email }}
+            {% if form.email.errors %}
+            <ul class="errorlist">
+                {% for error in form.email.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.password1.id_for_label }}">
+                <i class="fas fa-lock"></i>Password
+            </label>
+            {{ form.password1 }}
+            {% if form.password1.errors %}
+            <ul class="errorlist">
+                {% for error in form.password1.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            <small class="text-dim">Minimum 8 characters</small>
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.password2.id_for_label }}">
+                <i class="fas fa-lock"></i>Confirm Password
+            </label>
+            {{ form.password2 }}
+            {% if form.password2.errors %}
+            <ul class="errorlist">
+                {% for error in form.password2.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.referral_code.id_for_label }}">
+                <i class="fas fa-gift"></i>Referral Code (Optional)
+            </label>
+            {{ form.referral_code }}
+            <div class="referral-info">
+                <i class="fas fa-info-circle"></i>
+                Enter a referral code if someone invited you
+            </div>
+            {% if form.referral_code.errors %}
+            <ul class="errorlist">
+                {% for error in form.referral_code.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+
+        <button type="submit" class="btn-register">
+            <i class="fas fa-user-plus me-2"></i>Create Account
+        </button>
+
+        <div class="login-link">
+            Already have an account? <a href="{% url 'users:login' %}">Login</a>
+        </div>
+    </form>
 </div>
 {% endblock %}

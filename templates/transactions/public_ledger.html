@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Public Ledger{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 px-3">
+        <h1 class="h3 mb-0 fw-bold">Public Ledger</h1>
+        <span class="badge-live">Live Network</span>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="px-3 mb-4">
+        <div class="post-input-box">
+            <i class="fa-solid fa-magnifying-glass text-dim"></i>
+            <input type="text" id="searchInput" placeholder="Search by transaction ID, username..." class="border-0 bg-transparent w-100">
+        </div>
+    </div>
+
+    <!-- Stats Summary -->
+    <div class="stats-grid mb-4">
+        <div class="stat-item">
+            <div class="stat-value">{{ total_transactions }}</div>
+            <div class="stat-label">Total Tx</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">{{ total_volume|floatformat:0 }}</div>
+            <div class="stat-label">Volume (NSU)</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">{{ unique_users }}</div>
+            <div class="stat-label">Active Users</div>
+        </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="action-row mb-3">
+        <button class="pill filter-btn active" data-filter="all">All</button>
+        <button class="pill filter-btn" data-filter="deposit">Deposits</button>
+        <button class="pill filter-btn" data-filter="withdrawal">Withdrawals</button>
+        <button class="pill filter-btn" data-filter="transfer">Transfers</button>
+    </div>
+
+    <!-- Transactions List -->
+    <div class="feed" id="transactionsList">
+        {% if transactions %}
+            {% for tx in transactions %}
+            <a href="{% url 'transactions:transaction_detail' tx.id %}" class="text-decoration-none">
+                <div class="tx-card" data-type="{{ tx.transaction_type }}">
+                    <div class="tx-header">
+                        <img src="{% if tx.user.userprofile.profile_picture %}{{ tx.user.userprofile.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ tx.user.username|first }}&background=3b82f6&color=fff{% endif %}" 
+                             style="width: 40px; height: 40px; border-radius: 12px; object-fit: cover;">
+                        <div class="flex-grow-1">
+                            <div class="user-name">{{ tx.user.userprofile.display_name|default:tx.user.username }}</div>
+                            <div class="text-dim small" style="font-size: 0.7rem;">{{ tx.timestamp|timesince }} ago</div>
+                        </div>
+                        <span class="badge bg-{% if tx.transaction_type == 'deposit' %}success{% elif tx.transaction_type == 'withdrawal' %}warning{% else %}info{% endif %}">
+                            {{ tx.get_transaction_type_display }}
+                        </span>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mt-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-hashtag text-dim small"></i>
+                            <span class="text-dim small">#{{ tx.id }}</span>
+                        </div>
+                        <div class="fw-bold {% if tx.amount > 0 %}text-success{% else %}text-warning{% endif %}">
+                            {{ tx.amount }} NSU
+                        </div>
+                    </div>
+                    
+                    {% if tx.agent %}
+                    <div class="d-flex align-items-center gap-2 mt-2 text-dim small">
+                        <i class="fa-solid fa-user-tie"></i>
+                        <span>Agent: {{ tx.agent.username }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-flex justify-content-between mt-3 text-dim small">
+                        <span><i class="fa-regular fa-clock me-1"></i> {{ tx.timestamp|date:"M d, H:i" }}</span>
+                        {% if tx.status %}
+                        <span class="badge bg-{% if tx.status == 'completed' %}success{% elif tx.status == 'pending' %}warning{% else %}secondary{% endif %}">
+                            {{ tx.get_status_display }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+
+            <!-- Pagination -->
+            {% if transactions.has_other_pages %}
+            <div class="d-flex justify-content-center gap-2 mt-4 mb-5">
+                {% if transactions.has_previous %}
+                <a href="?page={{ transactions.previous_page_number }}" class="btn btn-outline-primary rounded-circle" style="width: 45px; height: 45px;">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </a>
+                {% endif %}
+                
+                <span class="btn btn-primary rounded-circle" style="width: 45px; height: 45px;">
+                    {{ transactions.number }}
+                </span>
+                
+                {% if transactions.has_next %}
+                <a href="?page={{ transactions.next_page_number }}" class="btn btn-outline-primary rounded-circle" style="width: 45px; height: 45px;">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        {% else %}
+            <!-- Empty State -->
+            <div class="text-center mt-5">
+                <div class="mb-3">
+                    <i class="fa-regular fa-rectangle-list text-dim" style="font-size: 4rem;"></i>
+                </div>
+                <h5>No transactions yet</h5>
+                <p class="text-dim">The ledger is empty. Start transacting!</p>
+                {% if user.is_authenticated %}
+                <a href="{% url 'transactions:transfer_tokens' %}" class="btn btn-primary rounded-pill px-4 mt-3">
+                    <i class="fa-solid fa-paper-plane me-2"></i>Send Tokens
+                </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Filter functionality
+document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        // Update active state
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        
+        const filter = this.dataset.filter;
+        const transactions = document.querySelectorAll('.tx-card');
+        
+        transactions.forEach(tx => {
+            if (filter === 'all' || tx.dataset.type === filter) {
+                tx.style.display = 'block';
+            } else {
+                tx.style.display = 'none';
+            }
+        });
+    });
+});
+
+// Search functionality
+const searchInput = document.getElementById('searchInput');
+if (searchInput) {
+    searchInput.addEventListener('keyup', function() {
+        const searchTerm = this.value.toLowerCase();
+        const transactions = document.querySelectorAll('.tx-card');
+        
+        transactions.forEach(tx => {
+            const txText = tx.textContent.toLowerCase();
+            if (txText.includes(searchTerm)) {
+                tx.style.display = 'block';
+            } else {
+                tx.style.display = 'none';
+            }
+        });
+    });
+}
+
+// Live update every 30 seconds
+function refreshLedger() {
+    fetch("{% url 'transactions:public_ledger' %}?ajax=1")
+    .then(response => response.text())
+    .then(html => {
+        // Only update if there are changes
+        console.log('Refreshing ledger...');
+    });
+}
+
+// Refresh every 30 seconds if user is on the page
+let refreshInterval = setInterval(refreshLedger, 30000);
+
+// Clear interval when leaving page
+window.addEventListener('beforeunload', function() {
+    clearInterval(refreshInterval);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Process Withdrawal{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex align-items-center gap-3 mb-4 px-3">
+        <a href="{% url 'users:dashboard' %}" class="text-dim">
+            <i class="fa-solid fa-arrow-left fa-xl"></i>
+        </a>
+        <h1 class="h3 mb-0 fw-bold">Process Withdrawal</h1>
+    </div>
+
+    <!-- Agent Badge -->
+    <div class="text-center mb-4">
+        <span class="badge bg-accent text-white px-4 py-2">
+            <i class="fa-solid fa-user-tie me-2"></i>Agent Mode
+        </span>
+    </div>
+
+    <!-- Processing Form -->
+    <div class="tx-card">
+        <form method="POST" id="processForm">
+            {% csrf_token %}
+            
+            <div class="mb-4">
+                <label class="form-label fw-bold">Username</label>
+                <div class="post-input-box p-0 border-0">
+                    <input type="text" name="username" class="form-control form-control-lg rounded-4" 
+                           placeholder="Enter username" required>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-bold">Amount (NSU)</label>
+                <div class="post-input-box p-0 border-0">
+                    <input type="number" name="amount" class="form-control form-control-lg rounded-4" 
+                           placeholder="Enter amount" step="0.01" min="1" required>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-bold">6-Digit PIN</label>
+                <div class="post-input-box p-0 border-0">
+                    <input type="text" name="pin" class="form-control form-control-lg rounded-4" 
+                           placeholder="Enter PIN" maxlength="6" pattern="[0-9]{6}" required>
+                </div>
+                <div class="form-text text-dim">Enter the 6-digit PIN provided by user</div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="d-flex gap-2 mb-4 flex-wrap">
+                <button type="button" class="pill" onclick="fillSample()">
+                    <i class="fa-regular fa-eye"></i> Sample Data
+                </button>
+                <button type="button" class="pill" onclick="clearForm()">
+                    <i class="fa-regular fa-trash-can"></i> Clear
+                </button>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary w-100 rounded-pill py-3 fw-bold">
+                <i class="fa-solid fa-check-circle me-2"></i>Verify & Process
+            </button>
+        </form>
+    </div>
+
+    <!-- Recent Withdrawals -->
+    <div class="mt-4">
+        <h6 class="fw-bold mb-3 px-3">Recent Processed Withdrawals</h6>
+        {% if recent_withdrawals %}
+            {% for withdrawal in recent_withdrawals %}
+            <div class="tx-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="fw-bold">{{ withdrawal.user.username }}</span>
+                        <span class="text-dim small d-block">{{ withdrawal.timestamp|timesince }} ago</span>
+                    </div>
+                    <div class="text-end">
+                        <span class="fw-bold text-success">{{ withdrawal.amount }} NSU</span>
+                        <span class="badge bg-success d-block mt-1">Completed</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="text-center text-dim py-4">
+                <i class="fa-regular fa-clock mb-2"></i>
+                <p>No processed withdrawals yet</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function fillSample() {
+    document.querySelector('input[name="username"]').value = 'testuser';
+    document.querySelector('input[name="amount"]').value = '100';
+    document.querySelector('input[name="pin"]').value = '123456';
+}
+
+function clearForm() {
+    document.querySelector('input[name="username"]').value = '';
+    document.querySelector('input[name="amount"]').value = '';
+    document.querySelector('input[name="pin"]').value = '';
+}
+</script>
+{% endblock %}

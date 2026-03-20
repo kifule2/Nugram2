@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Withdrawal PIN{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="text-center mb-4">
+        <div class="rounded-circle bg-accent-light d-inline-flex p-4 mb-3" style="background: var(--accent-light);">
+            <i class="fa-solid fa-lock-open text-accent fa-3x"></i>
+        </div>
+        <h1 class="h4 fw-bold">Your Withdrawal PIN</h1>
+        <p class="text-dim">Present this PIN to any agent to complete your withdrawal</p>
+    </div>
+
+    <!-- PIN Card -->
+    <div class="tx-card text-center">
+        <!-- Timer -->
+        <div class="mb-4">
+            <span class="badge bg-warning text-dark px-3 py-2" id="timer">
+                <i class="fa-regular fa-clock me-2"></i>
+                <span id="minutes">10</span>:<span id="seconds">00</span> remaining
+            </span>
+        </div>
+
+        <!-- PIN Display -->
+        <div class="display-1 fw-bold tracking-wider mb-4" style="letter-spacing: 10px;">
+            {{ pin }}
+        </div>
+
+        <!-- Copy Button -->
+        <button class="btn btn-outline-primary rounded-pill px-5 mb-4" onclick="copyPIN()">
+            <i class="fa-regular fa-copy me-2"></i>Copy PIN
+        </button>
+
+        <!-- Amount Info -->
+        <div class="bg-light rounded-4 p-3 mb-3">
+            <div class="d-flex justify-content-between mb-2">
+                <span class="text-dim">Amount</span>
+                <span class="fw-bold">{{ amount }} NSU</span>
+            </div>
+            <div class="d-flex justify-content-between">
+                <span class="text-dim">Expires</span>
+                <span class="fw-bold text-danger" id="expiry">{{ expiry|date:"H:i:s" }}</span>
+            </div>
+        </div>
+
+        <!-- QR Code (optional) -->
+        <div class="text-center mb-3">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=PIN:{{ pin }}" 
+                 style="width: 150px; height: 150px; border-radius: 20px;">
+        </div>
+
+        <!-- Instructions -->
+        <div class="alert alert-info rounded-4 text-start">
+            <i class="fa-regular fa-circle-info me-2"></i>
+            <strong>How to use:</strong>
+            <ol class="mt-2 mb-0 small">
+                <li>Take this PIN to any authorized agent</li>
+                <li>Agent will verify and process your withdrawal</li>
+                <li>You'll receive UGX cash equivalent</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="d-flex gap-2 mt-4">
+        <a href="{% url 'users:dashboard' %}" class="btn btn-outline-primary w-50 rounded-pill">
+            Later
+        </a>
+        <a href="{% url 'transactions:public_ledger' %}" class="btn btn-primary w-50 rounded-pill">
+            Done
+        </a>
+    </div>
+</div>
+
+<script>
+// Timer countdown
+const expiryTime = new Date("{{ expiry|date:'Y-m-d H:i:s' }}").getTime();
+
+function updateTimer() {
+    const now = new Date().getTime();
+    const distance = expiryTime - now;
+    
+    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+    
+    document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+    document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+    
+    if (distance < 0) {
+        clearInterval(timerInterval);
+        document.getElementById('timer').innerHTML = '<i class="fa-regular fa-circle-xmark me-2"></i>Expired';
+        document.getElementById('timer').className = 'badge bg-danger text-white px-3 py-2';
+    }
+}
+
+const timerInterval = setInterval(updateTimer, 1000);
+
+// Copy PIN function
+function copyPIN() {
+    const pin = "{{ pin }}";
+    navigator.clipboard.writeText(pin).then(() => {
+        alert('PIN copied to clipboard!');
+    });
+}
+</script>
+
+<style>
+.tracking-wider {
+    letter-spacing: 10px;
+}
+</style>
+{% endblock %}

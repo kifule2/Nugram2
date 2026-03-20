@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Transaction #{{ transaction.id }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Back Button -->
+    <div class="mb-3 px-3">
+        <a href="{% url 'transactions:public_ledger' %}" class="text-decoration-none text-dim">
+            <i class="fa-solid fa-arrow-left me-2"></i>Back to Ledger
+        </a>
+    </div>
+
+    <!-- Transaction Card -->
+    <div class="tx-card">
+        <div class="text-center mb-4">
+            <div class="mb-3">
+                <div class="rounded-circle bg-{% if transaction.transaction_type == 'deposit' %}success{% elif transaction.transaction_type == 'withdrawal' %}warning{% else %}info{% bg-light d-inline-flex p-3" style="width: 80px; height: 80px;">
+                    <i class="fa-solid {% if transaction.transaction_type == 'deposit' %}fa-arrow-down{% elif transaction.transaction_type == 'withdrawal' %}fa-arrow-up{% else %}fa-arrow-right-arrow-left{% endif %} fa-2x text-accent m-auto"></i>
+                </div>
+            </div>
+            <h2 class="h4 mb-1">{{ transaction.get_transaction_type_display }}</h2>
+            <span class="badge bg-{% if transaction.status == 'completed' %}success{% elif transaction.status == 'pending' %}warning{% else %}secondary{% endif %} fs-6 px-3 py-2">
+                {{ transaction.get_status_display|upper }}
+            </span>
+        </div>
+
+        <!-- Amount -->
+        <div class="text-center mb-4">
+            <div class="balance-label mb-1">Amount</div>
+            <div class="balance-amount {% if transaction.amount > 0 %}text-success{% endif %}">
+                {{ transaction.amount }} NSU
+            </div>
+        </div>
+
+        <!-- Details -->
+        <div class="tx-bubble mb-4">
+            <div class="d-flex justify-content-between mb-3">
+                <span class="text-dim">Transaction ID</span>
+                <span class="fw-bold">#{{ transaction.id }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-3">
+                <span class="text-dim">Date & Time</span>
+                <span>{{ transaction.timestamp|date:"M d, Y H:i:s" }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-3">
+                <span class="text-dim">From/To</span>
+                <span>
+                    <a href="{% url 'users:user_profile' transaction.user.username %}" class="text-decoration-none text-accent">
+                        {{ transaction.user.username }}
+                    </a>
+                </span>
+            </div>
+            {% if transaction.agent %}
+            <div class="d-flex justify-content-between mb-3">
+                <span class="text-dim">Agent</span>
+                <span>
+                    <a href="{% url 'users:user_profile' transaction.agent.username %}" class="text-decoration-none text-accent">
+                        {{ transaction.agent.username }}
+                    </a>
+                </span>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Blockchain Info -->
+        <div class="bg-light rounded-4 p-3 mb-4">
+            <h6 class="fw-bold mb-3">Blockchain Details</h6>
+            <div class="small">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-dim">Hash</span>
+                    <span class="font-monospace">{{ transaction.hashed_detail|truncatechars:20 }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-dim">Previous Hash</span>
+                    <span class="font-monospace">{{ transaction.previous_hash|default:"Genesis"|truncatechars:20 }}</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span class="text-dim">Confirmations</span>
+                    <span class="text-success">✓ Verified</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-flex gap-2">
+            <button onclick="window.print()" class="btn btn-outline-primary w-50 rounded-pill">
+                <i class="fa-regular fa-print me-2"></i>Print
+            </button>
+            <a href="{% url 'transactions:transaction_receipt' transaction.id %}?print=1" class="btn btn-primary w-50 rounded-pill" target="_blank">
+                <i class="fa-regular fa-file-pdf me-2"></i>Receipt
+            </a>
+        </div>
+
+        {% if user.is_superuser or user == transaction.agent %}
+        <!-- Admin Notes (only visible to superusers and agents) -->
+        <div class="mt-4 pt-3 border-top">
+            <h6 class="fw-bold mb-3">Admin Notes</h6>
+            <textarea class="form-control rounded-4" rows="2" placeholder="Add notes..."></textarea>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
