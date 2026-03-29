@@ -222,8 +222,6 @@ class Post(models.Model):
         """Get media items by type"""
         return self.media_items.filter(media_type=media_type)
 
-# In social/models.py, update the PostMedia class
-
 class PostMedia(models.Model):
     """Model for multiple media items per post using Cloudinary"""
     MEDIA_TYPES = [
@@ -247,30 +245,25 @@ class PostMedia(models.Model):
         'video', 
         blank=True, 
         null=True,
-        resource_type='video'
+        resource_type='video'  # Important: Must be 'video' not 'auto'
     )
     
     # For external GIFs/embeds
     external_url = models.URLField(blank=True, null=True)
     
     # Media metadata
-    width = models.IntegerField(null=True, blank=True, help_text="Width in pixels")
-    height = models.IntegerField(null=True, blank=True, help_text="Height in pixels")
-    duration = models.FloatField(null=True, blank=True, help_text="Duration in seconds (for videos)")
-    file_size = models.IntegerField(null=True, blank=True, help_text="File size in bytes")
-    format = models.CharField(max_length=10, blank=True, help_text="File format (mp4, jpg, etc.)")
+    width = models.IntegerField(null=True, blank=True)
+    height = models.IntegerField(null=True, blank=True)
+    duration = models.FloatField(null=True, blank=True)
+    file_size = models.IntegerField(null=True, blank=True)
+    format = models.CharField(max_length=10, blank=True)
     
-    # Ordering within post
     order = models.PositiveIntegerField(default=0)
-    
-    # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
         ordering = ['order']
-        verbose_name = 'Post Media'
-        verbose_name_plural = 'Post Media'
     
     def __str__(self):
         return f"Media {self.id} for Post {self.post_id} - {self.media_type}"
@@ -278,10 +271,24 @@ class PostMedia(models.Model):
     @property
     def url(self):
         """Get the secure URL for the media"""
-        if self.image:
-            return self.build_url()
-        elif self.video:
-            return self.build_url(resource_type='video')
+        if self.is_video:
+            # For videos, return the video URL
+            if self.video:
+                try:
+                    return self.video.url
+                except:
+                    # If URL generation fails, try manual construction
+                    from django.conf import settings
+                    cloud_name = settings.CLOUDINARY_STORAGE['CLOUD_NAME']
+                    return f"https://res.cloudinary.com/{cloud_name}/video/upload/{self.video}"
+        elif self.is_image:
+            if self.image:
+                try:
+                    return self.image.url
+                except:
+                    from django.conf import settings
+                    cloud_name = settings.CLOUDINARY_STORAGE['CLOUD_NAME']
+                    return f"https://res.cloudinary.com/{cloud_name}/image/upload/{self.image}"
         elif self.external_url:
             return self.external_url
         return None
@@ -289,27 +296,36 @@ class PostMedia(models.Model):
     @property
     def thumbnail_url(self):
         """Get thumbnail URL for videos or optimized thumbnail for images"""
-        if self.video:
-            # Generate video thumbnail at 1 second
-            return self.build_url(
-                resource_type='video',
-                transformation=[
-                    {'width': 300, 'height': 300, 'crop': 'fill'},
-                    {'quality': 'auto'},
-                    {'fetch_format': 'auto'},
-                    {'start_offset': 1}  # Thumbnail at 1 second
-                ],
-                format='jpg'
-            )
-        elif self.image:
-            # Optimized image thumbnail
-            return self.build_url(
-                transformation=[
-                    {'width': 300, 'height': 300, 'crop': 'fill'},
-                    {'quality': 'auto'},
-                    {'fetch_format': 'auto'}
-                ]
-            )
+        if self.is_video:
+            # Generate video thumbnail at 1 second - returns JPG image
+            if self.video:
+                try:
+                    return self.video.build_url(
+                        transformation=[
+                            {'width': 300, 'height': 300, 'crop': 'fill'},
+                            {'quality': 'auto'},
+                            {'start_offset': 1}
+                        ],
+                        format='jpg'
+                    )
+                except:
+                    # Fallback to constructing URL manually
+                    from django.conf import settings
+                    cloud_name = settings.CLOUDINARY_STORAGE['CLOUD_NAME']
+                    return f"https://res.cloudinary.com/{cloud_name}/video/upload/w_300,h_300,c_fill,q_auto/video_thumb_{self.id}.jpg"
+        elif self.is_image:
+            if self.image:
+                try:
+                    return self.image.build_url(
+                        transformation=[
+                            {'width': 300, 'height': 300, 'crop': 'fill'},
+                            {'quality': 'auto'}
+                        ]
+                    )
+                except:
+                    from django.conf import settings
+                    cloud_name = settings.CLOUDINARY_STORAGE['CLOUD_NAME']
+                    return f"https://res.cloudinary.com/{cloud_name}/image/upload/w_300,h_300,c_fill,q_auto/{self.image}"
         return None
     
     @property
@@ -337,15 +353,16 @@ class PostMedia(models.Model):
             return public_id.split('/')[-1]
         return public_id
     
-    @property
-    def is_image(self):
-        """Check if media is an image"""
-        return self.media_type == 'image' and self.image is not None
-    
+    # FIXED: These were the main issues
     @property
     def is_video(self):
-        """Check if media is a video"""
-        return self.media_type == 'video' and self.video is not None
+        """Check if media is a video - FIXED"""
+        return self.media_type == 'video' or (self.video is not None)
+    
+    @property
+    def is_image(self):
+        """Check if media is an image - FIXED"""
+        return self.media_type == 'image' and self.image is not None
     
     @property
     def is_external(self):
@@ -353,17 +370,7 @@ class PostMedia(models.Model):
         return self.external_url is not None
     
     def build_url(self, resource_type='image', transformation=None, format=None):
-        """
-        Build a Cloudinary URL with custom transformations
-        
-        Args:
-            resource_type: 'image' or 'video'
-            transformation: List of Cloudinary transformations
-            format: Output format (jpg, png, mp4, etc.)
-        
-        Returns:
-            str: Cloudinary URL
-        """
+        """Build a Cloudinary URL with custom transformations"""
         if resource_type == 'image' and self.image:
             return self.image.build_url(
                 transformation=transformation or [],
@@ -377,16 +384,7 @@ class PostMedia(models.Model):
         return None
     
     def get_optimized_url(self, width=None, height=None):
-        """
-        Get optimized URL with specific dimensions
-        
-        Args:
-            width: Desired width
-            height: Desired height
-        
-        Returns:
-            str: Optimized Cloudinary URL
-        """
+        """Get optimized URL with specific dimensions"""
         transformation = [{'quality': 'auto', 'fetch_format': 'auto'}]
         
         if width and height:
@@ -415,12 +413,6 @@ class PostMedia(models.Model):
             )
         return None
     
-    def get_dominant_color(self):
-        """Get dominant color from image (if available)"""
-        if self.is_image:
-            return self.build_url(transformation=[{'effect': 'dominant-color'}])
-        return None
-    
     def delete_from_cloudinary(self):
         """Delete the media from Cloudinary"""
         try:
@@ -438,60 +430,6 @@ class PostMedia(models.Model):
             return False
         return False
     
-    def get_metadata(self):
-        """Get metadata from Cloudinary"""
-        try:
-            if self.image:
-                result = cloudinary.api.resource(self.image.public_id)
-                return {
-                    'width': result.get('width'),
-                    'height': result.get('height'),
-                    'format': result.get('format'),
-                    'bytes': result.get('bytes'),
-                    'created_at': result.get('created_at')
-                }
-            elif self.video:
-                result = cloudinary.api.resource(
-                    self.video.public_id, 
-                    resource_type='video'
-                )
-                return {
-                    'width': result.get('width'),
-                    'height': result.get('height'),
-                    'duration': result.get('duration'),
-                    'format': result.get('format'),
-                    'bytes': result.get('bytes'),
-                    'created_at': result.get('created_at'),
-                    'frame_rate': result.get('frame_rate'),
-                    'bit_rate': result.get('bit_rate')
-                }
-        except Exception as e:
-            logger.error(f"Failed to get metadata: {e}")
-            return None
-        return None
-    
-    def refresh_metadata(self):
-        """Refresh and save metadata from Cloudinary"""
-        metadata = self.get_metadata()
-        if metadata:
-            self.width = metadata.get('width')
-            self.height = metadata.get('height')
-            self.duration = metadata.get('duration')
-            self.file_size = metadata.get('bytes')
-            self.format = metadata.get('format')
-            self.save(update_fields=['width', 'height', 'duration', 'file_size', 'format'])
-            return True
-        return False
-    
-    def get_aspect_ratio(self):
-        """Get aspect ratio as string (e.g., '16:9')"""
-        if self.width and self.height:
-            from math import gcd
-            w, h = self.width, self.height
-            g = gcd(w, h)
-            return f"{w//g}:{h//g}"
-        return None
-    
     def to_dict(self):
         """Convert to dictionary for API responses"""
         return {
@@ -507,7 +445,8 @@ class PostMedia(models.Model):
             'public_id': self.public_id,
             'folder': self.folder,
             'filename': self.filename,
-            'aspect_ratio': self.get_aspect_ratio(),
+            'is_video': self.is_video,
+            'is_image': self.is_image,
             'optimized_urls': {
                 'small': self.get_optimized_url(width=320),
                 'medium': self.get_optimized_url(width=640),
@@ -517,57 +456,7 @@ class PostMedia(models.Model):
                 'poster': self.get_video_poster(),
             }
         }
-    
-    @classmethod
-    def create_from_upload(cls, post, file, media_type, order=0):
-        """
-        Create PostMedia from uploaded file
-        
-        Args:
-            post: Post instance
-            file: Uploaded file
-            media_type: 'image' or 'video'
-            order: Order index
-        
-        Returns:
-            PostMedia instance
-        """
-        is_video = media_type == 'video'
-        timestamp = int(time.time())
-        
-        # Create folder structure
-        folder = f"nusu/users/{post.user.id}/{'videos' if is_video else 'images'}"
-        public_id = f"media_{timestamp}_{order}"
-        
-        # Upload to Cloudinary
-        result = cloudinary.uploader.upload(
-            file,
-            folder=folder,
-            public_id=public_id,
-            resource_type='video' if is_video else 'image',
-            overwrite=True
-        )
-        
-        # Create instance
-        media = cls(
-            post=post,
-            media_type=media_type,
-            order=order
-        )
-        
-        if is_video:
-            media.video = result['public_id']
-            media.duration = result.get('duration')
-        else:
-            media.image = result['public_id']
-        
-        media.width = result.get('width')
-        media.height = result.get('height')
-        media.file_size = result.get('bytes')
-        media.format = result.get('format')
-        
-        media.save()
-        return media
+
 
 class Like(models.Model):
     """Model for post likes"""

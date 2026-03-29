@@ -1,195 +1,325 @@
 {% extends "base.html" %}
 {% load static %}
+{% load task_filters %}
 
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<!-- Balance Overview (for authenticated users) -->
-{% if user.is_authenticated %}
-<div class="balance-card">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-        <span class="balance-label">Total Balance</span>
-        <span class="badge-live">NSU Token</span>
-    </div>
-    <div class="balance-amount" id="tokenBalance">{{ user.userprofile.token_balance|floatformat:2 }}</div>
-    <div class="d-flex justify-content-between mt-2">
-        <span class="text-dim" id="ugxBalance">≈ UGX {{ user.userprofile.get_ugx_balance|floatformat:2 }}</span>
-        <span class="text-success">
-            <i class="fa-regular fa-circle-check"></i> Active
-        </span>
-    </div>
-</div>
-
-<!-- Quick Stats with Live Data -->
-<div class="stats-grid">
-    <div class="stat-item">
-        <div class="stat-value" id="followersCount">{{ user.userprofile.get_followers_count }}</div>
-        <div class="stat-label">Followers</div>
-    </div>
-    <div class="stat-item">
-        <div class="stat-value" id="followingCount">{{ user.userprofile.get_following_count }}</div>
-        <div class="stat-label">Following</div>
-    </div>
-    <div class="stat-item">
-        <div class="stat-value" id="referralsCount">{{ user.referrals.count }}</div>
-        <div class="stat-label">Referrals</div>
-    </div>
-</div>
-
-<!-- Mining Widget -->
-{% if mining_state %}
-<div class="mining-widget">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h6 class="mb-0 fw-bold">Mining Session</h6>
-        <span class="badge bg-{% if mining_state.is_mining %}success{% else %}secondary{% endif %}" id="miningStatus">
-            {% if mining_state.is_mining %}ACTIVE{% else %}INACTIVE{% endif %}
-        </span>
-    </div>
-    
-    <div class="progress mb-2">
-        <div class="progress-bar" id="miningProgress" style="width: {{ mining_state.progress_percentage }}%"></div>
-    </div>
-    
-    <div class="d-flex justify-content-between small">
-        <span class="text-dim" id="miningTime">{{ mining_state.elapsed_hours|floatformat:1 }} / 24 hours</span>
-        <span class="fw-bold" id="miningPoints">{{ mining_state.points_earned_today|floatformat:2 }} NSU</span>
-    </div>
-    
-    <div class="d-flex gap-2 mt-3">
-        {% if mining_state.is_mining %}
-        <button class="btn btn-outline-danger w-50 rounded-pill" onclick="toggleMining()">
-            <i class="fa-solid fa-stop"></i> Stop
-        </button>
-        {% else %}
-        <button class="btn btn-outline-success w-50 rounded-pill" onclick="toggleMining()">
-            <i class="fa-solid fa-play"></i> Start
-        </button>
-        {% endif %}
-        <a href="{% url 'airdrop:dashboard' %}" class="btn btn-primary w-50 rounded-pill">
-            Details <i class="fa-solid fa-arrow-right ms-2"></i>
+<!-- Hero Section for Non-Authenticated Users -->
+{% if not user.is_authenticated %}
+<div class="hero-section text-center py-5">
+    <h1 class="display-4 fw-bold mb-3">Welcome to eNusu</h1>
+    <p class="lead text-dim mb-4">The social finance platform where you earn while connecting</p>
+    <div class="d-flex gap-3 justify-content-center">
+        <a href="{% url 'users:register' %}" class="btn btn-primary rounded-pill px-4 py-2">
+            <i class="fas fa-user-plus me-2"></i>Get Started
+        </a>
+        <a href="{% url 'users:login' %}" class="btn btn-outline-primary rounded-pill px-4 py-2">
+            <i class="fas fa-sign-in-alt me-2"></i>Login
         </a>
     </div>
-</div>
-{% endif %}
-{% endif %}
-
-<!-- Quick Actions -->
-<div class="action-row">
-    <a href="{% if user.is_authenticated %}{% url 'transactions:transfer_tokens' %}{% else %}#{% endif %}" 
-       class="pill {% if not user.is_authenticated %}disabled-link{% endif %}"
-       {% if not user.is_authenticated %}data-bs-toggle="modal" data-bs-target="#loginModal"{% endif %}>
-        <i class="fa-solid fa-paper-plane"></i> Send
-    </a>
-    <a href="{% if user.is_authenticated %}{% url 'transactions:request_withdrawal' %}{% else %}#{% endif %}" 
-       class="pill {% if not user.is_authenticated %}disabled-link{% endif %}"
-       {% if not user.is_authenticated %}data-bs-toggle="modal" data-bs-target="#loginModal"{% endif %}>
-        <i class="fa-solid fa-arrow-down"></i> Withdraw
-    </a>
-    <a href="{% url 'transactions:public_ledger' %}" class="pill">
-        <i class="fa-solid fa-chart-line"></i> Ledger
-    </a>
-    <a href="{% if user.is_authenticated %}{% url 'airdrop:dashboard' %}{% else %}#{% endif %}" 
-       class="pill {% if not user.is_authenticated %}disabled-link{% endif %}"
-       {% if not user.is_authenticated %}data-bs-toggle="modal" data-bs-target="#loginModal"{% endif %}>
-        <i class="fa-solid fa-bolt"></i> Mine
-    </a>
-</div>
-
-<!-- Recent Transactions Feed -->
-<div class="feed">
-    <h5 class="px-4 mb-3 fw-bold">Recent Activity</h5>
     
-    {% if recent_transactions %}
-        {% for tx in recent_transactions %}
-        <a href="{% url 'transactions:transaction_detail' tx.id %}" class="text-decoration-none">
-            <div class="tx-card">
-                <div class="tx-header">
-                    <img src="{% if tx.user.userprofile.profile_picture %}{{ tx.user.userprofile.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ tx.user.username|first }}&background=3b82f6&color=fff{% endif %}" 
-                         style="width: 40px; height: 40px; border-radius: 12px; object-fit: cover;">
-                    <div class="flex-grow-1">
-                        <div class="user-name">{{ tx.user.userprofile.display_name|default:tx.user.username }}</div>
-                        <div class="text-dim small" style="font-size: 0.7rem;">{{ tx.timestamp|timesince }} ago</div>
-                    </div>
-                    <span class="badge bg-{% if tx.transaction_type == 'deposit' %}success{% elif tx.transaction_type == 'withdrawal' %}warning{% else %}info{% endif %}">
-                        {{ tx.get_transaction_type_display }}
-                    </span>
-                </div>
-                
-                <div class="tx-bubble" style="border-left-color: {% if tx.amount > 0 %}var(--success){% else %}var(--warning){% endif %};">
-                    <div class="d-flex align-items-center gap-2">
-                        <i class="fa-solid fa-coins" style="color: {% if tx.amount > 0 %}var(--success){% else %}var(--warning){% endif %};"></i>
-                        <div>
-                            <span class="small fw-bold d-block">{{ tx.amount }} NSU</span>
-                            {% if tx.agent %}
-                            <span class="small text-dim">Agent: {{ tx.agent.username }}</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                    <i class="fa-solid fa-chevron-right text-dim"></i>
-                </div>
-                
-                <div class="d-flex gap-4 mt-3 text-dim small">
-                    <span><i class="fa-regular fa-clock me-1"></i> {{ tx.timestamp|date:"M d, H:i" }}</span>
-                    {% if tx.status %}
-                    <span class="ms-auto">
-                        <i class="fa-regular fa-circle-check text-success me-1"></i> {{ tx.get_status_display }}
-                    </span>
-                    {% endif %}
+    <!-- Sneak Peek for Non-Authenticated Users -->
+    <div class="mt-5 pt-4">
+        <h5 class="text-dim mb-4">What you'll get</h5>
+        <div class="row g-3">
+            <div class="col-4">
+                <div class="feature-card p-3">
+                    <i class="fas fa-coins fa-2x text-primary mb-2"></i>
+                    <h6 class="mb-1">Earn Points</h6>
+                    <small class="text-dim">Complete tasks, get NSU</small>
                 </div>
             </div>
-        </a>
-        {% endfor %}
+            <div class="col-4">
+                <div class="feature-card p-3">
+                    <i class="fas fa-users fa-2x text-primary mb-2"></i>
+                    <h6 class="mb-1">Connect</h6>
+                    <small class="text-dim">Build your network</small>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="feature-card p-3">
+                    <i class="fas fa-chart-line fa-2x text-primary mb-2"></i>
+                    <h6 class="mb-1">Grow</h6>
+                    <small class="text-dim">Watch your balance grow</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 
-        <!-- View All Link -->
-        <div class="text-center mt-3 mb-4">
-            <a href="{% url 'transactions:public_ledger' %}" class="btn btn-outline-primary rounded-pill px-5">
-                View All Transactions <i class="fa-solid fa-arrow-right ms-2"></i>
+<!-- Main Content for Authenticated Users -->
+{% if user.is_authenticated %}
+
+<!-- Balance Card - Simplified -->
+<div class="balance-card-modern mb-4">
+    <div class="balance-header d-flex justify-content-between align-items-center mb-2">
+        <span class="text-dim small">Total Balance</span>
+        <span class="badge bg-primary-subtle text-primary rounded-pill px-3">NSU Token</span>
+    </div>
+    <div class="balance-amount-large" id="tokenBalance">{{ user.userprofile.token_balance|floatformat:2 }}</div>
+    <div class="balance-footer d-flex justify-content-between mt-2">
+        <span class="text-dim small" id="ugxBalance">≈ UGX {{ user.userprofile.get_ugx_balance|floatformat:2 }}</span>
+        <span class="text-success small">
+            <i class="fas fa-circle fa-2xs me-1"></i> Active
+        </span>
+    </div>
+</div>
+
+<!-- Quick Stats Row -->
+<div class="stats-row d-flex justify-content-between gap-3 mb-4">
+    <div class="stat-card text-center flex-grow-1 p-2">
+        <div class="stat-number" id="followersCount">{{ user.userprofile.get_followers_count }}</div>
+        <div class="stat-label small text-dim">Followers</div>
+    </div>
+    <div class="stat-card text-center flex-grow-1 p-2">
+        <div class="stat-number" id="followingCount">{{ user.userprofile.get_following_count }}</div>
+        <div class="stat-label small text-dim">Following</div>
+    </div>
+    <div class="stat-card text-center flex-grow-1 p-2">
+        <div class="stat-number" id="referralsCount">{{ user.referrals.count }}</div>
+        <div class="stat-label small text-dim">Referrals</div>
+    </div>
+</div>
+
+<!-- Mining Widget - Prominent -->
+{% if mining_state %}
+<div class="mining-widget-modern mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h6 class="mb-0 fw-bold">⚡ Mining Active</h6>
+            <small class="text-dim" id="miningTime">{{ mining_state.elapsed_hours|floatformat:1 }} / 24 hours</small>
+        </div>
+        <span class="badge {% if mining_state.is_mining %}bg-success{% else %}bg-secondary{% endif %} rounded-pill px-3" id="miningStatus">
+            {% if mining_state.is_mining %}MINING{% else %}IDLE{% endif %}
+        </span>
+    </div>
+    
+    <div class="progress mining-progress mb-2" style="height: 8px;">
+        <div class="progress-bar bg-gradient" id="miningProgress" style="width: {{ mining_state.progress_percentage }}%"></div>
+    </div>
+    
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <span class="text-dim small">Today's Earnings</span>
+            <div class="fw-bold" id="miningPoints">{{ mining_state.points_earned_today|floatformat:2 }} NSU</div>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="toggleMining()">
+                {% if mining_state.is_mining %}
+                <i class="fas fa-stop me-1"></i> Stop
+                {% else %}
+                <i class="fas fa-play me-1"></i> Start
+                {% endif %}
+            </button>
+            <a href="{% url 'airdrop:dashboard' %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+                Details <i class="fas fa-arrow-right ms-1"></i>
             </a>
         </div>
-    {% else %}
-        <!-- Empty State -->
-        <div class="text-center mt-4">
-            <div class="mb-3">
-                <i class="fa-regular fa-clock text-dim" style="font-size: 4rem;"></i>
+    </div>
+</div>
+{% endif %}
+
+<!-- Action Buttons - Muted Style (Send & Withdraw muted for now) -->
+<div class="action-row-modern d-flex gap-3 mb-4">
+    <a href="#" class="action-pill muted" data-bs-toggle="modal" data-bs-target="#comingSoonModal">
+        <i class="fas fa-paper-plane"></i>
+        <span>Send</span>
+        <small class="coming-badge">soon</small>
+    </a>
+    <a href="#" class="action-pill muted" data-bs-toggle="modal" data-bs-target="#comingSoonModal">
+        <i class="fas fa-arrow-down"></i>
+        <span>Withdraw</span>
+        <small class="coming-badge">soon</small>
+    </a>
+    <a href="{% url 'transactions:public_ledger' %}" class="action-pill">
+        <i class="fas fa-chart-line"></i>
+        <span>Ledger</span>
+    </a>
+    <a href="{% url 'airdrop:dashboard' %}" class="action-pill highlight">
+        <i class="fas fa-bolt"></i>
+        <span>Mine</span>
+    </a>
+</div>
+
+<!-- Main Feed - Trending & Recent Activity -->
+<div class="home-feed">
+    <div class="feed-tabs d-flex gap-4 mb-3">
+        <button class="feed-tab active" onclick="switchFeed('trending')">🔥 Trending</button>
+        <button class="feed-tab" onclick="switchFeed('activity')">📊 Your Activity</button>
+        <button class="feed-tab" onclick="switchFeed('updates')">📢 Updates</button>
+    </div>
+    
+    <!-- Trending Posts Section -->
+    <div id="trending-feed" class="feed-content active">
+        {% if trending_posts %}
+            {% for post in trending_posts %}
+            <div class="post-card" onclick="window.location.href='{% url 'social:post_detail' post.id %}'">
+                <div class="post-header d-flex gap-2 align-items-center mb-2">
+                    <img src="{% if post.user.userprofile.profile_picture %}{{ post.user.userprofile.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ post.user.username|first }}&background=3b82f6&color=fff&size=32{% endif %}" 
+                         class="post-avatar" style="width: 32px; height: 32px; border-radius: 12px;">
+                    <div>
+                        <div class="fw-bold small">{{ post.user.userprofile.display_name|default:post.user.username }}</div>
+                        <div class="text-dim small">@{{ post.user.username }} • {{ post.created_at|timesince }} ago</div>
+                    </div>
+                    {% if post.likes_count > 50 %}
+                    <span class="ms-auto hot-badge">🔥 Hot</span>
+                    {% endif %}
+                </div>
+                
+                <div class="post-content-preview mb-2">
+                    {{ post.content|truncatechars:100 }}
+                </div>
+                
+                {% if post.media_items.first %}
+                <div class="post-media-preview mt-2">
+                    <img src="{{ post.media_items.first.url }}" class="img-fluid rounded-3" style="max-height: 200px; width: 100%; object-fit: cover;">
+                </div>
+                {% endif %}
+                
+                <div class="post-stats d-flex gap-4 mt-2 pt-2 border-top border-secondary">
+                    <span class="small text-dim"><i class="fas fa-heart"></i> {{ post.likes_count }}</span>
+                    <span class="small text-dim"><i class="fas fa-comment"></i> {{ post.replies_count }}</span>
+                    <span class="small text-dim"><i class="fas fa-eye"></i> {{ post.views_count }}</span>
+                </div>
             </div>
-            <h5>No transactions yet</h5>
-            <p class="text-dim">Start mining or make your first transaction!</p>
-            {% if user.is_authenticated %}
-            <div class="d-flex gap-2 justify-content-center">
-                <a href="{% url 'airdrop:dashboard' %}" class="btn btn-primary rounded-pill px-4">
-                    <i class="fa-solid fa-pickaxe me-2"></i>Start Mining
-                </a>
-                <a href="{% url 'transactions:transfer_tokens' %}" class="btn btn-outline-primary rounded-pill px-4">
-                    <i class="fa-solid fa-paper-plane me-2"></i>Send Tokens
+            {% endfor %}
+        {% else %}
+            <div class="empty-state text-center py-5">
+                <i class="fas fa-fire fa-3x text-dim mb-3"></i>
+                <p class="text-dim">No trending posts yet</p>
+                <a href="{% url 'social:feed' %}" class="btn btn-sm btn-primary rounded-pill">Explore Feed</a>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Your Activity Section -->
+    <div id="activity-feed" class="feed-content" style="display: none;">
+        {% if recent_transactions %}
+            {% for tx in recent_transactions %}
+            <div class="activity-card" onclick="window.location.href='{% url 'transactions:transaction_detail' tx.id %}'">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex gap-2 align-items-center">
+                        <div class="activity-icon {% if tx.transaction_type == 'deposit' %}deposit{% else %}transfer{% endif %}">
+                            <i class="fas fa-{% if tx.transaction_type == 'deposit' %}arrow-down{% else %}exchange-alt{% endif %}"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold small">{{ tx.get_transaction_type_display }}</div>
+                            <div class="text-dim small">{{ tx.timestamp|timesince }} ago</div>
+                        </div>
+                    </div>
+                    <div class="fw-bold {% if tx.amount > 0 %}text-success{% else %}text-warning{% endif %}">
+                        {{ tx.amount }} NSU
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            
+            <div class="text-center mt-3">
+                <a href="{% url 'transactions:public_ledger' %}" class="btn btn-sm btn-outline-primary rounded-pill px-4">
+                    View All Activity <i class="fas fa-arrow-right ms-1"></i>
                 </a>
             </div>
-            {% endif %}
+        {% else %}
+            <div class="empty-state text-center py-5">
+                <i class="fas fa-chart-simple fa-3x text-dim mb-3"></i>
+                <p class="text-dim">No transactions yet</p>
+                <a href="{% url 'airdrop:dashboard' %}" class="btn btn-sm btn-primary rounded-pill">Start Mining</a>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Updates Section -->
+    <div id="updates-feed" class="feed-content" style="display: none;">
+        {% if system_updates %}
+            {% for update in system_updates %}
+            <div class="update-card">
+                <div class="d-flex gap-2 align-items-start">
+                    <div class="update-icon {{ update.type }}">
+                        <i class="fas fa-{% if update.type == 'announcement' %}megaphone{% elif update.type == 'feature' %}rocket{% else %}info-circle{% endif %}"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="fw-bold small">{{ update.title }}</div>
+                        <div class="text-dim small">{{ update.message|truncatechars:120 }}</div>
+                        <div class="text-dim small mt-1">{{ update.created_at|timesince }} ago</div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state text-center py-5">
+                <i class="fas fa-newspaper fa-3x text-dim mb-3"></i>
+                <p class="text-dim">No updates yet. Check back soon!</p>
+            </div>
+        {% endif %}
+        
+        <!-- Featured Task Sneak Peek -->
+        {% if featured_task %}
+        <div class="featured-task-card mt-3" onclick="window.location.href='{% url 'tasks:task_detail' featured_task.task_code %}'">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge bg-primary rounded-pill">Featured Task</span>
+                <span class="text-success fw-bold">+{{ featured_task.points_reward }} NSU</span>
+            </div>
+            <h6 class="mb-1">{{ featured_task.name }}</h6>
+            <p class="small text-dim mb-2">{{ featured_task.description|truncatechars:80 }}</p>
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="small text-dim"><i class="fas fa-users"></i> {{ featured_task.participants_count }} completed</span>
+                <span class="small text-primary">Join now <i class="fas fa-arrow-right"></i></span>
+            </div>
         </div>
-    {% endif %}
-</div>
-
-<!-- Global Stats -->
-<div class="stats-grid mt-4">
-    <div class="stat-item">
-        <div class="stat-value" id="globalMiningRate">{{ global_stats.current_multiplier|default:"1.0" }}x</div>
-        <div class="stat-label">Mining Rate</div>
-    </div>
-    <div class="stat-item">
-        <div class="stat-value" id="globalUgxRate">UGX {{ global_stats.ugx_rate|default:"3800" }}</div>
-        <div class="stat-label">Token Value</div>
-    </div>
-    <div class="stat-item">
-        <div class="stat-value" id="globalTotalUsers">{{ global_stats.total_users|default:"0" }}</div>
-        <div class="stat-label">Total Users</div>
+        {% endif %}
     </div>
 </div>
 
-<!-- Hidden CSRF Token for AJAX -->
+<!-- Global Stats Footer -->
+<div class="global-stats-footer d-flex justify-content-between align-items-center mt-4 pt-3 border-top border-secondary">
+    <div class="text-center flex-grow-1">
+        <div class="small fw-bold" id="globalMiningRate">{{ global_stats.current_multiplier|default:"1.0" }}x</div>
+        <div class="text-dim small">Mining Rate</div>
+    </div>
+    <div class="text-center flex-grow-1">
+        <div class="small fw-bold" id="globalUgxRate">UGX {{ global_stats.ugx_rate|default:"3800" }}</div>
+        <div class="text-dim small">Token Value</div>
+    </div>
+    <div class="text-center flex-grow-1">
+        <div class="small fw-bold" id="globalTotalUsers">{{ global_stats.total_users|default:"0" }}</div>
+        <div class="text-dim small">Users</div>
+    </div>
+</div>
+
+<!-- Coming Soon Modal -->
+<div class="modal fade" id="comingSoonModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark border-secondary">
+            <div class="modal-body text-center p-4">
+                <i class="fas fa-rocket fa-3x text-primary mb-3"></i>
+                <h5 class="mb-2">Coming Soon!</h5>
+                <p class="text-dim mb-3">This feature is being prepared. Stay tuned for updates!</p>
+                <button type="button" class="btn btn-primary rounded-pill px-4" data-bs-dismiss="modal">
+                    Got it
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endif %}
+
 {% csrf_token %}
 {% endblock %}
 
 {% block extra_scripts %}
 <script>
+// Feed Toggle
+function switchFeed(feed) {
+    document.querySelectorAll('.feed-content').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.feed-tab').forEach(el => el.classList.remove('active'));
+    
+    document.getElementById(`${feed}-feed`).style.display = 'block';
+    event.target.classList.add('active');
+}
+
 // Mining Toggle Function
 function toggleMining() {
     fetch("{% url 'airdrop:toggle_mining' %}", {
@@ -202,35 +332,30 @@ function toggleMining() {
     .then(response => response.json())
     .then(data => {
         if (data.status === 'started' || data.status === 'stopped') {
-            // Update mining status badge
             const statusBadge = document.getElementById('miningStatus');
             const progressBar = document.getElementById('miningProgress');
             const timeDisplay = document.getElementById('miningTime');
             const pointsDisplay = document.getElementById('miningPoints');
-            const miningButton = document.querySelector('.mining-widget .btn-outline-danger, .mining-widget .btn-outline-success');
+            const miningButton = document.querySelector('.mining-widget-modern .btn-outline-primary');
             
             if (data.is_mining) {
-                statusBadge.textContent = 'ACTIVE';
-                statusBadge.className = 'badge bg-success';
+                statusBadge.textContent = 'MINING';
+                statusBadge.className = 'badge bg-success rounded-pill px-3';
                 if (miningButton) {
-                    miningButton.className = 'btn btn-outline-danger w-50 rounded-pill';
-                    miningButton.innerHTML = '<i class="fa-solid fa-stop"></i> Stop';
+                    miningButton.innerHTML = '<i class="fas fa-stop me-1"></i> Stop';
                 }
             } else {
-                statusBadge.textContent = 'INACTIVE';
-                statusBadge.className = 'badge bg-secondary';
+                statusBadge.textContent = 'IDLE';
+                statusBadge.className = 'badge bg-secondary rounded-pill px-3';
                 if (miningButton) {
-                    miningButton.className = 'btn btn-outline-success w-50 rounded-pill';
-                    miningButton.innerHTML = '<i class="fa-solid fa-play"></i> Start';
+                    miningButton.innerHTML = '<i class="fas fa-play me-1"></i> Start';
                 }
             }
             
-            // Update progress
             if (progressBar) progressBar.style.width = data.progress_percentage + '%';
             if (timeDisplay) timeDisplay.textContent = data.elapsed_hours.toFixed(1) + ' / 24 hours';
             if (pointsDisplay) pointsDisplay.textContent = data.session_points.toFixed(2) + ' NSU';
             
-            // Show success message
             showToast(data.status === 'started' ? 'Mining started!' : 'Mining stopped');
         }
     })
@@ -240,58 +365,23 @@ function toggleMining() {
     });
 }
 
-// Update mining display function
-function updateMiningDisplay() {
-    {% if mining_state and mining_state.is_mining %}
-    fetch("{% url 'airdrop:mining_status' %}")
-    .then(response => response.json())
-    .then(data => {
-        const progressBar = document.getElementById('miningProgress');
-        const timeDisplay = document.getElementById('miningTime');
-        const pointsDisplay = document.getElementById('miningPoints');
-        
-        if (progressBar && timeDisplay && pointsDisplay) {
-            progressBar.style.width = data.progress_percentage + '%';
-            timeDisplay.textContent = data.elapsed_hours.toFixed(1) + ' / 24 hours';
-            pointsDisplay.textContent = data.session_points.toFixed(2) + ' NSU';
-        }
-    })
-    .catch(error => {
-        console.error('Error updating mining status:', error);
-    });
-    {% endif %}
-}
-
-// Update user stats function
+// Update user stats
 function updateUserStats() {
-    {% if user.is_authenticated %}
     fetch("{% url 'user_stats_api' %}")
     .then(response => response.json())
     .then(data => {
-        // Update follower counts
         document.getElementById('followersCount').textContent = data.followers;
         document.getElementById('followingCount').textContent = data.following;
         document.getElementById('referralsCount').textContent = data.referrals;
-        
-        // Update token balance
         const balanceEl = document.getElementById('tokenBalance');
-        if (balanceEl) {
-            balanceEl.textContent = data.token_balance.toFixed(2);
-        }
-        
-        // Update UGX balance
+        if (balanceEl) balanceEl.textContent = data.token_balance.toFixed(2);
         const ugxEl = document.getElementById('ugxBalance');
-        if (ugxEl) {
-            ugxEl.textContent = '≈ UGX ' + data.ugx_balance.toFixed(2);
-        }
+        if (ugxEl) ugxEl.textContent = '≈ UGX ' + data.ugx_balance.toFixed(2);
     })
-    .catch(error => {
-        console.error('Error updating user stats:', error);
-    });
-    {% endif %}
+    .catch(error => console.error('Error updating user stats:', error));
 }
 
-// Update global stats function
+// Update global stats
 function updateGlobalStats() {
     fetch("{% url 'global_stats' %}")
     .then(response => response.json())
@@ -300,64 +390,179 @@ function updateGlobalStats() {
         document.getElementById('globalUgxRate').textContent = 'UGX ' + data.ugx_rate;
         document.getElementById('globalTotalUsers').textContent = data.total_users;
     })
-    .catch(error => {
-        console.error('Error updating global stats:', error);
-    });
+    .catch(error => console.error('Error updating global stats:', error));
 }
 
-// Show toast message
 function showToast(message, type = 'success') {
     const toast = document.createElement('div');
-    toast.className = 'coming-soon-toast show';
-    toast.innerHTML = `<i class="fa-regular fa-${type === 'success' ? 'check-circle' : 'circle-xmark'}"></i>${message}`;
+    toast.className = `toast-notification toast-${type}`;
+    toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>${message}`;
     document.body.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
-    }, 2000);
+    setTimeout(() => toast.remove(), 2000);
 }
 
-// Animate balance on load
+// Auto-refresh intervals
 document.addEventListener('DOMContentLoaded', function() {
-    const balanceElement = document.querySelector('.balance-amount');
-    if (balanceElement) {
-        const finalValue = parseFloat(balanceElement.textContent);
-        if (!isNaN(finalValue) && finalValue > 0) {
-            let current = 0;
-            const increment = finalValue / 50;
-            const timer = setInterval(() => {
-                current += increment;
-                if (current >= finalValue) {
-                    balanceElement.textContent = finalValue.toFixed(2);
-                    clearInterval(timer);
-                } else {
-                    balanceElement.textContent = current.toFixed(2);
-                }
-            }, 20);
-        }
-    }
-    
-    // Start auto-refresh intervals
-    {% if mining_state and mining_state.is_mining %}
-    // Update mining every 30 seconds if active
-    setInterval(updateMiningDisplay, 30000);
-    {% endif %}
-    
-    // Update user stats every 30 seconds
     setInterval(updateUserStats, 30000);
-    
-    // Update global stats every 60 seconds
     setInterval(updateGlobalStats, 60000);
 });
-
-// Handle visibility change (refresh data when tab becomes visible)
-document.addEventListener('visibilitychange', function() {
-    if (!document.hidden) {
-        updateUserStats();
-        updateGlobalStats();
-        updateMiningDisplay();
-    }
-});
 </script>
+
+<style>
+.balance-card-modern {
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    border-radius: 28px;
+    padding: 20px;
+    border: 1px solid #334155;
+}
+.balance-amount-large {
+    font-size: 2.5rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+.stat-card {
+    background: var(--surface);
+    border-radius: 20px;
+}
+.stat-number {
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+.mining-widget-modern {
+    background: var(--surface);
+    border-radius: 24px;
+    padding: 16px;
+}
+.progress-bar.bg-gradient {
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+}
+.action-pill {
+    flex: 1;
+    background: var(--surface);
+    border-radius: 40px;
+    padding: 12px 8px;
+    text-align: center;
+    text-decoration: none;
+    color: var(--text-dim);
+    transition: all 0.2s;
+    position: relative;
+}
+.action-pill i {
+    font-size: 1.1rem;
+    display: block;
+    margin-bottom: 4px;
+}
+.action-pill span {
+    font-size: 0.7rem;
+    font-weight: 500;
+}
+.action-pill.muted {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+.action-pill.highlight {
+    background: var(--primary);
+    color: white;
+}
+.action-pill:not(.muted):hover {
+    transform: translateY(-2px);
+    background: var(--primary);
+    color: white;
+}
+.coming-badge {
+    position: absolute;
+    top: -6px;
+    right: 8px;
+    background: #f59e0b;
+    color: #000;
+    font-size: 0.55rem;
+    padding: 2px 6px;
+    border-radius: 20px;
+    font-weight: 600;
+}
+.post-card, .activity-card, .update-card, .featured-task-card {
+    background: var(--surface);
+    border-radius: 20px;
+    padding: 14px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.post-card:hover, .activity-card:hover, .update-card:hover, .featured-task-card:hover {
+    transform: translateY(-2px);
+    background: #2d3a4e;
+}
+.hot-badge {
+    background: linear-gradient(135deg, #f97316, #dc2626);
+    color: white;
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    border-radius: 20px;
+}
+.activity-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.activity-icon.deposit {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+.activity-icon.transfer {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+.update-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.update-icon.announcement {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+.update-icon.feature {
+    background: rgba(139, 92, 246, 0.1);
+    color: #8b5cf6;
+}
+.update-icon.info {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+.feed-tabs {
+    border-bottom: 1px solid var(--border);
+}
+.feed-tab {
+    background: none;
+    border: none;
+    padding: 8px 0;
+    color: var(--text-dim);
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    position: relative;
+}
+.feed-tab.active {
+    color: var(--primary);
+}
+.feed-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--primary);
+}
+.feature-card {
+    background: var(--surface);
+    border-radius: 20px;
+}
+</style>
 {% endblock %}

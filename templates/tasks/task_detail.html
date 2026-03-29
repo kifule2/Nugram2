@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load task_filters %}
+
+{% block title %}{{ task.name }} | eNusu{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <div class="d-flex align-items-center mb-4">
+        <a href="{% url 'tasks:marketplace' %}" class="btn btn-link text-dim p-0 me-3">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <h2 class="h4 mb-0 fw-bold">{{ task.name }}</h2>
+    </div>
+
+    <!-- Task Header -->
+    <div class="card bg-dark border-secondary mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                    <span class="badge" style="background: {{ task.task_type|platform_color }};">
+                        <i class="{{ task.task_type|platform_icon }} me-1"></i>
+                        {{ task.get_task_type_display }}
+                    </span>
+                    <span class="badge bg-secondary ms-2">{{ task.task_code }}</span>
+                </div>
+                <div class="text-end">
+                    <div class="fw-bold text-success fs-4">+{{ task.points_reward }}</div>
+                    <small class="text-dim">NSU Points</small>
+                </div>
+            </div>
+            
+            <p class="mb-3">{{ task.description }}</p>
+            
+            <div class="d-flex gap-3 flex-wrap">
+                {% if task.mining_boost > 1 %}
+                <div class="badge bg-warning text-dark">
+                    <i class="fas fa-bolt"></i> {{ task.mining_boost }}x Mining Boost ({{ task.boost_duration_hours }}h)
+                </div>
+                {% endif %}
+                <div class="badge bg-info">
+                    <i class="fas fa-users"></i> {{ total_completed }} completed
+                </div>
+                {% if task.max_participants %}
+                <div class="badge bg-secondary">
+                    <i class="fas fa-limit"></i> Max {{ task.max_participants }} participants
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Required -->
+    {% if not has_profile and task.platform and task.platform != 'custom' %}
+    <div class="alert alert-warning mb-4">
+        <i class="fas fa-link me-2"></i>
+        <strong>Connect your {{ task.get_platform_display }} account first!</strong>
+        <a href="{% url 'tasks:connect_social' %}" class="btn btn-sm btn-warning ms-2">Connect Now</a>
+    </div>
+    {% endif %}
+
+    <!-- Task Steps -->
+    <div class="card bg-dark border-secondary mb-4">
+        <div class="card-body">
+            <h5 class="mb-3"><i class="fas fa-list-check me-2"></i> How to Complete</h5>
+            
+            {% if task.target_url %}
+            <div class="step-item mb-3">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="step-number">1</span>
+                    <span class="fw-bold">Visit the link</span>
+                </div>
+                <div class="bg-dark border-secondary rounded p-2">
+                    <code class="text-primary">{{ task.target_url }}</code>
+                    <button class="btn btn-sm btn-outline-primary ms-2" onclick="copyToClipboard('{{ task.target_url }}')">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="step-item mb-3">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="step-number">2</span>
+                    <span class="fw-bold">Perform the action</span>
+                </div>
+                <p class="text-dim mb-0">
+                    {% if task.action == 'follow' %}
+                    Follow <strong>{{ task.target_identifier|default:task.name }}</strong> on {{ task.get_platform_display }}
+                    {% elif task.action == 'like' %}
+                    Like the post/video
+                    {% elif task.action == 'comment' %}
+                    Leave a comment (any comment works!)
+                    {% elif task.action == 'subscribe' %}
+                    Subscribe to the channel
+                    {% else %}
+                    Complete the action as described
+                    {% endif %}
+                </p>
+            </div>
+            
+            <div class="step-item">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="step-number">3</span>
+                    <span class="fw-bold">Verify & Earn</span>
+                </div>
+                <p class="text-dim mb-3">Click the Verify button below to check if you completed the action.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Button -->
+    {% if completion %}
+        {% if completion.status == 'verified' %}
+        <div class="alert alert-success text-center">
+            <i class="fas fa-check-circle fa-2x mb-2"></i>
+            <h5>Task Completed!</h5>
+            <p>You earned {{ task.points_reward }} points!</p>
+            <a href="{% url 'tasks:marketplace' %}" class="btn btn-primary">Find More Tasks</a>
+        </div>
+        {% elif completion.status == 'pending' or completion.status == 'processing' %}
+        <div class="text-center">
+            <button class="btn btn-primary btn-lg w-100" onclick="verifyTask()" id="verifyBtn">
+                <i class="fas fa-check-circle"></i> Verify My Action
+            </button>
+            <small class="text-dim d-block mt-2">
+                <i class="fas fa-clock"></i> Verification takes a few seconds
+            </small>
+        </div>
+        {% elif completion.status == 'failed' %}
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-triangle"></i>
+            Verification failed. Make sure you completed the action correctly.
+            <button class="btn btn-outline-danger mt-2" onclick="verifyTask()">Try Again</button>
+        </div>
+        {% endif %}
+    {% elif pending_request %}
+    <div class="alert alert-warning text-center">
+        <i class="fas fa-clock fa-2x mb-2"></i>
+        <h5>Request Pending</h5>
+        <p>Waiting for creator approval to join this task.</p>
+        <button class="btn btn-outline-danger" onclick="cancelRequest()">Cancel Request</button>
+    </div>
+    {% else %}
+    <form method="POST" action="{% url 'tasks:join_task' task.task_code %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary btn-lg w-100" {% if not has_profile and task.platform and task.platform != 'custom' %}disabled{% endif %}>
+            <i class="fas fa-play-circle"></i> Join Task
+        </button>
+    </form>
+    {% endif %}
+
+    <!-- Recent Completions -->
+    {% if recent_completions %}
+    <div class="mt-4">
+        <h6 class="mb-3"><i class="fas fa-trophy"></i> Recent completions</h6>
+        <div class="d-flex flex-wrap gap-2">
+            {% for c in recent_completions %}
+            <div class="badge bg-dark">
+                <i class="fas fa-user-check"></i> {{ c.user.username }}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function verifyTask() {
+    const btn = document.getElementById('verifyBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
+    
+    fetch('{% url 'tasks:verify_task' task.task_code %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        }
+    }).then(response => {
+        window.location.reload();
+    }).catch(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check-circle"></i> Try Again';
+    });
+}
+
+function cancelRequest() {
+    if (confirm('Cancel your request to join this task?')) {
+        fetch('{% url 'tasks:cancel_request' task.task_code %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        }).then(() => {
+            window.location.href = '{% url 'tasks:marketplace' %}';
+        });
+    }
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text);
+    alert('Link copied to clipboard!');
+}
+</script>
+
+<style>
+.step-number {
+    width: 28px;
+    height: 28px;
+    background: var(--primary);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.85rem;
+}
+</style>
+{% endblock %}

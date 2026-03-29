@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'tokens',
     'airdrop',
     'social',
+    'tasks',
 ]
 
 MIDDLEWARE = [
@@ -130,13 +131,14 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# Cloudinary Configuration
+# Cloudinary Configuration - Add RESOURCE_TYPE = 'auto'
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
     'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
     'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
     'SECURE': True,
     'MEDIA_TAG': 'nusu_media',
+    'RESOURCE_TYPE': 'auto',  # ADD THIS LINE - allows auto-detection of image/video
     'INVALID_VIDEO_ERROR_MESSAGE': 'Please upload a valid video file.',
     'EXCLUDE_DELETE_ORPHANED_MEDIA_PATHS': (),
     'STATIC_TAG': 'nusu_static',

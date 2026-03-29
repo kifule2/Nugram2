@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Task | eNusu{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <div class="d-flex align-items-center mb-4">
+        <a href="{% url 'tasks:my_created_tasks' %}" class="btn btn-link text-dim p-0 me-3">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <h2 class="h4 mb-0 fw-bold">Edit Task: {{ task.name }}</h2>
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+        
+        <div class="card bg-dark border-secondary mb-3">
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Task Name</label>
+                    <input type="text" name="name" class="form-control bg-dark border-secondary" 
+                           value="{{ task.name }}" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <textarea name="description" class="form-control bg-dark border-secondary" 
+                              rows="3" required>{{ task.description }}</textarea>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Task Type</label>
+                        <select name="task_type" class="form-select bg-dark border-secondary" disabled>
+                            <option value="{{ task.task_type }}">{{ task.get_task_type_display }}</option>
+                        </select>
+                        <small class="text-dim">Task type cannot be changed</small>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Action</label>
+                        <select name="action" class="form-select bg-dark border-secondary">
+                            {% for code, name in actions %}
+                            <option value="{{ code }}" {% if task.action == code %}selected{% endif %}>{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Target URL</label>
+                    <input type="url" name="target_url" class="form-control bg-dark border-secondary" 
+                           value="{{ task.target_url }}" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Target Identifier</label>
+                    <input type="text" name="target_identifier" class="form-control bg-dark border-secondary" 
+                           value="{{ task.target_identifier }}">
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Points Reward</label>
+                        <input type="number" name="points_reward" class="form-control bg-dark border-secondary" 
+                               value="{{ task.points_reward }}" min="10" step="10" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Mining Boost</label>
+                        <input type="number" name="mining_boost" class="form-control bg-dark border-secondary" 
+                               value="{{ task.mining_boost }}" min="1.0" max="2.0" step="0.01">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Boost Duration</label>
+                        <input type="number" name="boost_duration" class="form-control bg-dark border-secondary" 
+                               value="{{ task.boost_duration_hours }}" min="1" max="24">
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Verification Method</label>
+                        <select name="verification_method" class="form-select bg-dark border-secondary">
+                            <option value="auto" {% if task.verification_method == 'auto' %}selected{% endif %}>Auto Verification</option>
+                            <option value="manual" {% if task.verification_method == 'manual' %}selected{% endif %}>Manual Review</option>
+                            <option value="hybrid" {% if task.verification_method == 'hybrid' %}selected{% endif %}>Hybrid</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Max Participants</label>
+                        <input type="number" name="max_participants" class="form-control bg-dark border-secondary" 
+                               value="{{ task.max_participants }}" placeholder="Unlimited" min="1">
+                    </div>
+                </div>
+                
+                <div class="form-check mb-2">
+                    <input type="checkbox" name="requires_approval" class="form-check-input" id="requiresApproval" 
+                           {% if task.requires_approval %}checked{% endif %}>
+                    <label class="form-check-label" for="requiresApproval">
+                        Require approval before users can join
+                    </label>
+                </div>
+                
+                <div class="form-check mb-2">
+                    <input type="checkbox" name="is_active" class="form-check-input" id="isActive" 
+                           {% if task.is_active %}checked{% endif %}>
+                    <label class="form-check-label" for="isActive">
+                        Active (visible to users)
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Save Changes
+            </button>
+            <a href="{% url 'tasks:my_created_tasks' %}" class="btn btn-secondary">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

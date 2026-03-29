@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Task | eNusu{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <div class="d-flex align-items-center mb-4">
+        <a href="{% url 'tasks:my_created_tasks' %}" class="btn btn-link text-dim p-0 me-3">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <h2 class="h4 mb-0 fw-bold">Create New Task</h2>
+    </div>
+
+    <form method="POST" id="taskForm">
+        {% csrf_token %}
+        
+        <!-- Basic Info -->
+        <div class="card bg-dark border-secondary mb-3">
+            <div class="card-body">
+                <h6 class="mb-3">Basic Information</h6>
+                
+                <div class="mb-3">
+                    <label class="form-label">Task Name</label>
+                    <input type="text" name="name" class="form-control bg-dark border-secondary" 
+                           placeholder="e.g., Follow eNusu on Twitter" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <textarea name="description" class="form-control bg-dark border-secondary" 
+                              rows="3" placeholder="Explain what users need to do..." required></textarea>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Task Type</label>
+                        <select name="task_type" class="form-select bg-dark border-secondary" id="taskType" required>
+                            <option value="">Select type</option>
+                            {% for code, name in task_types %}
+                            <option value="{{ code }}">{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Action</label>
+                        <select name="action" class="form-select bg-dark border-secondary" required>
+                            {% for code, name in actions %}
+                            <option value="{{ code }}">{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Target -->
+        <div class="card bg-dark border-secondary mb-3" id="targetSection">
+            <div class="card-body">
+                <h6 class="mb-3">Target</h6>
+                
+                <div class="mb-3">
+                    <label class="form-label">Target URL</label>
+                    <input type="url" name="target_url" class="form-control bg-dark border-secondary" 
+                           placeholder="https://twitter.com/eNusu" required>
+                </div>
+                
+                <div class="mb-3" id="targetIdentifierField">
+                    <label class="form-label">Target Identifier</label>
+                    <input type="text" name="target_identifier" class="form-control bg-dark border-secondary" 
+                           placeholder="@username or channel ID">
+                    <small class="text-dim">For follow tasks, enter the account handle</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rewards -->
+        <div class="card bg-dark border-secondary mb-3">
+            <div class="card-body">
+                <h6 class="mb-3">Rewards</h6>
+                
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Points Reward</label>
+                        <input type="number" name="points_reward" class="form-control bg-dark border-secondary" 
+                               value="50" min="10" step="10" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Mining Boost</label>
+                        <input type="number" name="mining_boost" class="form-control bg-dark border-secondary" 
+                               value="1.05" min="1.0" max="2.0" step="0.01">
+                        <small class="text-dim">1.05 = 5% boost</small>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Boost Duration (hours)</label>
+                        <input type="number" name="boost_duration" class="form-control bg-dark border-secondary" 
+                               value="1" min="1" max="24">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings -->
+        <div class="card bg-dark border-secondary mb-3">
+            <div class="card-body">
+                <h6 class="mb-3">Settings</h6>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Verification Method</label>
+                        <select name="verification_method" class="form-select bg-dark border-secondary">
+                            <option value="auto">Auto Verification</option>
+                            <option value="manual">Manual Review</option>
+                            <option value="hybrid">Hybrid (Auto with Manual Fallback)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Max Participants</label>
+                        <input type="number" name="max_participants" class="form-control bg-dark border-secondary" 
+                               placeholder="Unlimited" min="1">
+                    </div>
+                </div>
+                
+                <div class="form-check mb-2">
+                    <input type="checkbox" name="requires_approval" class="form-check-input" id="requiresApproval">
+                    <label class="form-check-label" for="requiresApproval">
+                        Require approval before users can join
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg w-100">
+            <i class="fas fa-plus-circle"></i> Create Task
+        </button>
+    </form>
+</div>
+
+<script>
+document.getElementById('taskType').addEventListener('change', function() {
+    const type = this.value;
+    const identifierField = document.getElementById('targetIdentifierField');
+    
+    if (type === 'twitter' || type === 'tiktok') {
+        identifierField.querySelector('input').placeholder = '@username to follow';
+        identifierField.querySelector('small').textContent = 'Enter the account handle users should follow';
+        identifierField.style.display = 'block';
+    } else if (type === 'youtube') {
+        identifierField.querySelector('input').placeholder = '@channel or UCxxxxxx';
+        identifierField.querySelector('small').textContent = 'Enter the channel ID or handle';
+        identifierField.style.display = 'block';
+    } else {
+        identifierField.style.display = 'none';
+    }
+});
+</script>
+{% endblock %}

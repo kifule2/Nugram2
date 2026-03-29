@@ -19,6 +19,9 @@ import os
 import tempfile
 import time
 from django.urls import reverse
+from io import BytesIO
+from django.conf import settings
+
 
 logger = logging.getLogger(__name__)
 
@@ -143,23 +146,11 @@ def following_feed(request):
     }
     return render(request, 'social/feed.html', context)
 
+
 @login_required
 @csrf_exempt
 def create_post(request):
-    """
-    Create a new post - handles both text posts with templates and video/image posts
-    with proper Cloudinary upload to folders
-    """
-    import time
-    import logging
-    from io import BytesIO
-    import json
-    import cloudinary
-    import cloudinary.uploader
-    from django.urls import reverse
-    from django.conf import settings  # <-- THIS WAS MISSING
-    
-    logger = logging.getLogger(__name__)
+    """Create a new post - handles both text posts with templates and video/image posts"""
     
     # GET request - show create post page with templates
     if request.method == 'GET':
@@ -225,7 +216,6 @@ def create_post(request):
             # Handle media files directly
             media_files = request.FILES.getlist('media_files')
             
-            # Log what we received
             logger.info(f"Received {len(media_files)} files from user {request.user.id}")
             for f in media_files:
                 logger.info(f"File: {f.name}, Size: {f.size}, Type: {f.content_type}")
@@ -259,7 +249,7 @@ def create_post(request):
                     # Generate timestamp for unique filename
                     timestamp = int(time.time())
                     
-                    # Read the file content - important to do this before any operations
+                    # Read the file content
                     file_content = media_file.read()
                     file_size = len(file_content)
                     logger.info(f"Processing file {index}: {media_file.name}, size: {file_size} bytes")
@@ -272,7 +262,7 @@ def create_post(request):
                     api_key = settings.CLOUDINARY_STORAGE['API_KEY']
                     api_secret = settings.CLOUDINARY_STORAGE['API_SECRET']
                     
-                    # Configure Cloudinary with settings
+                    # Configure Cloudinary
                     cloudinary.config(
                         cloud_name=cloud_name,
                         api_key=api_key,
@@ -292,7 +282,7 @@ def create_post(request):
                         resource_type = 'image'
                         logger.info(f"Uploading image to folder: {folder_path}")
                     
-                    # Upload to Cloudinary with explicit folder
+                    # Upload to Cloudinary
                     upload_result = cloudinary.uploader.upload(
                         file_data,
                         folder=folder_path,
@@ -307,31 +297,34 @@ def create_post(request):
                     logger.info(f"✅ Upload successful! Public ID: {upload_result['public_id']}")
                     logger.info(f"   URL: {upload_result['secure_url']}")
                     
-                    # Create PostMedia entry
-                    post_media = PostMedia(
-                        post=post,
-                        media_type='video' if is_video else 'image',
-                        order=index
-                    )
-                    
-                    # Store the public_id in the appropriate CloudinaryField
+                    # Create PostMedia entry with correct media_type
                     if is_video:
-                        post_media.video = upload_result['public_id']
-                        if 'duration' in upload_result:
+                        post_media = PostMedia.objects.create(
+                            post=post,
+                            media_type='video',  # IMPORTANT: Must be 'video'
+                            order=index,
+                            video=upload_result['public_id'],
+                            duration=upload_result.get('duration'),
+                            width=upload_result.get('width'),
+                            height=upload_result.get('height'),
+                            file_size=upload_result.get('bytes'),
+                            format=upload_result.get('format')
+                        )
+                        if upload_result.get('duration'):
                             post.video_duration = upload_result['duration']
                             post.save(update_fields=['video_duration'])
                     else:
-                        post_media.image = upload_result['public_id']
+                        post_media = PostMedia.objects.create(
+                            post=post,
+                            media_type='image',  # IMPORTANT: Must be 'image'
+                            order=index,
+                            image=upload_result['public_id'],
+                            width=upload_result.get('width'),
+                            height=upload_result.get('height'),
+                            file_size=upload_result.get('bytes'),
+                            format=upload_result.get('format')
+                        )
                     
-                    # Save media metadata
-                    post_media.width = upload_result.get('width')
-                    post_media.height = upload_result.get('height')
-                    post_media.file_size = upload_result.get('bytes')
-                    post_media.format = upload_result.get('format')
-                    if 'duration' in upload_result:
-                        post_media.duration = upload_result.get('duration')
-                    
-                    post_media.save()
                     logger.info(f"✅ PostMedia {post_media.id} saved for post {post.id}")
                     
                     upload_results.append({
@@ -353,7 +346,7 @@ def create_post(request):
                         'file': media_file.name if media_file else 'Unknown'
                     })
             
-            # Notify followers about the post (only if at least one media uploaded successfully)
+            # Notify followers about the post
             successful_uploads = [r for r in upload_results if r.get('success')]
             if successful_uploads:
                 for follow in Follow.objects.filter(following=request.user):
@@ -365,18 +358,15 @@ def create_post(request):
                     )
                 logger.info(f"Notified followers about new post")
             
-            # Return JSON response for AJAX requests, otherwise redirect
+            # Return JSON response for AJAX requests
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 response_data = {
-                    'status': 'success' if successful_uploads else 'partial_success',
+                    'status': 'success' if successful_uploads else 'error',
                     'post_id': post.id,
-                    'message': f'Posted {len(successful_uploads)} of {len(media_files)} files',
+                    'message': f'Posted {len(successful_uploads)} of {len(media_files)} files' if successful_uploads else 'Failed to upload any files',
                     'uploads': upload_results,
                     'redirect_url': reverse('social:feed')
                 }
-                if not successful_uploads:
-                    response_data['status'] = 'error'
-                    response_data['message'] = 'Failed to upload any files'
                 return JsonResponse(response_data)
             else:
                 if successful_uploads:

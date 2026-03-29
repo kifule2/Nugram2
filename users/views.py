@@ -7,6 +7,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.db.models import Q, Count
 from django.core.paginator import Paginator
+from django.utils import timezone
 from .models import CustomUser, UserProfile, Notification
 from .forms import CustomUserCreationForm, ProfileUpdateForm
 from social.models import Follow, Notification as SocialNotification, Post
@@ -15,9 +16,10 @@ from tokens.models import TokenRate
 from transactions.models import Transaction
 import cloudinary.uploader
 
+
 @login_required
 def user_profile(request, username):
-    """View user profile"""
+    """View user profile with all content"""
     profile_user = get_object_or_404(CustomUser, username=username)
     is_owner = (request.user == profile_user)
     
@@ -31,28 +33,95 @@ def user_profile(request, username):
             following=profile_user
         ).exists()
     
-    posts = Post.objects.filter(
+    # Get all posts by user
+    all_posts = Post.objects.filter(
         user=profile_user,
         is_reply=False
-    ).prefetch_related('media_items', 'likes').order_by('-created_at')[:10]
+    ).select_related(
+        'user', 'user__userprofile', 'background_template'
+    ).prefetch_related(
+        'likes', 'replies', 'views', 'media_items'
+    ).order_by('-created_at')
+    
+    # Separate posts by type for tabs
+    media_posts = all_posts.filter(
+        post_type__in=['media', 'mixed']
+    ).order_by('-created_at')[:30]
+    
+    text_posts = all_posts.filter(
+        post_type='text'
+    ).order_by('-created_at')[:20]
+    
+    # Get completed tasks for tasks tab
+    completed_tasks = []
+    if hasattr(profile_user, 'task_completions'):
+        completed_tasks = profile_user.task_completions.filter(
+            status='verified'
+        ).select_related('task').order_by('-verified_at')[:20]
     
     mining_state = None
     if is_owner:
         mining_state, created = UserMiningState.objects.get_or_create(user=profile_user)
+    else:
+        try:
+            mining_state = UserMiningState.objects.get(user=profile_user)
+        except UserMiningState.DoesNotExist:
+            pass
     
     transactions = Transaction.objects.filter(user=profile_user).order_by('-timestamp')[:5]
     
+    # Get token balance and UGX value
+    token_balance = profile_user.userprofile.token_balance if hasattr(profile_user, 'userprofile') else 0
+    
+    current_rate = None
+    try:
+        current_rate = TokenRate.objects.latest('effective_date')
+        ugx_value = token_balance * float(current_rate.rate)
+    except TokenRate.DoesNotExist:
+        ugx_value = token_balance * 3800
+    
+    # Get referral count
+    referrals_count = profile_user.referrals.count() if hasattr(profile_user, 'referrals') else 0
+    
+    # Pagination for all posts (for potential infinite scroll)
+    paginator = Paginator(all_posts, 20)
+    page = request.GET.get('page')
+    posts_page = paginator.get_page(page)
+    
     context = {
+        # User info
         'profile_user': profile_user,
         'is_owner': is_owner,
         'is_following': is_following,
+        
+        # Stats
         'followers_count': followers_count,
         'following_count': following_count,
-        'posts': posts,
-        'transactions': transactions,
+        'referrals_count': referrals_count,
+        
+        # Posts
+        'posts': posts_page,
+        'media_posts': media_posts,
+        'text_posts': text_posts,
+        'all_posts_count': all_posts.count(),
+        
+        # Tasks
+        'completed_tasks': completed_tasks,
+        
+        # Mining & Tokens
         'mining_state': mining_state,
+        'current_rate': current_rate,
+        'token_balance': token_balance,
+        'ugx_value': ugx_value,
+        
+        # Transactions
+        'transactions': transactions,
+        
+        # Profile details
+        'user_profile': profile_user.userprofile if hasattr(profile_user, 'userprofile') else None,
     }
     return render(request, 'users/profile.html', context)
+
 
 @login_required
 def edit_profile(request):
@@ -119,6 +188,7 @@ def edit_profile(request):
     
     return render(request, 'users/edit_profile.html', {'form': form})
 
+
 @login_required
 def dashboard(request):
     """User dashboard with live stats"""
@@ -135,6 +205,11 @@ def dashboard(request):
     recent_transactions = Transaction.objects.filter(user=user).order_by('-timestamp')[:5]
     current_rate = TokenRate.objects.last()
     
+    # Get completed tasks count
+    completed_tasks_count = 0
+    if hasattr(user, 'task_completions'):
+        completed_tasks_count = user.task_completions.filter(status='verified').count()
+    
     context = {
         'user': user,
         'followers_count': followers_count,
@@ -145,8 +220,11 @@ def dashboard(request):
         'current_rate': current_rate,
         'unread_notifications': SocialNotification.objects.filter(recipient=user, is_read=False).count(),
         'referrals_count': user.referrals.count(),
+        'completed_tasks_count': completed_tasks_count,
+        'token_balance': user.userprofile.token_balance if hasattr(user, 'userprofile') else 0,
     }
     return render(request, 'users/dashboard.html', context)
+
 
 @login_required
 def dashboard_stats(request):
@@ -170,12 +248,32 @@ def dashboard_stats(request):
             'followed_at': follow.created_at.isoformat()
         })
     
+    # Get mining stats
+    mining_active = False
+    mining_rate = 1.0
+    try:
+        mining_state = UserMiningState.objects.get(user=user)
+        mining_active = mining_state.is_mining
+        mining_rate = mining_state.current_rate
+    except UserMiningState.DoesNotExist:
+        pass
+    
+    # Get task stats
+    completed_tasks = 0
+    if hasattr(user, 'task_completions'):
+        completed_tasks = user.task_completions.filter(status='verified').count()
+    
     return JsonResponse({
         'followers': followers_count,
         'following': following_count,
         'referrals': user.referrals.count(),
+        'mining_active': mining_active,
+        'mining_rate': mining_rate,
+        'completed_tasks': completed_tasks,
+        'token_balance': float(user.userprofile.token_balance) if hasattr(user, 'userprofile') else 0,
         'recent_followers': recent_followers_data,
     })
+
 
 def register(request):
     """User registration with referral"""
@@ -206,6 +304,7 @@ def register(request):
     
     return render(request, 'users/register.html', {'form': form})
 
+
 def user_login(request):
     """User login"""
     if request.method == 'POST':
@@ -222,11 +321,13 @@ def user_login(request):
     
     return render(request, 'users/login.html')
 
+
 def user_logout(request):
     """User logout"""
     logout(request)
     messages.success(request, "You have been logged out.")
     return redirect('home')
+
 
 @login_required
 def follow_list(request, username, list_type):
@@ -259,6 +360,7 @@ def follow_list(request, username, list_type):
     }
     return render(request, 'users/follow_list.html', context)
 
+
 @login_required
 def notifications_list(request):
     """View all notifications"""
@@ -271,6 +373,7 @@ def notifications_list(request):
     
     return render(request, 'users/notifications.html', {'notifications': notifications})
 
+
 @login_required
 def mark_notification_read(request, notification_id):
     """Mark notification as read"""
@@ -282,6 +385,7 @@ def mark_notification_read(request, notification_id):
         return JsonResponse({'status': 'success'})
     return redirect('users:notifications')
 
+
 @login_required
 def delete_notification(request, notification_id):
     """Delete notification"""
@@ -289,6 +393,7 @@ def delete_notification(request, notification_id):
     notification.delete()
     messages.success(request, "Notification deleted")
     return redirect('users:notifications')
+
 
 @login_required
 def admin_balances(request):
@@ -305,6 +410,7 @@ def admin_balances(request):
         'total_users': users.count(),
     }
     return render(request, 'users/admin_balances.html', context)
+
 
 @login_required
 def create_agent(request):
@@ -328,6 +434,7 @@ def create_agent(request):
             return redirect('users:admin_balances')
     
     return render(request, 'users/create_agent.html')
+
 
 @login_required
 def send_tokens(request):
