@@ -1,304 +1,1244 @@
+
 {% extends "base.html" %}
 {% load static %}
 {% load task_filters %}
 
 {% block title %}Home{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* ── PAGE SHELL ── */
+    body { background: var(--dark-900); }
+
+    .home-wrap {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+
+    /* ═══════════════════════════════════
+       DARK HERO ZONE
+       ═══════════════════════════════════ */
+    .hero-zone {
+        background: linear-gradient(180deg, #0a0f1e 0%, #0f172a 80%, #111827 100%);
+        padding: 20px 20px 40px;
+        position: relative;
+    }
+
+    /* subtle grid lines */
+    .hero-zone::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(59,130,246,0.04) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(59,130,246,0.04) 1px, transparent 1px);
+        background-size: 32px 32px;
+        pointer-events: none;
+    }
+
+    /* ── GREETING ── */
+    .greeting-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        position: relative;
+    }
+
+    .greeting-text small {
+        display: block;
+        font-size: 0.8rem;
+        color: rgba(255,255,255,0.4);
+        font-weight: 500;
+        letter-spacing: 0.3px;
+        margin-bottom: 2px;
+    }
+
+    .greeting-text h2 {
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: #fff;
+        margin: 0;
+        letter-spacing: -0.5px;
+    }
+
+    .verified-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: rgba(59,130,246,0.15);
+        border: 1px solid rgba(59,130,246,0.3);
+        border-radius: 50px;
+        padding: 4px 10px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: var(--blue);
+    }
+
+    /* ── BALANCE CARD ── */
+    .balance-card {
+        background: linear-gradient(135deg, #1a2744 0%, #0f1d36 50%, #141e35 100%);
+        border: 1px solid rgba(59,130,246,0.18);
+        border-radius: 28px;
+        padding: 24px;
+        margin-bottom: 16px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06);
+    }
+
+    /* decorative glow orb */
+    .balance-card::after {
+        content: '';
+        position: absolute;
+        top: -40px; right: -40px;
+        width: 160px; height: 160px;
+        background: radial-gradient(circle, rgba(59,130,246,0.18) 0%, transparent 70%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .balance-label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        color: rgba(255,255,255,0.45);
+        text-transform: uppercase;
+        margin-bottom: 6px;
+    }
+
+    .balance-amount {
+        font-size: 2.8rem;
+        font-weight: 900;
+        letter-spacing: -2px;
+        line-height: 1;
+        color: #fff;
+        margin-bottom: 6px;
+    }
+
+    .balance-amount .balance-currency {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: rgba(255,255,255,0.45);
+        letter-spacing: 0;
+        margin-left: 4px;
+        vertical-align: middle;
+    }
+
+    .balance-ugx {
+        font-size: 0.88rem;
+        color: rgba(255,255,255,0.45);
+        margin-bottom: 18px;
+    }
+
+    .balance-ugx strong { color: rgba(255,255,255,0.7); }
+
+    .balance-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .bal-action-btn {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 16px;
+        padding: 12px 8px;
+        color: rgba(255,255,255,0.65);
+        text-decoration: none;
+        font-size: 0.72rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        position: relative;
+    }
+
+    .bal-action-btn i { font-size: 1.1rem; }
+
+    .bal-action-btn:hover:not(.muted) {
+        background: rgba(59,130,246,0.15);
+        border-color: rgba(59,130,246,0.3);
+        color: var(--blue);
+        transform: translateY(-2px);
+    }
+
+    .bal-action-btn.muted { opacity: 0.4; cursor: not-allowed; }
+
+    .bal-action-btn.primary-action {
+        background: linear-gradient(135deg, var(--blue), var(--indigo));
+        border-color: transparent;
+        color: #fff;
+        box-shadow: 0 8px 20px rgba(59,130,246,0.3);
+    }
+
+    .bal-action-btn.primary-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px rgba(59,130,246,0.4);
+        color: #fff;
+        border-color: transparent;
+        background: linear-gradient(135deg, var(--blue), var(--indigo));
+    }
+
+    .soon-tag {
+        position: absolute;
+        top: -6px; right: 6px;
+        background: var(--amber);
+        color: #000;
+        font-size: 0.55rem;
+        font-weight: 800;
+        padding: 2px 6px;
+        border-radius: 20px;
+        letter-spacing: 0.3px;
+    }
+
+    /* ── QUICK STATS ── */
+    .quick-stats {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .q-stat {
+        flex: 1;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 18px;
+        padding: 14px 10px;
+        text-align: center;
+        transition: all 0.2s;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .q-stat:hover {
+        background: rgba(59,130,246,0.08);
+        border-color: rgba(59,130,246,0.2);
+        transform: translateY(-2px);
+    }
+
+    .q-stat-num {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: #fff;
+        line-height: 1;
+        margin-bottom: 4px;
+    }
+
+    .q-stat-label {
+        font-size: 0.7rem;
+        color: rgba(255,255,255,0.4);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* ── STORIES ROW (Mining Snapshots) ── */
+    .stories-section { margin-bottom: 24px; }
+
+    .stories-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.35);
+        margin-bottom: 12px;
+        padding: 0 2px;
+    }
+
+    .stories-row {
+        display: flex;
+        gap: 14px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        scrollbar-width: none;
+    }
+
+    .stories-row::-webkit-scrollbar { display: none; }
+
+    .story-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        flex-shrink: 0;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .story-ring {
+        position: relative;
+        width: 64px; height: 64px;
+    }
+
+    /* SVG ring sits behind avatar */
+    .story-ring svg {
+        position: absolute;
+        inset: -3px;
+        width: 70px; height: 70px;
+    }
+
+    .story-avatar {
+        position: absolute;
+        inset: 4px;
+        border-radius: 50%;
+        object-fit: cover;
+        background: var(--dark-700);
+        border: 2px solid var(--dark-900);
+        width: calc(100% - 8px);
+        height: calc(100% - 8px);
+    }
+
+    /* Mine button story */
+    .story-mine .story-avatar-inner {
+        position: absolute;
+        inset: 4px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--blue), var(--indigo));
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.4rem;
+        border: 2px solid var(--dark-900);
+    }
+
+    .story-name {
+        font-size: 0.72rem;
+        color: rgba(255,255,255,0.55);
+        font-weight: 500;
+        max-width: 64px;
+        text-align: center;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .story-name.story-mine-label { color: var(--blue); font-weight: 700; }
+
+    /* Animated mining ring */
+    @keyframes dashSpin {
+        to { stroke-dashoffset: 0; }
+    }
+
+    .mining-ring-active { animation: dashSpin 2s linear infinite; }
+
+    /* ── MINING STRIP ── */
+    .mining-strip {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 22px;
+        padding: 16px 18px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 4px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .mining-strip:hover {
+        background: rgba(59,130,246,0.07);
+        border-color: rgba(59,130,246,0.2);
+        transform: translateY(-1px);
+    }
+
+    .mining-strip-icon {
+        width: 44px; height: 44px;
+        border-radius: 16px;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+        font-size: 1.2rem;
+        transition: box-shadow 0.3s;
+    }
+
+    .mining-strip-icon.active {
+        background: linear-gradient(135deg, var(--blue), var(--indigo));
+        box-shadow: 0 6px 18px rgba(59,130,246,0.35);
+        animation: iconPulse 2s ease infinite;
+    }
+
+    .mining-strip-icon.idle {
+        background: rgba(255,255,255,0.06);
+        color: rgba(255,255,255,0.3);
+    }
+
+    @keyframes iconPulse {
+        0%, 100% { box-shadow: 0 6px 18px rgba(59,130,246,0.35); }
+        50%       { box-shadow: 0 6px 28px rgba(59,130,246,0.6); }
+    }
+
+    .mining-strip-info { flex: 1; min-width: 0; }
+
+    .mining-strip-title {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .mining-live-dot {
+        width: 7px; height: 7px;
+        border-radius: 50%;
+        background: var(--emerald);
+        animation: liveDot 1.5s ease infinite;
+        flex-shrink: 0;
+    }
+
+    @keyframes liveDot {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50%       { opacity: 0.5; transform: scale(0.75); }
+    }
+
+    .mining-strip-sub {
+        font-size: 0.78rem;
+        color: rgba(255,255,255,0.4);
+        margin-top: 2px;
+    }
+
+    .mining-progress-bar {
+        width: 100%;
+        height: 4px;
+        background: rgba(255,255,255,0.07);
+        border-radius: 4px;
+        margin-top: 8px;
+        overflow: hidden;
+    }
+
+    .mining-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--blue), var(--cyan));
+        border-radius: 4px;
+        transition: width 0.5s ease;
+    }
+
+    .mining-strip-toggle {
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: rgba(255,255,255,0.7);
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.8rem;
+        font-weight: 700;
+        padding: 8px 16px;
+        border-radius: 50px;
+        cursor: pointer;
+        white-space: nowrap;
+        flex-shrink: 0;
+        transition: all 0.2s;
+    }
+
+    .mining-strip-toggle.active {
+        background: rgba(239,68,68,0.15);
+        border-color: rgba(239,68,68,0.3);
+        color: var(--rose);
+    }
+
+    .mining-strip-toggle.idle {
+        background: linear-gradient(135deg, var(--blue), var(--indigo));
+        border-color: transparent;
+        color: #fff;
+    }
+
+    .mining-strip-toggle:hover { filter: brightness(1.15); }
+
+    /* ═══════════════════════════════════
+       LIGHT CONTENT ZONE
+       ═══════════════════════════════════ */
+    .content-zone {
+        background: var(--light-bg);
+        border-radius: 32px 32px 0 0;
+        padding: 28px 20px 32px;
+        flex: 1;
+        /* slight lift shadow at the seam */
+        box-shadow: 0 -8px 32px rgba(0,0,0,0.25);
+        position: relative;
+        margin-top: -4px;
+    }
+
+    /* pill handle */
+    .content-zone::before {
+        content: '';
+        position: absolute;
+        top: 10px; left: 50%;
+        transform: translateX(-50%);
+        width: 36px; height: 4px;
+        background: rgba(0,0,0,0.12);
+        border-radius: 4px;
+    }
+
+    /* ── SECTION HEADER ── */
+    .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+    }
+
+    .section-title {
+        font-size: 1rem;
+        font-weight: 800;
+        color: var(--light-text);
+        letter-spacing: -0.3px;
+    }
+
+    .section-link {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--blue);
+        text-decoration: none;
+    }
+
+    /* ── FEED TABS ── */
+    .feed-tabs-row {
+        display: flex;
+        gap: 0;
+        margin-bottom: 20px;
+        background: #e8eef6;
+        border-radius: 14px;
+        padding: 4px;
+    }
+
+    .feed-tab-btn {
+        flex: 1;
+        background: none;
+        border: none;
+        padding: 9px 12px;
+        border-radius: 11px;
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--light-dim);
+        cursor: pointer;
+        transition: all 0.22s;
+        white-space: nowrap;
+    }
+
+    .feed-tab-btn.active {
+        background: #fff;
+        color: var(--light-text);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    /* ── POST CARD ── */
+    .post-card {
+        background: var(--light-card);
+        border-radius: 20px;
+        padding: 16px;
+        margin-bottom: 12px;
+        border: 1px solid var(--light-border);
+        box-shadow: var(--shadow-sm);
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: block;
+        color: var(--light-text);
+    }
+
+    .post-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+        color: var(--light-text);
+    }
+
+    .post-card-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .post-card-avatar {
+        width: 38px; height: 38px;
+        border-radius: 14px;
+        object-fit: cover;
+        flex-shrink: 0;
+        border: 1.5px solid var(--light-border);
+    }
+
+    .post-card-meta { flex: 1; min-width: 0; }
+
+    .post-card-name {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: var(--light-text);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .post-card-name .v-icon {
+        color: var(--blue);
+        font-size: 0.75rem;
+    }
+
+    .post-card-time {
+        font-size: 0.75rem;
+        color: var(--light-dim);
+        margin-top: 1px;
+    }
+
+    .hot-chip {
+        background: linear-gradient(135deg, #f97316, #dc2626);
+        color: #fff;
+        font-size: 0.65rem;
+        font-weight: 800;
+        padding: 3px 9px;
+        border-radius: 50px;
+        white-space: nowrap;
+    }
+
+    .post-card-body {
+        font-size: 0.9rem;
+        color: #374151;
+        line-height: 1.55;
+        margin-bottom: 10px;
+    }
+
+    .post-card-img {
+        width: 100%;
+        max-height: 220px;
+        object-fit: cover;
+        border-radius: 14px;
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    .post-card-stats {
+        display: flex;
+        gap: 16px;
+        padding-top: 10px;
+        border-top: 1px solid var(--light-border);
+    }
+
+    .post-card-stats span {
+        font-size: 0.8rem;
+        color: var(--light-dim);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-weight: 500;
+    }
+
+    .post-card-stats i { font-size: 0.85rem; }
+
+    /* ── ACTIVITY CARD ── */
+    .activity-card {
+        background: var(--light-card);
+        border-radius: 18px;
+        padding: 14px 16px;
+        margin-bottom: 10px;
+        border: 1px solid var(--light-border);
+        cursor: pointer;
+        transition: all 0.2s;
+        display: block;
+        text-decoration: none;
+        color: var(--light-text);
+    }
+
+    .activity-card:hover {
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
+        color: var(--light-text);
+    }
+
+    .activity-card-inner {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .activity-icon-circle {
+        width: 42px; height: 42px;
+        border-radius: 14px;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+        font-size: 1rem;
+    }
+
+    .icon-deposit  { background: rgba(16,185,129,0.1);  color: var(--emerald); }
+    .icon-transfer { background: rgba(59,130,246,0.1);  color: var(--blue);    }
+    .icon-withdraw { background: rgba(245,158,11,0.1);  color: var(--amber);   }
+
+    .activity-info { flex: 1; }
+    .activity-type  { font-size: 0.88rem; font-weight: 700; color: var(--light-text); }
+    .activity-time  { font-size: 0.75rem; color: var(--light-dim); margin-top: 2px; }
+    .activity-amount {
+        font-size: 0.95rem; font-weight: 800;
+    }
+
+    .amount-positive { color: var(--emerald); }
+    .amount-neutral  { color: var(--amber); }
+
+    /* ── UPDATE CARD ── */
+    .update-card {
+        background: var(--light-card);
+        border-radius: 18px;
+        padding: 14px 16px;
+        margin-bottom: 10px;
+        border: 1px solid var(--light-border);
+    }
+
+    .update-card-inner {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+    .update-icon-circle {
+        width: 40px; height: 40px;
+        border-radius: 14px;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+        font-size: 0.95rem;
+    }
+
+    .icon-announce { background: rgba(245,158,11,0.1);  color: var(--amber); }
+    .icon-feature  { background: rgba(139,92,246,0.1);  color: var(--violet); }
+    .icon-info     { background: rgba(59,130,246,0.1);  color: var(--blue); }
+
+    .update-title  { font-size: 0.88rem; font-weight: 700; color: var(--light-text); }
+    .update-body   { font-size: 0.8rem; color: var(--light-dim); margin-top: 3px; line-height: 1.4; }
+    .update-time   { font-size: 0.72rem; color: #a0aec0; margin-top: 5px; }
+
+    /* ── FEATURED TASK ── */
+    .featured-task {
+        background: linear-gradient(135deg, #1e3a5f, #0f2744);
+        border: 1px solid rgba(59,130,246,0.25);
+        border-radius: 20px;
+        padding: 18px;
+        margin-top: 16px;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: block;
+        color: #fff;
+    }
+
+    .featured-task:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 32px rgba(59,130,246,0.2);
+        color: #fff;
+    }
+
+    .featured-task-badge {
+        display: inline-block;
+        background: rgba(59,130,246,0.2);
+        border: 1px solid rgba(59,130,246,0.35);
+        color: var(--blue);
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 50px;
+        margin-bottom: 10px;
+    }
+
+    /* ── GLOBAL STATS BAR ── */
+    .global-stats-bar {
+        display: flex;
+        background: var(--light-card);
+        border: 1px solid var(--light-border);
+        border-radius: 20px;
+        overflow: hidden;
+        margin-top: 24px;
+    }
+
+    .g-stat {
+        flex: 1;
+        padding: 14px 10px;
+        text-align: center;
+        border-right: 1px solid var(--light-border);
+    }
+
+    .g-stat:last-child { border-right: none; }
+    .g-stat-val { font-size: 0.95rem; font-weight: 800; color: var(--light-text); }
+    .g-stat-lbl { font-size: 0.68rem; color: var(--light-dim); font-weight: 500; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.3px; }
+
+    /* ── EMPTY STATES ── */
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: var(--light-dim);
+    }
+
+    .empty-state i { font-size: 2rem; margin-bottom: 12px; display: block; opacity: 0.4; }
+    .empty-state p { font-size: 0.88rem; margin-bottom: 16px; }
+
+    /* ── UNAUTHENTICATED HERO ── */
+    .guest-hero {
+        min-height: calc(100vh - 72px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 28px;
+        text-align: center;
+    }
+
+    .guest-logo {
+        font-size: 4rem;
+        font-weight: 900;
+        letter-spacing: -4px;
+        background: linear-gradient(135deg, #fff 30%, var(--blue));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 8px;
+    }
+
+    .guest-tagline {
+        font-size: 1rem;
+        color: rgba(255,255,255,0.45);
+        margin-bottom: 36px;
+        max-width: 260px;
+        line-height: 1.5;
+    }
+
+    .guest-cta-row { display: flex; gap: 12px; margin-bottom: 48px; }
+
+    .btn-primary-hero {
+        background: linear-gradient(135deg, var(--blue), var(--indigo));
+        color: #fff;
+        border: none;
+        padding: 14px 32px;
+        border-radius: 50px;
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.95rem;
+        font-weight: 700;
+        text-decoration: none;
+        box-shadow: var(--shadow-blue);
+        transition: all 0.2s;
+    }
+
+    .btn-primary-hero:hover {
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 16px 32px rgba(59,130,246,0.4);
+    }
+
+    .btn-outline-hero {
+        background: rgba(255,255,255,0.07);
+        color: rgba(255,255,255,0.8);
+        border: 1.5px solid rgba(255,255,255,0.15);
+        padding: 14px 32px;
+        border-radius: 50px;
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.95rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .btn-outline-hero:hover {
+        background: rgba(255,255,255,0.12);
+        color: #fff;
+    }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        width: 100%;
+        max-width: 380px;
+    }
+
+    .feature-tile {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 20px;
+        padding: 18px 10px;
+        text-align: center;
+    }
+
+    .feature-tile i { font-size: 1.5rem; color: var(--blue); margin-bottom: 8px; display: block; }
+    .feature-tile h6 { font-size: 0.8rem; color: #fff; font-weight: 700; margin-bottom: 4px; }
+    .feature-tile small { font-size: 0.7rem; color: rgba(255,255,255,0.35); }
+</style>
+{% endblock %}
+
 {% block content %}
-<!-- Hero Section for Non-Authenticated Users -->
 {% if not user.is_authenticated %}
-<div class="hero-section text-center py-5">
-    <h1 class="display-4 fw-bold mb-3">Welcome to eNusu</h1>
-    <p class="lead text-dim mb-4">The social finance platform where you earn while connecting</p>
-    <div class="d-flex gap-3 justify-content-center">
-        <a href="{% url 'users:register' %}" class="btn btn-primary rounded-pill px-4 py-2">
-            <i class="fas fa-user-plus me-2"></i>Get Started
+
+<!-- ═══ GUEST HERO ═══ -->
+<div class="guest-hero">
+    <div class="guest-logo">NUSU.</div>
+    <p class="guest-tagline">The social finance platform where you earn while connecting.</p>
+    <div class="guest-cta-row">
+        <a href="{% url 'users:register' %}" class="btn-primary-hero">
+            <i class="fas fa-bolt me-2"></i>Get Started
         </a>
-        <a href="{% url 'users:login' %}" class="btn btn-outline-primary rounded-pill px-4 py-2">
-            <i class="fas fa-sign-in-alt me-2"></i>Login
-        </a>
+        <a href="{% url 'users:login' %}" class="btn-outline-hero">Login</a>
     </div>
-    
-    <!-- Sneak Peek for Non-Authenticated Users -->
-    <div class="mt-5 pt-4">
-        <h5 class="text-dim mb-4">What you'll get</h5>
-        <div class="row g-3">
-            <div class="col-4">
-                <div class="feature-card p-3">
-                    <i class="fas fa-coins fa-2x text-primary mb-2"></i>
-                    <h6 class="mb-1">Earn Points</h6>
-                    <small class="text-dim">Complete tasks, get NSU</small>
-                </div>
-            </div>
-            <div class="col-4">
-                <div class="feature-card p-3">
-                    <i class="fas fa-users fa-2x text-primary mb-2"></i>
-                    <h6 class="mb-1">Connect</h6>
-                    <small class="text-dim">Build your network</small>
-                </div>
-            </div>
-            <div class="col-4">
-                <div class="feature-card p-3">
-                    <i class="fas fa-chart-line fa-2x text-primary mb-2"></i>
-                    <h6 class="mb-1">Grow</h6>
-                    <small class="text-dim">Watch your balance grow</small>
-                </div>
-            </div>
+    <div class="features-grid">
+        <div class="feature-tile">
+            <i class="fas fa-pickaxe"></i>
+            <h6>Mine</h6>
+            <small>Earn NSU tokens daily</small>
+        </div>
+        <div class="feature-tile">
+            <i class="fas fa-users"></i>
+            <h6>Connect</h6>
+            <small>Build your network</small>
+        </div>
+        <div class="feature-tile">
+            <i class="fas fa-chart-line"></i>
+            <h6>Grow</h6>
+            <small>Watch your balance</small>
         </div>
     </div>
 </div>
-{% endif %}
 
-<!-- Main Content for Authenticated Users -->
-{% if user.is_authenticated %}
+{% else %}
 
-<!-- Balance Card - Simplified -->
-<div class="balance-card-modern mb-4">
-    <div class="balance-header d-flex justify-content-between align-items-center mb-2">
-        <span class="text-dim small">Total Balance</span>
-        <span class="badge bg-primary-subtle text-primary rounded-pill px-3">NSU Token</span>
-    </div>
-    <div class="balance-amount-large" id="tokenBalance">{{ user.userprofile.token_balance|floatformat:2 }}</div>
-    <div class="balance-footer d-flex justify-content-between mt-2">
-        <span class="text-dim small" id="ugxBalance">≈ UGX {{ user.userprofile.get_ugx_balance|floatformat:2 }}</span>
-        <span class="text-success small">
-            <i class="fas fa-circle fa-2xs me-1"></i> Active
-        </span>
-    </div>
-</div>
+<!-- ═══ AUTHENTICATED HOME ═══ -->
+<div class="home-wrap">
 
-<!-- Quick Stats Row -->
-<div class="stats-row d-flex justify-content-between gap-3 mb-4">
-    <div class="stat-card text-center flex-grow-1 p-2">
-        <div class="stat-number" id="followersCount">{{ user.userprofile.get_followers_count }}</div>
-        <div class="stat-label small text-dim">Followers</div>
-    </div>
-    <div class="stat-card text-center flex-grow-1 p-2">
-        <div class="stat-number" id="followingCount">{{ user.userprofile.get_following_count }}</div>
-        <div class="stat-label small text-dim">Following</div>
-    </div>
-    <div class="stat-card text-center flex-grow-1 p-2">
-        <div class="stat-number" id="referralsCount">{{ user.referrals.count }}</div>
-        <div class="stat-label small text-dim">Referrals</div>
-    </div>
-</div>
+    <!-- ───── DARK HERO ZONE ───── -->
+    <div class="hero-zone">
 
-<!-- Mining Widget - Prominent -->
-{% if mining_state %}
-<div class="mining-widget-modern mb-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <div>
-            <h6 class="mb-0 fw-bold">⚡ Mining Active</h6>
-            <small class="text-dim" id="miningTime">{{ mining_state.elapsed_hours|floatformat:1 }} / 24 hours</small>
-        </div>
-        <span class="badge {% if mining_state.is_mining %}bg-success{% else %}bg-secondary{% endif %} rounded-pill px-3" id="miningStatus">
-            {% if mining_state.is_mining %}MINING{% else %}IDLE{% endif %}
-        </span>
-    </div>
-    
-    <div class="progress mining-progress mb-2" style="height: 8px;">
-        <div class="progress-bar bg-gradient" id="miningProgress" style="width: {{ mining_state.progress_percentage }}%"></div>
-    </div>
-    
-    <div class="d-flex justify-content-between align-items-center">
-        <div>
-            <span class="text-dim small">Today's Earnings</span>
-            <div class="fw-bold" id="miningPoints">{{ mining_state.points_earned_today|floatformat:2 }} NSU</div>
-        </div>
-        <div class="d-flex gap-2">
-            <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="toggleMining()">
-                {% if mining_state.is_mining %}
-                <i class="fas fa-stop me-1"></i> Stop
-                {% else %}
-                <i class="fas fa-play me-1"></i> Start
-                {% endif %}
-            </button>
-            <a href="{% url 'airdrop:dashboard' %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
-                Details <i class="fas fa-arrow-right ms-1"></i>
-            </a>
-        </div>
-    </div>
-</div>
-{% endif %}
-
-<!-- Action Buttons - Muted Style (Send & Withdraw muted for now) -->
-<div class="action-row-modern d-flex gap-3 mb-4">
-    <a href="#" class="action-pill muted" data-bs-toggle="modal" data-bs-target="#comingSoonModal">
-        <i class="fas fa-paper-plane"></i>
-        <span>Send</span>
-        <small class="coming-badge">soon</small>
-    </a>
-    <a href="#" class="action-pill muted" data-bs-toggle="modal" data-bs-target="#comingSoonModal">
-        <i class="fas fa-arrow-down"></i>
-        <span>Withdraw</span>
-        <small class="coming-badge">soon</small>
-    </a>
-    <a href="{% url 'transactions:public_ledger' %}" class="action-pill">
-        <i class="fas fa-chart-line"></i>
-        <span>Ledger</span>
-    </a>
-    <a href="{% url 'airdrop:dashboard' %}" class="action-pill highlight">
-        <i class="fas fa-bolt"></i>
-        <span>Mine</span>
-    </a>
-</div>
-
-<!-- Main Feed - Trending & Recent Activity -->
-<div class="home-feed">
-    <div class="feed-tabs d-flex gap-4 mb-3">
-        <button class="feed-tab active" onclick="switchFeed('trending')">🔥 Trending</button>
-        <button class="feed-tab" onclick="switchFeed('activity')">📊 Your Activity</button>
-        <button class="feed-tab" onclick="switchFeed('updates')">📢 Updates</button>
-    </div>
-    
-    <!-- Trending Posts Section -->
-    <div id="trending-feed" class="feed-content active">
-        {% if trending_posts %}
-            {% for post in trending_posts %}
-            <div class="post-card" onclick="window.location.href='{% url 'social:post_detail' post.id %}'">
-                <div class="post-header d-flex gap-2 align-items-center mb-2">
-                    <img src="{% if post.user.userprofile.profile_picture %}{{ post.user.userprofile.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ post.user.username|first }}&background=3b82f6&color=fff&size=32{% endif %}" 
-                         class="post-avatar" style="width: 32px; height: 32px; border-radius: 12px;">
-                    <div>
-                        <div class="fw-bold small">{{ post.user.userprofile.display_name|default:post.user.username }}</div>
-                        <div class="text-dim small">@{{ post.user.username }} • {{ post.created_at|timesince }} ago</div>
-                    </div>
-                    {% if post.likes_count > 50 %}
-                    <span class="ms-auto hot-badge">🔥 Hot</span>
-                    {% endif %}
-                </div>
-                
-                <div class="post-content-preview mb-2">
-                    {{ post.content|truncatechars:100 }}
-                </div>
-                
-                {% if post.media_items.first %}
-                <div class="post-media-preview mt-2">
-                    <img src="{{ post.media_items.first.url }}" class="img-fluid rounded-3" style="max-height: 200px; width: 100%; object-fit: cover;">
-                </div>
-                {% endif %}
-                
-                <div class="post-stats d-flex gap-4 mt-2 pt-2 border-top border-secondary">
-                    <span class="small text-dim"><i class="fas fa-heart"></i> {{ post.likes_count }}</span>
-                    <span class="small text-dim"><i class="fas fa-comment"></i> {{ post.replies_count }}</span>
-                    <span class="small text-dim"><i class="fas fa-eye"></i> {{ post.views_count }}</span>
-                </div>
+        <!-- Greeting -->
+        <div class="greeting-row">
+            <div class="greeting-text">
+                <small>Good day,</small>
+                <h2>{{ user.userprofile.display_name|default:user.username }} 👋</h2>
             </div>
-            {% endfor %}
-        {% else %}
-            <div class="empty-state text-center py-5">
-                <i class="fas fa-fire fa-3x text-dim mb-3"></i>
-                <p class="text-dim">No trending posts yet</p>
-                <a href="{% url 'social:feed' %}" class="btn btn-sm btn-primary rounded-pill">Explore Feed</a>
+            {% if user.is_verified or user.userprofile.verified %}
+            <div class="verified-chip">
+                <i class="fas fa-check-circle"></i> Verified
             </div>
-        {% endif %}
-    </div>
-    
-    <!-- Your Activity Section -->
-    <div id="activity-feed" class="feed-content" style="display: none;">
-        {% if recent_transactions %}
-            {% for tx in recent_transactions %}
-            <div class="activity-card" onclick="window.location.href='{% url 'transactions:transaction_detail' tx.id %}'">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex gap-2 align-items-center">
-                        <div class="activity-icon {% if tx.transaction_type == 'deposit' %}deposit{% else %}transfer{% endif %}">
-                            <i class="fas fa-{% if tx.transaction_type == 'deposit' %}arrow-down{% else %}exchange-alt{% endif %}"></i>
-                        </div>
-                        <div>
-                            <div class="fw-bold small">{{ tx.get_transaction_type_display }}</div>
-                            <div class="text-dim small">{{ tx.timestamp|timesince }} ago</div>
-                        </div>
-                    </div>
-                    <div class="fw-bold {% if tx.amount > 0 %}text-success{% else %}text-warning{% endif %}">
-                        {{ tx.amount }} NSU
-                    </div>
-                </div>
+            {% endif %}
+        </div>
+
+        <!-- Balance Card -->
+        <div class="balance-card">
+            <div class="balance-label">Total Balance</div>
+            <div class="balance-amount" id="tokenBalance">
+                {{ user.userprofile.token_balance|floatformat:2 }}<span class="balance-currency">NSU</span>
             </div>
-            {% endfor %}
-            
-            <div class="text-center mt-3">
-                <a href="{% url 'transactions:public_ledger' %}" class="btn btn-sm btn-outline-primary rounded-pill px-4">
-                    View All Activity <i class="fas fa-arrow-right ms-1"></i>
+            <div class="balance-ugx">
+                ≈ <strong id="ugxBalance">UGX {{ user.userprofile.get_ugx_balance|floatformat:2 }}</strong>
+            </div>
+            <div class="balance-actions">
+                <button class="bal-action-btn muted" data-bs-toggle="modal" data-bs-target="#comingSoonModal" title="Coming soon">
+                    <i class="fas fa-paper-plane"></i>
+                    Send
+                    <span class="soon-tag">soon</span>
+                </button>
+                <button class="bal-action-btn muted" data-bs-toggle="modal" data-bs-target="#comingSoonModal" title="Coming soon">
+                    <i class="fas fa-arrow-down-to-line"></i>
+                    Withdraw
+                    <span class="soon-tag">soon</span>
+                </button>
+                <a href="{% url 'transactions:public_ledger' %}" class="bal-action-btn">
+                    <i class="fas fa-chart-line"></i>
+                    Ledger
+                </a>
+                <a href="{% url 'airdrop:dashboard' %}" class="bal-action-btn primary-action">
+                    <i class="fas fa-bolt"></i>
+                    Mine
                 </a>
             </div>
-        {% else %}
-            <div class="empty-state text-center py-5">
-                <i class="fas fa-chart-simple fa-3x text-dim mb-3"></i>
-                <p class="text-dim">No transactions yet</p>
-                <a href="{% url 'airdrop:dashboard' %}" class="btn btn-sm btn-primary rounded-pill">Start Mining</a>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="quick-stats">
+            <a href="{% url 'users:followers_list' user.username %}" class="q-stat">
+                <div class="q-stat-num" id="followersCount">{{ user.userprofile.get_followers_count }}</div>
+                <div class="q-stat-label">Followers</div>
+            </a>
+            <a href="{% url 'users:following_list' user.username %}" class="q-stat">
+                <div class="q-stat-num" id="followingCount">{{ user.userprofile.get_following_count }}</div>
+                <div class="q-stat-label">Following</div>
+            </a>
+            <div class="q-stat">
+                <div class="q-stat-num" id="referralsCount">{{ user.referrals.count }}</div>
+                <div class="q-stat-label">Referrals</div>
             </div>
-        {% endif %}
-    </div>
-    
-    <!-- Updates Section -->
-    <div id="updates-feed" class="feed-content" style="display: none;">
-        {% if system_updates %}
-            {% for update in system_updates %}
-            <div class="update-card">
-                <div class="d-flex gap-2 align-items-start">
-                    <div class="update-icon {{ update.type }}">
-                        <i class="fas fa-{% if update.type == 'announcement' %}megaphone{% elif update.type == 'feature' %}rocket{% else %}info-circle{% endif %}"></i>
+        </div>
+
+        <!-- Mining Snapshots (Stories row) -->
+        {% if mining_state or active_miners %}
+        <div class="stories-section">
+            <div class="stories-label">⚡ Who's Mining Now</div>
+            <div class="stories-row">
+
+                <!-- Your mining story -->
+                <a href="{% url 'airdrop:dashboard' %}" class="story-item">
+                    <div class="story-ring story-mine">
+                        <svg viewBox="0 0 70 70">
+                            {% if mining_state and mining_state.is_mining %}
+                            <circle cx="35" cy="35" r="31"
+                                    fill="none" stroke="rgba(59,130,246,0.15)" stroke-width="3"/>
+                            <circle cx="35" cy="35" r="31"
+                                    fill="none" stroke="url(#mineGrad)" stroke-width="3"
+                                    stroke-linecap="round"
+                                    stroke-dasharray="195"
+                                    stroke-dashoffset="{{ mining_state.progress_percentage|floatformat:0|default:0 }}"
+                                    transform="rotate(-90 35 35)"/>
+                            <defs>
+                                <linearGradient id="mineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="#3b82f6"/>
+                                    <stop offset="100%" stop-color="#22d3ee"/>
+                                </linearGradient>
+                            </defs>
+                            {% else %}
+                            <circle cx="35" cy="35" r="31"
+                                    fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="3"
+                                    stroke-dasharray="4 4"/>
+                            {% endif %}
+                        </svg>
+                        <div class="story-avatar-inner">⚡</div>
                     </div>
-                    <div class="flex-grow-1">
-                        <div class="fw-bold small">{{ update.title }}</div>
-                        <div class="text-dim small">{{ update.message|truncatechars:120 }}</div>
-                        <div class="text-dim small mt-1">{{ update.created_at|timesince }} ago</div>
+                    <span class="story-name story-mine-label">
+                        {% if mining_state and mining_state.is_mining %}Mining{% else %}Start{% endif %}
+                    </span>
+                </a>
+
+                {% if active_miners %}
+                {% for miner in active_miners %}
+                <a href="{% url 'users:user_profile' miner.user.username %}" class="story-item">
+                    <div class="story-ring">
+                        <svg viewBox="0 0 70 70">
+                            <circle cx="35" cy="35" r="31"
+                                    fill="none" stroke="rgba(34,211,238,0.2)" stroke-width="3"/>
+                            <circle cx="35" cy="35" r="31"
+                                    fill="none" stroke="#22d3ee" stroke-width="3"
+                                    stroke-linecap="round"
+                                    stroke-dasharray="195"
+                                    stroke-dashoffset="{{ miner.progress_percentage|floatformat:0|default:50 }}"
+                                    transform="rotate(-90 35 35)"
+                                    class="mining-ring-active"/>
+                        </svg>
+                        {% if miner.user.userprofile.profile_picture %}
+                        <img src="{{ miner.user.userprofile.profile_picture.url }}"
+                             class="story-avatar"
+                             alt="{{ miner.user.username }}">
+                        {% else %}
+                        <img src="https://ui-avatars.com/api/?name={{ miner.user.username|first }}&background=3b82f6&color=fff&size=56"
+                             class="story-avatar"
+                             alt="{{ miner.user.username }}">
+                        {% endif %}
                     </div>
-                </div>
-            </div>
-            {% endfor %}
-        {% else %}
-            <div class="empty-state text-center py-5">
-                <i class="fas fa-newspaper fa-3x text-dim mb-3"></i>
-                <p class="text-dim">No updates yet. Check back soon!</p>
-            </div>
-        {% endif %}
-        
-        <!-- Featured Task Sneak Peek -->
-        {% if featured_task %}
-        <div class="featured-task-card mt-3" onclick="window.location.href='{% url 'tasks:task_detail' featured_task.task_code %}'">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="badge bg-primary rounded-pill">Featured Task</span>
-                <span class="text-success fw-bold">+{{ featured_task.points_reward }} NSU</span>
-            </div>
-            <h6 class="mb-1">{{ featured_task.name }}</h6>
-            <p class="small text-dim mb-2">{{ featured_task.description|truncatechars:80 }}</p>
-            <div class="d-flex justify-content-between align-items-center">
-                <span class="small text-dim"><i class="fas fa-users"></i> {{ featured_task.participants_count }} completed</span>
-                <span class="small text-primary">Join now <i class="fas fa-arrow-right"></i></span>
+                    <span class="story-name">@{{ miner.user.username|truncatechars:8 }}</span>
+                </a>
+                {% endfor %}
+                {% endif %}
+
             </div>
         </div>
         {% endif %}
-    </div>
-</div>
 
-<!-- Global Stats Footer -->
-<div class="global-stats-footer d-flex justify-content-between align-items-center mt-4 pt-3 border-top border-secondary">
-    <div class="text-center flex-grow-1">
-        <div class="small fw-bold" id="globalMiningRate">{{ global_stats.current_multiplier|default:"1.0" }}x</div>
-        <div class="text-dim small">Mining Rate</div>
-    </div>
-    <div class="text-center flex-grow-1">
-        <div class="small fw-bold" id="globalUgxRate">UGX {{ global_stats.ugx_rate|default:"3800" }}</div>
-        <div class="text-dim small">Token Value</div>
-    </div>
-    <div class="text-center flex-grow-1">
-        <div class="small fw-bold" id="globalTotalUsers">{{ global_stats.total_users|default:"0" }}</div>
-        <div class="text-dim small">Users</div>
-    </div>
-</div>
+        <!-- Mining Strip -->
+        {% if mining_state %}
+        <div class="mining-strip" onclick="toggleMining()">
+            <div class="mining-strip-icon {% if mining_state.is_mining %}active{% else %}idle{% endif %}">
+                <i class="fas fa-pickaxe" style="color:#fff;"></i>
+            </div>
+            <div class="mining-strip-info">
+                <div class="mining-strip-title">
+                    {% if mining_state.is_mining %}
+                    <span class="mining-live-dot"></span>
+                    Mining Active
+                    {% else %}
+                    Mining Idle
+                    {% endif %}
+                </div>
+                <div class="mining-strip-sub" id="miningTime">
+                    {% if mining_state.is_mining %}
+                    {{ mining_state.elapsed_hours|floatformat:1 }}h / 24h · <strong id="miningPoints">{{ mining_state.points_earned_today|floatformat:2 }} NSU</strong> earned
+                    {% else %}
+                    Tap to start · {{ mining_state.current_rate|floatformat:2 }}x rate
+                    {% endif %}
+                </div>
+                <div class="mining-progress-bar">
+                    <div class="mining-progress-fill" id="miningProgress" style="width:{{ mining_state.progress_percentage }}%;"></div>
+                </div>
+            </div>
+            <button class="mining-strip-toggle {% if mining_state.is_mining %}active{% else %}idle{% endif %}"
+                    id="miningToggleBtn"
+                    onclick="event.stopPropagation(); toggleMining();">
+                {% if mining_state.is_mining %}Stop{% else %}Start{% endif %}
+            </button>
+        </div>
+        {% endif %}
+
+    </div><!-- /hero-zone -->
+
+
+    <!-- ───── LIGHT CONTENT ZONE ───── -->
+    <div class="content-zone">
+
+        <!-- Feed Tabs -->
+        <div class="feed-tabs-row" role="tablist">
+            <button class="feed-tab-btn active" onclick="switchTab('trending', this)" role="tab">🔥 Trending</button>
+            <button class="feed-tab-btn"         onclick="switchTab('activity',  this)" role="tab">📊 Activity</button>
+            <button class="feed-tab-btn"         onclick="switchTab('updates',   this)" role="tab">📢 Updates</button>
+        </div>
+
+        <!-- ── TRENDING ── -->
+        <div id="tab-trending" class="tab-pane">
+            {% if trending_posts %}
+                {% for post in trending_posts %}
+                <a class="post-card" href="{% url 'social:post_detail' post.id %}">
+                    <div class="post-card-header">
+                        <img src="{% if post.user.userprofile.profile_picture %}{{ post.user.userprofile.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ post.user.username|first }}&background=3b82f6&color=fff&size=38{% endif %}"
+                             class="post-card-avatar"
+                             onerror="this.src='https://ui-avatars.com/api/?name={{ post.user.username|first }}&background=3b82f6&color=fff&size=38'">
+                        <div class="post-card-meta">
+                            <div class="post-card-name">
+                                {{ post.user.userprofile.display_name|default:post.user.username }}
+                                {% if post.user.userprofile.verified %}<i class="fas fa-circle-check v-icon"></i>{% endif %}
+                            </div>
+                            <div class="post-card-time">@{{ post.user.username }} · {{ post.created_at|timesince }} ago</div>
+                        </div>
+                        {% if post.likes_count > 50 %}
+                        <span class="hot-chip">🔥 Hot</span>
+                        {% endif %}
+                    </div>
+
+                    {% if post.content %}
+                    <div class="post-card-body">{{ post.content|truncatechars:120 }}</div>
+                    {% endif %}
+
+                    {% if post.media_items.first %}
+                    <img src="{{ post.media_items.first.url }}"
+                         class="post-card-img"
+                         loading="lazy"
+                         alt="Post media">
+                    {% endif %}
+
+                    <div class="post-card-stats">
+                        <span><i class="fas fa-heart" style="color:var(--rose);"></i> {{ post.likes_count }}</span>
+                        <span><i class="fas fa-comment" style="color:var(--blue);"></i> {{ post.replies_count }}</span>
+                        <span><i class="fas fa-eye" style="color:var(--light-dim);"></i> {{ post.views_count }}</span>
+                    </div>
+                </a>
+                {% endfor %}
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-fire"></i>
+                <p>No trending posts yet.</p>
+                <a href="{% url 'social:feed' %}" class="btn btn-primary btn-sm rounded-pill px-4">Explore Feed</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- ── ACTIVITY ── -->
+        <div id="tab-activity" class="tab-pane" style="display:none;">
+            {% if recent_transactions %}
+                {% for tx in recent_transactions %}
+                <a href="{% url 'transactions:transaction_detail' tx.id %}" class="activity-card">
+                    <div class="activity-card-inner">
+                        <div class="activity-icon-circle
+                            {% if tx.transaction_type == 'deposit' %}icon-deposit
+                            {% elif tx.transaction_type == 'transfer' %}icon-transfer
+                            {% else %}icon-withdraw{% endif %}">
+                            <i class="fas
+                                {% if tx.transaction_type == 'deposit' %}fa-arrow-down
+                                {% elif tx.transaction_type == 'transfer' %}fa-arrow-right-arrow-left
+                                {% else %}fa-arrow-up{% endif %}"></i>
+                        </div>
+                        <div class="activity-info">
+                            <div class="activity-type">{{ tx.get_transaction_type_display }}</div>
+                            <div class="activity-time">{{ tx.timestamp|timesince }} ago</div>
+                        </div>
+                        <div class="activity-amount {% if tx.transaction_type == 'deposit' %}amount-positive{% else %}amount-neutral{% endif %}">
+                            {{ tx.amount }} NSU
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+                <div class="text-center mt-3">
+                    <a href="{% url 'transactions:public_ledger' %}" class="btn btn-sm btn-outline-primary rounded-pill px-4">
+                        View All <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-chart-simple"></i>
+                <p>No transactions yet.</p>
+                <a href="{% url 'airdrop:dashboard' %}" class="btn btn-primary btn-sm rounded-pill px-4">Start Mining</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- ── UPDATES ── -->
+        <div id="tab-updates" class="tab-pane" style="display:none;">
+            {% if system_updates %}
+                {% for update in system_updates %}
+                <div class="update-card">
+                    <div class="update-card-inner">
+                        <div class="update-icon-circle
+                            {% if update.type == 'announcement' %}icon-announce
+                            {% elif update.type == 'feature' %}icon-feature
+                            {% else %}icon-info{% endif %}">
+                            <i class="fas
+                                {% if update.type == 'announcement' %}fa-bullhorn
+                                {% elif update.type == 'feature' %}fa-rocket
+                                {% else %}fa-circle-info{% endif %}"></i>
+                        </div>
+                        <div>
+                            <div class="update-title">{{ update.title }}</div>
+                            <div class="update-body">{{ update.message|truncatechars:120 }}</div>
+                            <div class="update-time">{{ update.created_at|timesince }} ago</div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-newspaper"></i>
+                <p>No updates yet. Check back soon!</p>
+            </div>
+            {% endif %}
+
+            {% if featured_task %}
+            <a href="{% url 'tasks:task_detail' featured_task.task_code %}" class="featured-task">
+                <span class="featured-task-badge">⚡ Featured Task</span>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="mb-0 fw-bold">{{ featured_task.name }}</h6>
+                    <span style="color:var(--emerald);font-weight:800;font-size:0.95rem;">+{{ featured_task.points_reward }} NSU</span>
+                </div>
+                <p style="font-size:0.85rem;color:rgba(255,255,255,0.55);margin:0 0 10px;">{{ featured_task.description|truncatechars:80 }}</p>
+                <div style="font-size:0.78rem;color:rgba(255,255,255,0.35);">
+                    <i class="fas fa-users me-1"></i>{{ featured_task.participants_count }} completed
+                    <span class="ms-3" style="color:var(--blue);">Join now <i class="fas fa-arrow-right ms-1"></i></span>
+                </div>
+            </a>
+            {% endif %}
+        </div>
+
+        <!-- Global Stats Bar -->
+        <div class="global-stats-bar">
+            <div class="g-stat">
+                <div class="g-stat-val" id="globalMiningRate">{{ global_stats.current_multiplier|default:"1.0" }}x</div>
+                <div class="g-stat-lbl">Mining Rate</div>
+            </div>
+            <div class="g-stat">
+                <div class="g-stat-val" id="globalUgxRate">{{ global_stats.ugx_rate|default:"3800" }}</div>
+                <div class="g-stat-lbl">UGX / NSU</div>
+            </div>
+            <div class="g-stat">
+                <div class="g-stat-val" id="globalTotalUsers">{{ global_stats.total_users|default:"0" }}</div>
+                <div class="g-stat-lbl">Users</div>
+            </div>
+        </div>
+
+    </div><!-- /content-zone -->
+</div><!-- /home-wrap -->
 
 <!-- Coming Soon Modal -->
 <div class="modal fade" id="comingSoonModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content bg-dark border-secondary">
-            <div class="modal-body text-center p-4">
-                <i class="fas fa-rocket fa-3x text-primary mb-3"></i>
-                <h5 class="mb-2">Coming Soon!</h5>
-                <p class="text-dim mb-3">This feature is being prepared. Stay tuned for updates!</p>
-                <button type="button" class="btn btn-primary rounded-pill px-4" data-bs-dismiss="modal">
-                    Got it
-                </button>
+        <div class="modal-content">
+            <div class="modal-body text-center p-5">
+                <i class="fas fa-rocket fa-2x" style="color:var(--blue);"></i>
+                <h5 class="mt-3 fw-bold">Coming Soon!</h5>
+                <p class="text-dim mt-2 mb-4" style="font-size:0.9rem;">This feature is being built. Stay tuned!</p>
+                <button type="button" class="btn btn-primary rounded-pill px-5" data-bs-dismiss="modal">Got it</button>
             </div>
         </div>
     </div>
@@ -309,260 +1249,82 @@
 {% csrf_token %}
 {% endblock %}
 
+
 {% block extra_scripts %}
 <script>
-// Feed Toggle
-function switchFeed(feed) {
-    document.querySelectorAll('.feed-content').forEach(el => el.style.display = 'none');
-    document.querySelectorAll('.feed-tab').forEach(el => el.classList.remove('active'));
-    
-    document.getElementById(`${feed}-feed`).style.display = 'block';
-    event.target.classList.add('active');
+/* ── Tab switching ── */
+function switchTab(name, btn) {
+    document.querySelectorAll('.tab-pane').forEach(p => p.style.display = 'none');
+    document.querySelectorAll('.feed-tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).style.display = 'block';
+    btn.classList.add('active');
 }
 
-// Mining Toggle Function
+/* ── Mining toggle ── */
 function toggleMining() {
     fetch("{% url 'airdrop:toggle_mining' %}", {
         method: 'POST',
-        headers: {
-            'X-CSRFToken': '{{ csrf_token }}',
-            'Content-Type': 'application/json',
-        }
+        headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json' }
     })
-    .then(response => response.json())
+    .then(r => r.json())
     .then(data => {
-        if (data.status === 'started' || data.status === 'stopped') {
-            const statusBadge = document.getElementById('miningStatus');
-            const progressBar = document.getElementById('miningProgress');
-            const timeDisplay = document.getElementById('miningTime');
-            const pointsDisplay = document.getElementById('miningPoints');
-            const miningButton = document.querySelector('.mining-widget-modern .btn-outline-primary');
-            
-            if (data.is_mining) {
-                statusBadge.textContent = 'MINING';
-                statusBadge.className = 'badge bg-success rounded-pill px-3';
-                if (miningButton) {
-                    miningButton.innerHTML = '<i class="fas fa-stop me-1"></i> Stop';
-                }
-            } else {
-                statusBadge.textContent = 'IDLE';
-                statusBadge.className = 'badge bg-secondary rounded-pill px-3';
-                if (miningButton) {
-                    miningButton.innerHTML = '<i class="fas fa-play me-1"></i> Start';
-                }
-            }
-            
-            if (progressBar) progressBar.style.width = data.progress_percentage + '%';
-            if (timeDisplay) timeDisplay.textContent = data.elapsed_hours.toFixed(1) + ' / 24 hours';
-            if (pointsDisplay) pointsDisplay.textContent = data.session_points.toFixed(2) + ' NSU';
-            
-            showToast(data.status === 'started' ? 'Mining started!' : 'Mining stopped');
+        const btn      = document.getElementById('miningToggleBtn');
+        const icon     = document.querySelector('.mining-strip-icon');
+        const timeEl   = document.getElementById('miningTime');
+        const bar      = document.getElementById('miningProgress');
+        const ptsEl    = document.getElementById('miningPoints');
+
+        if (data.is_mining) {
+            if (btn)  { btn.textContent = 'Stop'; btn.className = 'mining-strip-toggle active'; }
+            if (icon) { icon.className  = 'mining-strip-icon active'; }
+        } else {
+            if (btn)  { btn.textContent = 'Start'; btn.className = 'mining-strip-toggle idle'; }
+            if (icon) { icon.className  = 'mining-strip-icon idle'; }
         }
+
+        if (bar)   bar.style.width    = (data.progress_percentage || 0) + '%';
+        if (ptsEl) ptsEl.textContent  = (data.session_points || 0).toFixed(2) + ' NSU';
+
+        showToast(data.status === 'started' ? '⚡ Mining started!' : '✓ Mining stopped', 'success');
     })
-    .catch(error => {
-        console.error('Error:', error);
-        showToast('Error toggling mining', 'error');
-    });
+    .catch(() => showToast('Error toggling mining', 'error'));
 }
 
-// Update user stats
-function updateUserStats() {
+/* ── Stat polling ── */
+function refreshStats() {
     fetch("{% url 'user_stats_api' %}")
-    .then(response => response.json())
-    .then(data => {
-        document.getElementById('followersCount').textContent = data.followers;
-        document.getElementById('followingCount').textContent = data.following;
-        document.getElementById('referralsCount').textContent = data.referrals;
-        const balanceEl = document.getElementById('tokenBalance');
-        if (balanceEl) balanceEl.textContent = data.token_balance.toFixed(2);
-        const ugxEl = document.getElementById('ugxBalance');
-        if (ugxEl) ugxEl.textContent = '≈ UGX ' + data.ugx_balance.toFixed(2);
+    .then(r => r.json())
+    .then(d => {
+        const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+        set('followersCount', d.followers ?? '');
+        set('followingCount', d.following ?? '');
+        set('referralsCount', d.referrals ?? '');
+        set('tokenBalance',   d.token_balance != null ? parseFloat(d.token_balance).toFixed(2) : '');
+        set('ugxBalance',     d.ugx_balance   != null ? 'UGX ' + parseFloat(d.ugx_balance).toFixed(2) : '');
+        if (d.mining) {
+            set('miningProgress', ''); // handled via style below
+            const bar = document.getElementById('miningProgress');
+            if (bar) bar.style.width = (d.mining.progress_percentage || 0) + '%';
+        }
     })
-    .catch(error => console.error('Error updating user stats:', error));
+    .catch(() => {});
 }
 
-// Update global stats
-function updateGlobalStats() {
+function refreshGlobal() {
     fetch("{% url 'global_stats' %}")
-    .then(response => response.json())
-    .then(data => {
-        document.getElementById('globalMiningRate').textContent = data.current_multiplier + 'x';
-        document.getElementById('globalUgxRate').textContent = 'UGX ' + data.ugx_rate;
-        document.getElementById('globalTotalUsers').textContent = data.total_users;
+    .then(r => r.json())
+    .then(d => {
+        const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+        set('globalMiningRate', (d.current_multiplier ?? 1.0) + 'x');
+        set('globalUgxRate',    d.ugx_rate ?? 3800);
+        set('globalTotalUsers', d.total_users ?? 0);
     })
-    .catch(error => console.error('Error updating global stats:', error));
+    .catch(() => {});
 }
 
-function showToast(message, type = 'success') {
-    const toast = document.createElement('div');
-    toast.className = `toast-notification toast-${type}`;
-    toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>${message}`;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 2000);
-}
-
-// Auto-refresh intervals
-document.addEventListener('DOMContentLoaded', function() {
-    setInterval(updateUserStats, 30000);
-    setInterval(updateGlobalStats, 60000);
+document.addEventListener('DOMContentLoaded', () => {
+    setInterval(refreshStats,  30000);
+    setInterval(refreshGlobal, 60000);
 });
 </script>
-
-<style>
-.balance-card-modern {
-    background: linear-gradient(135deg, #1e293b, #0f172a);
-    border-radius: 28px;
-    padding: 20px;
-    border: 1px solid #334155;
-}
-.balance-amount-large {
-    font-size: 2.5rem;
-    font-weight: 800;
-    letter-spacing: -1px;
-}
-.stat-card {
-    background: var(--surface);
-    border-radius: 20px;
-}
-.stat-number {
-    font-size: 1.3rem;
-    font-weight: 700;
-}
-.mining-widget-modern {
-    background: var(--surface);
-    border-radius: 24px;
-    padding: 16px;
-}
-.progress-bar.bg-gradient {
-    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-}
-.action-pill {
-    flex: 1;
-    background: var(--surface);
-    border-radius: 40px;
-    padding: 12px 8px;
-    text-align: center;
-    text-decoration: none;
-    color: var(--text-dim);
-    transition: all 0.2s;
-    position: relative;
-}
-.action-pill i {
-    font-size: 1.1rem;
-    display: block;
-    margin-bottom: 4px;
-}
-.action-pill span {
-    font-size: 0.7rem;
-    font-weight: 500;
-}
-.action-pill.muted {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-.action-pill.highlight {
-    background: var(--primary);
-    color: white;
-}
-.action-pill:not(.muted):hover {
-    transform: translateY(-2px);
-    background: var(--primary);
-    color: white;
-}
-.coming-badge {
-    position: absolute;
-    top: -6px;
-    right: 8px;
-    background: #f59e0b;
-    color: #000;
-    font-size: 0.55rem;
-    padding: 2px 6px;
-    border-radius: 20px;
-    font-weight: 600;
-}
-.post-card, .activity-card, .update-card, .featured-task-card {
-    background: var(--surface);
-    border-radius: 20px;
-    padding: 14px;
-    margin-bottom: 12px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.post-card:hover, .activity-card:hover, .update-card:hover, .featured-task-card:hover {
-    transform: translateY(-2px);
-    background: #2d3a4e;
-}
-.hot-badge {
-    background: linear-gradient(135deg, #f97316, #dc2626);
-    color: white;
-    font-size: 0.65rem;
-    padding: 2px 8px;
-    border-radius: 20px;
-}
-.activity-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.activity-icon.deposit {
-    background: rgba(16, 185, 129, 0.1);
-    color: #10b981;
-}
-.activity-icon.transfer {
-    background: rgba(59, 130, 246, 0.1);
-    color: #3b82f6;
-}
-.update-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.update-icon.announcement {
-    background: rgba(245, 158, 11, 0.1);
-    color: #f59e0b;
-}
-.update-icon.feature {
-    background: rgba(139, 92, 246, 0.1);
-    color: #8b5cf6;
-}
-.update-icon.info {
-    background: rgba(59, 130, 246, 0.1);
-    color: #3b82f6;
-}
-.feed-tabs {
-    border-bottom: 1px solid var(--border);
-}
-.feed-tab {
-    background: none;
-    border: none;
-    padding: 8px 0;
-    color: var(--text-dim);
-    font-weight: 600;
-    font-size: 0.85rem;
-    cursor: pointer;
-    position: relative;
-}
-.feed-tab.active {
-    color: var(--primary);
-}
-.feed-tab.active::after {
-    content: '';
-    position: absolute;
-    bottom: -1px;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: var(--primary);
-}
-.feature-card {
-    background: var(--surface);
-    border-radius: 20px;
-}
-</style>
 {% endblock %}

@@ -5,56 +5,32 @@
 
 {% block extra_css %}
 <style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-
-    body {
-        background: #000;
-        color: white;
-        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        overflow-x: hidden;
-    }
-
-    /* Top bar and bottom dock should be visible */
-    .top-bar, .dock-container {
-        display: flex !important;
-        z-index: 1000;
-    }
-
-    /* Main feed container */
+    body { background: #000; }
+    
     .feed-container {
-        max-width: 400px;
-        margin: 60px auto 80px;
-        background: #000;
+        max-width: 450px;
+        margin: 0 auto;
         position: relative;
-        border-left: 1px solid #222;
-        border-right: 1px solid #222;
-        min-height: calc(100vh - 140px);
+        height: 100vh;
+        overflow: hidden;
     }
-
+    
     .snap-scroll {
-        height: calc(100vh - 140px);
+        height: 100vh;
         overflow-y: scroll;
         scroll-snap-type: y mandatory;
         scrollbar-width: none;
     }
-
-    .snap-scroll::-webkit-scrollbar {
-        display: none;
-    }
-
+    .snap-scroll::-webkit-scrollbar { display: none; }
+    
     .post {
-        height: calc(100vh - 140px);
+        height: 100vh;
         width: 100%;
         scroll-snap-align: start;
-        scroll-snap-stop: always;
         position: relative;
         background: #000;
     }
-
+    
     .post-video {
         width: 100%;
         height: 100%;
@@ -62,48 +38,39 @@
         position: absolute;
         top: 0;
         left: 0;
-        background: #000;
     }
-
+    
     .text-post-container {
         width: 100%;
         height: 100%;
         position: absolute;
-        top: 0;
-        left: 0;
         display: flex;
         align-items: center;
         justify-content: center;
         background-size: cover !important;
         background-position: center !important;
     }
-
-    @keyframes gradientShift {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-    }
-
-    .gradient-sunset { background: linear-gradient(135deg, #667eea, #764ba2); background-size: 200% 200%; }
-    .gradient-pink { background: linear-gradient(135deg, #f093fb, #f5576c); background-size: 200% 200%; }
-    .gradient-ocean { background: linear-gradient(135deg, #4facfe, #00f2fe); background-size: 200% 200%; }
-    .animated-northern { background: linear-gradient(135deg, #ff6b6b, #4ecdc4, #45b7d1); background-size: 300% 300%; animation: gradientShift 3s ease infinite; }
-    .animated-pastel { background: linear-gradient(135deg, #a8edea, #fed6e3, #ffd3b6); background-size: 300% 300%; animation: gradientShift 3s ease infinite; }
-    .animated-neon { background: linear-gradient(135deg, #f12711, #f5af19, #00c6fb); background-size: 300% 300%; animation: gradientShift 4s ease infinite; }
-
+    
     .text-post-content {
         padding: 40px;
         text-align: center;
         font-weight: bold;
         line-height: 1.4;
-        width: 100%;
         color: white;
         text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        word-wrap: break-word;
-        z-index: 2;
         font-size: 1.8rem;
+        z-index: 2;
     }
-
+    
+    @keyframes gradientShift {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
+    .gradient-sunset { background: linear-gradient(135deg, #667eea, #764ba2); background-size: 200% 200%; }
+    .gradient-pink { background: linear-gradient(135deg, #f093fb, #f5576c); background-size: 200% 200%; }
+    .gradient-ocean { background: linear-gradient(135deg, #4facfe, #00f2fe); background-size: 200% 200%; }
+    .animated-northern { background: linear-gradient(135deg, #ff6b6b, #4ecdc4, #45b7d1); background-size: 300% 300%; animation: gradientShift 3s ease infinite; }
+    
     .post-header {
         position: absolute;
         top: 20px;
@@ -113,506 +80,319 @@
         justify-content: space-between;
         align-items: center;
         z-index: 20;
-        background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent);
-        padding: 15px 20px 30px;
+        background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent);
+        padding: 12px 16px 30px;
         border-radius: 0 0 20px 20px;
     }
-
+    
     .post-user-info {
         display: flex;
         align-items: center;
         gap: 10px;
     }
-
+    
     .post-avatar {
-        width: 40px;
-        height: 40px;
+        width: 44px;
+        height: 44px;
         border-radius: 50%;
         object-fit: cover;
-        border: 2px solid white;
+        border: 2px solid rgba(255,255,255,0.9);
     }
-
+    
     .post-username {
         color: white;
         text-decoration: none;
-        font-weight: bold;
-        font-size: 1rem;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        font-weight: 600;
+        font-size: 0.95rem;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.5);
     }
-
-    .post-username:hover {
-        color: #3b82f6;
-    }
-
-    .delete-post-btn {
-        background: rgba(239, 68, 68, 0.8);
+    .post-username:hover { color: #3b82f6; }
+    .verified { color: #3b82f6; font-size: 0.75rem; margin-left: 3px; }
+    
+    .post-menu-btn {
+        background: rgba(0,0,0,0.5);
         backdrop-filter: blur(5px);
-        color: white;
         border: none;
-        width: 40px;
-        height: 40px;
+        color: white;
+        width: 34px;
+        height: 34px;
         border-radius: 50%;
+        cursor: pointer;
+        font-size: 1.1rem;
+        transition: all 0.2s;
+    }
+    .post-menu-btn:hover { background: rgba(59,130,246,0.7); }
+    
+    .dropdown-menu-custom {
+        position: absolute;
+        right: 0;
+        top: 45px;
+        background: rgba(0,0,0,0.9);
+        backdrop-filter: blur(15px);
+        border-radius: 16px;
+        min-width: 150px;
+        border: 1px solid rgba(255,255,255,0.1);
+        z-index: 150;
+        display: none;
+        overflow: hidden;
+    }
+    .dropdown-menu-custom.show { display: block; }
+    .dropdown-item-custom {
         display: flex;
         align-items: center;
-        justify-content: center;
+        gap: 10px;
+        padding: 10px 16px;
+        color: rgba(255,255,255,0.9);
+        font-size: 0.85rem;
         cursor: pointer;
-        transition: all 0.2s;
-        font-size: 1.2rem;
-        border: 1px solid rgba(255,255,255,0.2);
+        transition: background 0.2s;
     }
-
-    .delete-post-btn:hover {
-        background: #ef4444;
-        transform: scale(1.1);
-    }
-
+    .dropdown-item-custom:hover { background: rgba(255,255,255,0.1); }
+    .dropdown-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 5px 0; }
+    
     .action-buttons {
         position: absolute;
-        right: 15px;
+        right: 16px;
         bottom: 100px;
         display: flex;
         flex-direction: column;
-        gap: 20px;
+        gap: 24px;
         z-index: 10;
     }
-
     .action-item {
         text-align: center;
-        color: white;
         cursor: pointer;
         transition: transform 0.2s;
     }
-
-    .action-item:hover {
-        transform: scale(1.1);
-    }
-
-    .action-item i {
-        font-size: 32px;
-        display: block;
-        margin-bottom: 5px;
-        text-shadow: 0 2px 5px rgba(0,0,0,0.5);
-    }
-
-    .action-item i.active {
-        color: #ef4444;
-    }
-
-    .action-item i.fa-bookmark.active {
-        color: #3b82f6;
-    }
-
-    .action-item span {
-        font-size: 14px;
-        font-weight: 600;
-        text-shadow: 0 2px 5px rgba(0,0,0,0.5);
-    }
-
+    .action-item:hover { transform: scale(1.1); }
+    .action-item i { font-size: 32px; display: block; margin-bottom: 4px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+    .action-item i.active { color: #ef4444; }
+    .action-item i.fa-bookmark.active { color: #3b82f6; }
+    .action-item span { font-size: 12px; font-weight: 600; }
+    
     .post-info {
         position: absolute;
         bottom: 100px;
         left: 20px;
         right: 80px;
         z-index: 10;
-        text-shadow: 0 2px 5px rgba(0,0,0,0.5);
     }
-
     .username {
         font-weight: bold;
-        font-size: 1.1rem;
-        margin-bottom: 8px;
-        display: flex;
+        font-size: 1rem;
+        margin-bottom: 5px;
+        display: inline-flex;
         align-items: center;
         gap: 5px;
         color: white;
         text-decoration: none;
     }
-
-    .username:hover {
-        color: #3b82f6;
-    }
-
-    .verified {
-        color: #3b82f6;
-        font-size: 0.9rem;
-    }
-
+    .username:hover { color: #3b82f6; }
     .caption {
-        font-size: 0.95rem;
-        margin-bottom: 8px;
+        font-size: 0.85rem;
+        margin-bottom: 5px;
         opacity: 0.9;
         max-width: 85%;
-        white-space: normal;
-        word-wrap: break-word;
         line-height: 1.4;
-        color: white;
     }
-
     .audio {
-        font-size: 0.85rem;
+        font-size: 0.75rem;
         opacity: 0.7;
         display: flex;
         align-items: center;
         gap: 5px;
     }
-
-    .audio i {
-        font-size: 0.8rem;
-        animation: spin 3s linear infinite;
-    }
-
-    @keyframes spin {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
-    }
-
+    .audio i { animation: spin 3s linear infinite; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    
     .video-progress {
         position: absolute;
         top: 0;
         left: 0;
         width: 100%;
         height: 3px;
-        background: rgba(255,255,255,0.2);
+        background: rgba(255,255,255,0.3);
         z-index: 15;
     }
-
     .video-progress-bar {
         height: 100%;
         width: 0%;
         background: #3b82f6;
         transition: width 0.1s linear;
     }
-
+    
+    /* Feed Tabs - LEFT ALIGNED */
+    .feed-tabs {
+        position: fixed;
+        top: 72px;
+        left: 20px;
+        display: flex;
+        gap: 16px;
+        z-index: 100;
+        background: rgba(0,0,0,0.5);
+        backdrop-filter: blur(10px);
+        padding: 6px 16px;
+        border-radius: 40px;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    .feed-tab {
+        color: rgba(255,255,255,0.6);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.85rem;
+        padding: 5px 12px;
+        border-radius: 30px;
+        transition: all 0.2s;
+    }
+    .feed-tab.active {
+        color: white;
+        background: #3b82f6;
+    }
+    
+    .create-btn {
+        position: fixed;
+        bottom: 90px;
+        right: 20px;
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #3b82f6, #6366f1);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+        text-decoration: none;
+        box-shadow: 0 4px 15px rgba(59,130,246,0.4);
+        transition: all 0.2s;
+    }
+    .create-btn:hover { transform: scale(1.05); }
+    
     .nav-arrows {
         position: fixed;
-        right: 30px;
+        right: 20px;
         top: 50%;
         transform: translateY(-50%);
         display: flex;
         flex-direction: column;
-        gap: 15px;
+        gap: 12px;
         z-index: 100;
     }
-
     .nav-arrow {
-        width: 45px;
-        height: 45px;
+        width: 40px;
+        height: 40px;
         border-radius: 50%;
-        background: rgba(255,255,255,0.1);
-        backdrop-filter: blur(10px);
+        background: rgba(0,0,0,0.5);
+        backdrop-filter: blur(8px);
         border: 1px solid rgba(255,255,255,0.2);
         color: white;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        transition: all 0.3s;
+        transition: all 0.2s;
     }
-
-    .nav-arrow:hover {
-        background: #3b82f6;
-        transform: scale(1.1);
-    }
-
-    .create-btn {
-        position: fixed;
-        bottom: 90px;
-        right: 30px;
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        background: #3b82f6;
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        z-index: 100;
-        box-shadow: 0 4px 15px rgba(59,130,246,0.4);
-        transition: all 0.3s;
-        text-decoration: none;
-        border: none;
-    }
-
-    .create-btn:hover {
-        transform: scale(1.1) rotate(90deg);
-        background: #2563eb;
-    }
-
-    .feed-tabs {
-        position: fixed;
-        top: 70px;
-        left: 50%;
-        transform: translateX(-50%);
-        display: flex;
-        gap: 20px;
-        z-index: 100;
-        background: rgba(0,0,0,0.5);
-        backdrop-filter: blur(10px);
-        padding: 8px 20px;
-        border-radius: 50px;
-        border: 1px solid rgba(255,255,255,0.1);
-    }
-
-    .feed-tab {
-        color: rgba(255,255,255,0.6);
-        text-decoration: none;
-        font-weight: 600;
-        padding: 5px 15px;
-        border-radius: 50px;
-        transition: all 0.3s;
-    }
-
-    .feed-tab.active {
-        color: white;
-        background: #3b82f6;
-    }
-
-    .feed-tab:hover {
-        color: white;
-    }
-
-    .new-posts-badge {
-        position: fixed;
-        top: 130px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: #3b82f6;
-        color: white;
-        padding: 8px 20px;
-        border-radius: 50px;
-        font-size: 0.9rem;
-        font-weight: 600;
-        z-index: 100;
-        cursor: pointer;
-        box-shadow: 0 4px 15px rgba(59,130,246,0.4);
-        animation: bounce 1s ease infinite;
-        display: none;
-    }
-
-    @keyframes bounce {
-        0%, 100% { transform: translateX(-50%) translateY(0); }
-        50% { transform: translateX(-50%) translateY(-5px); }
-    }
-
+    .nav-arrow:hover { background: #3b82f6; }
+    
+    /* Comments Modal */
     .modal-overlay {
         position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
+        top: 0; left: 0; right: 0; bottom: 0;
         background: rgba(0,0,0,0.7);
         z-index: 1000;
         display: none;
-        backdrop-filter: blur(5px);
     }
-
     .comments-modal {
         position: fixed;
         bottom: 0;
         left: 0;
         right: 0;
-        background: #1a1a1a;
-        border-top-left-radius: 20px;
-        border-top-right-radius: 20px;
-        padding: 20px;
+        background: #111;
+        border-radius: 24px 24px 0 0;
         transform: translateY(100%);
         transition: transform 0.3s ease;
         z-index: 1001;
         max-height: 80vh;
-        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
     }
-
-    .comments-modal.show {
-        transform: translateY(0);
-    }
-
+    .comments-modal.show { transform: translateY(0); }
     .modal-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 20px;
-        padding-bottom: 10px;
-        border-bottom: 1px solid #333;
+        padding: 16px 20px;
+        border-bottom: 1px solid #222;
     }
-
-    .close-modal {
-        cursor: pointer;
-        font-size: 24px;
-        color: #999;
+    .close-modal { cursor: pointer; font-size: 24px; color: #999; }
+    .comments-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px;
     }
-
-    .close-modal:hover {
-        color: white;
-    }
-
     .comment-item {
         display: flex;
-        gap: 10px;
-        margin-bottom: 15px;
-        padding: 10px;
-        background: #222;
-        border-radius: 10px;
+        gap: 12px;
+        margin-bottom: 20px;
     }
-
     .comment-avatar {
         width: 40px;
         height: 40px;
         border-radius: 50%;
         object-fit: cover;
     }
-
-    .comment-content {
-        flex: 1;
-    }
-
-    .comment-author {
-        font-weight: bold;
-        margin-bottom: 5px;
-    }
-
-    .comment-text {
-        color: #ddd;
-        font-size: 0.9rem;
-    }
-
-    .comment-time {
-        font-size: 0.7rem;
-        color: #666;
-        margin-top: 5px;
-    }
-
+    .comment-content { flex: 1; }
+    .comment-author { font-weight: bold; font-size: 0.85rem; display: flex; align-items: center; gap: 5px; }
+    .comment-text { font-size: 0.85rem; color: #ccc; margin-top: 4px; line-height: 1.4; }
+    .comment-time { font-size: 0.7rem; color: #666; margin-top: 4px; }
     .add-comment {
-        position: sticky;
-        bottom: 0;
-        background: #1a1a1a;
-        padding: 15px 0;
-        margin-top: 20px;
+        padding: 16px 20px;
+        border-top: 1px solid #222;
+        background: #111;
     }
-
     .comment-input {
         width: 100%;
-        padding: 12px 15px;
-        border-radius: 25px;
+        padding: 12px 16px;
+        border-radius: 30px;
         border: 1px solid #333;
-        background: #222;
+        background: #1a1a1a;
         color: white;
-        font-size: 0.95rem;
-    }
-
-    .comment-input:focus {
+        font-size: 0.9rem;
         outline: none;
-        border-color: #3b82f6;
     }
-
+    .comment-input:focus { border-color: #3b82f6; }
+    
     .delete-modal {
         position: fixed;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
         background: #1a1a1a;
-        padding: 30px;
-        border-radius: 30px;
+        padding: 24px;
+        border-radius: 24px;
         z-index: 2000;
         display: none;
-        width: 90%;
-        max-width: 350px;
+        width: 280px;
         text-align: center;
         border: 1px solid #333;
     }
-
-    .delete-modal.show {
-        display: block;
-    }
-
-    .delete-modal h3 {
-        margin-bottom: 15px;
-        color: #ef4444;
-    }
-
-    .delete-modal-buttons {
-        display: flex;
-        gap: 15px;
-        justify-content: center;
-        margin-top: 20px;
-    }
-
-    .delete-confirm-btn {
-        background: #ef4444;
-        color: white;
-        border: none;
-        padding: 10px 25px;
-        border-radius: 25px;
-        cursor: pointer;
-        font-weight: 600;
-    }
-
-    .delete-cancel-btn {
-        background: #333;
-        color: white;
-        border: none;
-        padding: 10px 25px;
-        border-radius: 25px;
-        cursor: pointer;
-        font-weight: 600;
-    }
-
-    .loading-spinner {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        color: white;
-        z-index: 1000;
-        display: none;
-    }
-
-    .toast-message {
-        position: fixed;
-        bottom: 100px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: #1e293b;
-        color: white;
-        padding: 12px 24px;
-        border-radius: 50px;
-        z-index: 2100;
-        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
-        animation: slideUp 0.3s ease;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    @keyframes slideUp {
-        from { transform: translate(-50%, 100%); opacity: 0; }
-        to { transform: translate(-50%, 0); opacity: 1; }
-    }
-
-    .video-error {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        color: white;
-        text-align: center;
-        background: rgba(0,0,0,0.7);
-        padding: 20px;
-        border-radius: 10px;
-    }
-
+    .delete-modal.show { display: block; }
+    .delete-modal h3 { color: #ef4444; font-size: 1.2rem; margin-bottom: 12px; }
+    .delete-modal-buttons { display: flex; gap: 12px; justify-content: center; margin-top: 20px; }
+    .delete-confirm-btn { background: #ef4444; color: white; border: none; padding: 8px 20px; border-radius: 30px; cursor: pointer; }
+    .delete-cancel-btn { background: #333; color: white; border: none; padding: 8px 20px; border-radius: 30px; cursor: pointer; }
+    
     @media (max-width: 768px) {
+        .feed-tabs { top: 60px; left: 16px; gap: 12px; padding: 5px 12px; }
+        .feed-tab { font-size: 0.75rem; padding: 4px 10px; }
+        .create-btn { bottom: 80px; right: 16px; width: 48px; height: 48px; }
         .nav-arrows { display: none; }
-        .feed-tabs { top: 60px; }
-        .create-btn { bottom: 80px; right: 20px; width: 50px; height: 50px; }
-        .feed-container { margin: 50px auto 70px; }
-        .snap-scroll { height: calc(100vh - 120px); }
-        .post { height: calc(100vh - 120px); }
-        .action-buttons { bottom: 80px; }
-        .post-info { bottom: 80px; }
-        .caption { max-width: 75%; font-size: 0.85rem; }
-        .username { font-size: 1rem; }
+        .action-buttons { right: 12px; bottom: 80px; gap: 20px; }
+        .action-item i { font-size: 28px; }
+        .post-info { bottom: 80px; left: 16px; right: 70px; }
+        .post-header { top: 12px; left: 12px; right: 12px; }
+        .post-avatar { width: 38px; height: 38px; }
+        .text-post-content { font-size: 1.4rem; padding: 20px; }
     }
 </style>
 {% endblock %}
@@ -623,25 +403,19 @@
     <a href="{% url 'social:following_feed' %}" class="feed-tab {% if feed_title == 'Following' %}active{% endif %}">Following</a>
 </div>
 
-<div class="new-posts-badge" id="newPostsBadge" onclick="refreshFeed()">
-    <i class="fas fa-arrow-up me-2"></i>New posts available
-</div>
-
 <div class="nav-arrows">
-    <div class="nav-arrow" onclick="scrollFeed('up')"><i class="fas fa-chevron-up"></i></div>
-    <div class="nav-arrow" onclick="scrollFeed('down')"><i class="fas fa-chevron-down"></i></div>
+    <div class="nav-arrow" onclick="scrollUp()"><i class="fas fa-chevron-up"></i></div>
+    <div class="nav-arrow" onclick="scrollDown()"><i class="fas fa-chevron-down"></i></div>
 </div>
 
 <a href="{% url 'social:create_post' %}" class="create-btn"><i class="fas fa-plus"></i></a>
 
-<div class="loading-spinner" id="loadingSpinner"><i class="fas fa-spinner fa-spin fa-3x"></i></div>
-
 <div class="delete-modal" id="deleteModal">
-    <h3><i class="fas fa-trash-alt me-2"></i>Delete Post?</h3>
-    <p>This action cannot be undone.</p>
+    <h3>Delete Post?</h3>
+    <p>This cannot be undone</p>
     <div class="delete-modal-buttons">
         <button class="delete-cancel-btn" onclick="closeDeleteModal()">Cancel</button>
-        <button class="delete-confirm-btn" id="confirmDeleteBtn" onclick="confirmDelete()">Delete</button>
+        <button class="delete-confirm-btn" onclick="confirmDelete()">Delete</button>
     </div>
 </div>
 <div class="modal-overlay" id="deleteOverlay" onclick="closeDeleteModal()"></div>
@@ -649,10 +423,10 @@
 <div class="modal-overlay" id="modalOverlay" onclick="closeComments()"></div>
 <div class="comments-modal" id="commentsModal">
     <div class="modal-header">
-        <h5><i class="fas fa-comment me-2"></i>Comments</h5>
+        <h5><i class="fas fa-comment"></i> Comments</h5>
         <span class="close-modal" onclick="closeComments()">&times;</span>
     </div>
-    <div id="commentsList" style="max-height: 50vh; overflow-y: auto;"></div>
+    <div class="comments-list" id="commentsList"></div>
     <div class="add-comment">
         <input type="text" class="comment-input" id="commentInput" placeholder="Add a comment..." onkeypress="handleCommentKeypress(event)">
     </div>
@@ -664,50 +438,51 @@
         <div class="post" data-post-id="{{ post.id }}">
             <div class="post-header">
                 <div class="post-user-info">
-                    <img src="{% if post.user.userprofile.profile_picture %}{{ post.user.userprofile.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ post.user.username }}&background=3b82f6&color=fff&size=40{% endif %}" 
+                    <img src="{% if post.user.userprofile.profile_picture %}{{ post.user.userprofile.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ post.user.username }}&background=3b82f6&color=fff&size=44&bold=true&length=1{% endif %}" 
                          class="post-avatar" 
-                         onerror="this.src='https://ui-avatars.com/api/?name={{ post.user.username }}&background=3b82f6&color=fff&size=40'">
+                         onerror="this.src='https://ui-avatars.com/api/?name={{ post.user.username }}&background=3b82f6&color=fff&size=44&bold=true&length=1'">
                     <a href="{% url 'users:user_profile' post.user.username %}" class="post-username">
                         @{{ post.user.username }}
                         {% if post.user.userprofile.verified %}<i class="fas fa-check-circle verified"></i>{% endif %}
                     </a>
                 </div>
-                {% if post.user == request.user %}
-                <button class="delete-post-btn" onclick="showDeleteModal('{{ post.id }}')"><i class="fas fa-trash-alt"></i></button>
-                {% endif %}
+                <div style="position: relative;">
+                    <button class="post-menu-btn" onclick="toggleMenu(event, {{ post.id }})">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </button>
+                    <div class="dropdown-menu-custom" id="menu-{{ post.id }}">
+                        {% if post.user == request.user %}
+                        <div class="dropdown-item-custom" onclick="deletePost('{{ post.id }}')">
+                            <i class="fas fa-trash-alt"></i> Delete
+                        </div>
+                        {% endif %}
+                        <div class="dropdown-item-custom" onclick="downloadPost('{{ post.id }}')">
+                            <i class="fas fa-download"></i> Download
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <div class="dropdown-item-custom" onclick="sharePost('{{ post.id }}')">
+                            <i class="fas fa-share-alt"></i> Share
+                        </div>
+                    </div>
+                </div>
             </div>
             
             {% if post.post_type == 'text' %}
                 <div class="text-post-container 
-                    {% if post.background_template and post.background_template.css_class %}{{ post.background_template.css_class }}{% else %}gradient-sunset{% endif %}"
-                    {% if post.background_template and post.background_template.gradient_css and not post.background_template.css_class %}
-                        style="background: {{ post.background_template.gradient_css }}; background-size: {% if post.background_template.is_animated %}300% 300%{% else %}cover{% endif %}; animation: {% if post.background_template.is_animated %}gradientShift {{ post.background_template.animation_duration }}s ease infinite{% endif %};">
-                    {% endif %}>
-                    <div class="text-post-content" 
-                         style="text-align: {{ post.text_alignment }}; font-size: {{ post.text_size }}rem; color: {{ post.text_color }}; font-family: {% if post.text_font == 'bold' %}Arial Black{% elif post.text_font == 'handwriting' %}Caveat, cursive{% elif post.text_font == 'typewriter' %}Courier New{% else %}inherit{% endif %};">
-                        {{ post.content|linebreaksbr }}
-                    </div>
+                    {% if post.background_template and post.background_template.css_class %}{{ post.background_template.css_class }}{% else %}gradient-sunset{% endif %}">
+                    <div class="text-post-content">{{ post.content|linebreaksbr }}</div>
                 </div>
             {% elif post.media_items.all %}
                 {% with media=post.media_items.first %}
                     {% if media.is_video %}
-                        <video class="post-video" 
-                               autoplay 
-                               loop 
-                               muted 
-                               playsinline 
-                               preload="auto"
-                               data-post-id="{{ post.id }}"
-                               poster="{% if media.thumbnail_url %}{{ media.thumbnail_url }}{% endif %}">
+                        <video class="post-video" autoplay loop muted playsinline preload="auto" data-post-id="{{ post.id }}">
                             <source src="{{ media.url }}" type="video/mp4">
-                            <source src="{{ media.url }}" type="video/webm">
-                            Your browser does not support the video tag.
                         </video>
                         <div class="video-progress">
                             <div class="video-progress-bar" id="progress-{{ post.id }}"></div>
                         </div>
                     {% elif media.is_image %}
-                        <img src="{{ media.url }}" class="post-video" alt="Post image" loading="lazy">
+                        <img src="{{ media.url }}" class="post-video" alt="Post image">
                     {% endif %}
                 {% endwith %}
             {% endif %}
@@ -719,7 +494,7 @@
                 </div>
                 <div class="action-item" onclick="openComments('{{ post.id }}')">
                     <i class="fas fa-comment"></i>
-                    <span class="comments-count">{{ post.comments_count }}</span>
+                    <span class="comments-count" id="comments-count-{{ post.id }}">{{ post.replies_count }}</span>
                 </div>
                 <div class="action-item" onclick="sharePost('{{ post.id }}')">
                     <i class="fas fa-share"></i>
@@ -747,20 +522,17 @@
         {% empty %}
         <div class="post">
             <div class="text-post-container gradient-sunset">
-                <div class="text-post-content" style="font-size: 1.5rem;">
+                <div class="text-post-content" style="font-size: 1.3rem;">
                     <i class="fas fa-users fa-3x mb-3"></i>
                     <p>No posts yet!</p>
-                    <p class="small opacity-75">Follow more people or create your first post</p>
-                    <a href="{% url 'social:create_post' %}" class="btn btn-primary mt-3" style="background: #3b82f6; border: none; padding: 10px 30px; border-radius: 50px; text-decoration: none; color: white;">
-                        <i class="fas fa-plus me-2"></i>Create Post
-                    </a>
+                    <a href="{% url 'social:create_post' %}" class="btn btn-primary mt-3 rounded-pill px-4">Create Post</a>
                 </div>
             </div>
         </div>
         {% endfor %}
         <div class="post" id="loadingMore" style="display: none;">
             <div class="text-post-container" style="background: #111;">
-                <div class="text-post-content"><i class="fas fa-spinner fa-spin fa-2x mb-3"></i><p>Loading more posts...</p></div>
+                <div class="text-post-content"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
             </div>
         </div>
     </div>
@@ -770,119 +542,113 @@
     const feed = document.getElementById('feed');
     let currentPage = 1;
     let loading = false;
-    let hasMore = true;
+    let hasMore = {{ posts.has_next|lower }};
     let videoIntervals = {};
     let currentPostId = null;
     let postToDelete = null;
 
-    function scrollFeed(direction) {
-        const scrollAmount = window.innerHeight;
-        feed.scrollBy({ top: direction === 'down' ? scrollAmount : -scrollAmount, behavior: 'smooth' });
-    }
+    // Scroll functions
+    function scrollUp() { feed.scrollBy({ top: -window.innerHeight, behavior: 'smooth' }); }
+    function scrollDown() { feed.scrollBy({ top: window.innerHeight, behavior: 'smooth' }); }
 
+    // Keyboard
     window.addEventListener('keydown', (e) => {
-        if (e.key === 'ArrowDown') { e.preventDefault(); scrollFeed('down'); }
-        if (e.key === 'ArrowUp') { e.preventDefault(); scrollFeed('up'); }
+        if (e.key === 'ArrowDown') { e.preventDefault(); scrollDown(); }
+        if (e.key === 'ArrowUp') { e.preventDefault(); scrollUp(); }
     });
 
+    // Video observer
     const videoObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             const video = entry.target.querySelector('video');
             const progressBar = entry.target.querySelector('.video-progress-bar');
-            const videoId = progressBar?.id;
-            
+            const vidId = progressBar?.id;
             if (video) {
                 if (entry.isIntersecting) {
-                    if (videoId && videoIntervals[videoId]) {
-                        clearInterval(videoIntervals[videoId]);
-                    }
-                    
-                    if (video.querySelector('source') && video.querySelector('source').src) {
-                        // Ensure video is muted for autoplay
-                        video.muted = true;
-                        
-                        // Reset to beginning and play
-                        video.currentTime = 0;
-                        let playPromise = video.play();
-                        
-                        if (playPromise !== undefined) {
-                            playPromise.then(() => {
-                                console.log('Video playing');
-                            }).catch(error => {
-                                console.log('Autoplay prevented:', error);
-                                video.setAttribute('controls', 'true');
-                            });
-                        }
-                        
-                        if (progressBar) {
-                            progressBar.style.width = '0%';
-                            
-                            videoIntervals[videoId] = setInterval(() => {
-                                if (video.duration && !isNaN(video.duration) && video.duration > 0 && !video.paused && !video.ended) {
-                                    const progress = (video.currentTime / video.duration) * 100;
-                                    progressBar.style.width = progress + '%';
-                                    
-                                    if (video.currentTime >= video.duration - 0.1) {
-                                        video.currentTime = 0;
-                                        video.play().catch(() => {});
-                                    }
+                    if (vidId && videoIntervals[vidId]) clearInterval(videoIntervals[vidId]);
+                    video.muted = true;
+                    video.currentTime = 0;
+                    video.play().catch(() => {});
+                    if (progressBar) {
+                        progressBar.style.width = '0%';
+                        videoIntervals[vidId] = setInterval(() => {
+                            if (video.duration && !isNaN(video.duration) && !video.paused && !video.ended) {
+                                const pct = (video.currentTime / video.duration) * 100;
+                                progressBar.style.width = pct + '%';
+                                if (video.currentTime >= video.duration - 0.1) {
+                                    video.currentTime = 0;
+                                    video.play().catch(() => {});
                                 }
-                            }, 100);
-                        }
+                            }
+                        }, 100);
                     }
                 } else {
                     video.pause();
-                    if (videoId && videoIntervals[videoId]) {
-                        clearInterval(videoIntervals[videoId]);
-                        delete videoIntervals[videoId];
+                    if (vidId && videoIntervals[vidId]) {
+                        clearInterval(videoIntervals[vidId]);
+                        delete videoIntervals[vidId];
                     }
-                    if (progressBar) {
-                        progressBar.style.width = '0%';
-                    }
+                    if (progressBar) progressBar.style.width = '0%';
                 }
             }
         });
-    }, { threshold: 0.6, rootMargin: '0px 0px -50px 0px' });
+    }, { threshold: 0.6 });
 
-    document.querySelectorAll('.post').forEach(post => videoObserver.observe(post));
+    document.querySelectorAll('.post').forEach(p => videoObserver.observe(p));
 
-    function likePost(postId, element) {
+    // Like
+    function likePost(postId, el) {
         fetch(`/social/post/${postId}/like/`, {
             method: 'POST',
             headers: { 'X-CSRFToken': '{{ csrf_token }}' }
         })
         .then(r => r.json())
         .then(data => {
-            const icon = element.querySelector('i');
+            const icon = el.querySelector('i');
             icon.classList.toggle('active', data.liked);
-            element.querySelector('.likes-count').textContent = data.likes_count;
+            el.querySelector('.likes-count').textContent = data.likes_count;
         });
     }
 
-    function savePost(postId, element) {
+    // Save
+    function savePost(postId, el) {
         fetch(`/social/api/save/${postId}/`, {
             method: 'POST',
             headers: { 'X-CSRFToken': '{{ csrf_token }}' }
         })
         .then(r => r.json())
         .then(data => {
-            const icon = element.querySelector('i');
+            const icon = el.querySelector('i');
             icon.classList.toggle('active', data.saved);
         });
     }
 
-    function showDeleteModal(postId) { 
-        postToDelete = postId; 
-        document.getElementById('deleteModal').classList.add('show'); 
-        document.getElementById('deleteOverlay').style.display = 'block'; 
+    // Menu
+    function toggleMenu(event, postId) {
+        event.stopPropagation();
+        const menu = document.getElementById(`menu-${postId}`);
+        document.querySelectorAll('.dropdown-menu-custom').forEach(m => { if (m !== menu) m.classList.remove('show'); });
+        menu.classList.toggle('show');
+        const close = (e) => {
+            if (!menu.contains(e.target) && !e.target.closest('.post-menu-btn')) {
+                menu.classList.remove('show');
+                document.removeEventListener('click', close);
+            }
+        };
+        setTimeout(() => document.addEventListener('click', close), 10);
     }
-    
-    function closeDeleteModal() { 
-        document.getElementById('deleteModal').classList.remove('show'); 
-        document.getElementById('deleteOverlay').style.display = 'none'; 
-        postToDelete = null; 
+
+    // Delete
+    function deletePost(postId) {
+        postToDelete = postId;
+        document.getElementById('deleteModal').classList.add('show');
+        document.getElementById('deleteOverlay').style.display = 'block';
     }
-    
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.remove('show');
+        document.getElementById('deleteOverlay').style.display = 'none';
+        postToDelete = null;
+    }
     function confirmDelete() {
         if (!postToDelete) return;
         fetch(`/social/post/${postToDelete}/delete/`, {
@@ -891,52 +657,73 @@
         })
         .then(r => {
             if (r.ok) {
-                document.querySelector(`[data-post-id="${postToDelete}"]`)?.remove();
-                showToast('Post deleted successfully');
+                document.querySelector(`[data-post-id="${postToDelete}"]`).remove();
+                showToast('Post deleted');
                 closeDeleteModal();
-            } else {
-                showToast('Failed to delete post', 'error');
             }
         });
     }
 
-    function openComments(postId) { 
-        currentPostId = postId; 
-        document.getElementById('modalOverlay').style.display = 'block'; 
-        document.getElementById('commentsModal').classList.add('show'); 
-        loadComments(postId); 
+    // Download
+    function downloadPost(postId) {
+        const video = document.querySelector(`[data-post-id="${postId}"] video`);
+        if (video && video.src) {
+            const a = document.createElement('a');
+            a.href = video.src;
+            a.download = `nusu_${postId}.mp4`;
+            a.click();
+            showToast('Download started');
+        } else {
+            showToast('Cannot download', 'error');
+        }
     }
-    
-    function closeComments() { 
-        document.getElementById('modalOverlay').style.display = 'none'; 
-        document.getElementById('commentsModal').classList.remove('show'); 
+
+    function sharePost(postId) {
+        const url = window.location.origin + '/social/post/' + postId + '/';
+        if (navigator.share) navigator.share({ url });
+        else { navigator.clipboard.writeText(url); showToast('Link copied'); }
     }
-    
+
+    // Comments
+    function openComments(postId) {
+        currentPostId = postId;
+        document.getElementById('modalOverlay').style.display = 'block';
+        document.getElementById('commentsModal').classList.add('show');
+        loadComments(postId);
+    }
+    function closeComments() {
+        document.getElementById('modalOverlay').style.display = 'none';
+        document.getElementById('commentsModal').classList.remove('show');
+    }
     function loadComments(postId) {
-        const commentsList = document.getElementById('commentsList');
-        commentsList.innerHTML = '<div class="text-center p-3"><i class="fas fa-spinner fa-spin"></i> Loading comments...</div>';
+        const list = document.getElementById('commentsList');
+        list.innerHTML = '<div class="text-center p-4">Loading...</div>';
         fetch(`/social/api/comments/${postId}/`)
             .then(r => r.json())
             .then(data => {
-                commentsList.innerHTML = '';
+                list.innerHTML = '';
                 if (data.comments?.length) {
-                    data.comments.forEach(comment => {
-                        commentsList.innerHTML += `
+                    data.comments.forEach(c => {
+                        list.innerHTML += `
                             <div class="comment-item">
-                                <img src="${comment.author.profile_pic || 'https://ui-avatars.com/api/?name=' + comment.author.username}" class="comment-avatar">
+                                <img src="${c.author.profile_pic || 'https://ui-avatars.com/api/?name=' + c.author.username + '&background=3b82f6&color=fff&size=40&bold=true'}" 
+                                     class="comment-avatar"
+                                     onerror="this.src='https://ui-avatars.com/api/?name=${c.author.username}&background=3b82f6&color=fff&size=40&bold=true'">
                                 <div class="comment-content">
-                                    <div class="comment-author">@${comment.author.username}</div>
-                                    <div class="comment-text">${comment.content}</div>
-                                    <div class="comment-time">${new Date(comment.created_at).toLocaleString()}</div>
+                                    <div class="comment-author">
+                                        @${c.author.username}
+                                        ${c.author.verified ? '<i class="fas fa-check-circle" style="color:#3b82f6; font-size:0.7rem;"></i>' : ''}
+                                    </div>
+                                    <div class="comment-text">${escapeHtml(c.content)}</div>
+                                    <div class="comment-time">${timeAgo(c.created_at)}</div>
                                 </div>
                             </div>`;
                     });
                 } else {
-                    commentsList.innerHTML = '<div class="text-center p-3 text-muted">No comments yet. Be the first!</div>';
+                    list.innerHTML = '<div class="text-center p-4 text-muted">No comments yet</div>';
                 }
             });
     }
-
     function handleCommentKeypress(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -952,134 +739,111 @@
                     if (data.status === 'success') {
                         document.getElementById('commentInput').value = '';
                         loadComments(currentPostId);
-                        const countSpan = document.querySelector(`[data-post-id="${currentPostId}"] .comments-count`);
-                        countSpan.textContent = parseInt(countSpan.textContent) + 1;
+                        const countSpan = document.getElementById(`comments-count-${currentPostId}`);
+                        if (countSpan) countSpan.textContent = parseInt(countSpan.textContent) + 1;
                     }
                 });
             }
         }
     }
-
-    function sharePost(postId) {
-        const url = window.location.origin + '/social/post/' + postId + '/';
-        if (navigator.share) {
-            navigator.share({ title: 'Check out this post on NUSU!', url }).catch(() => copyToClipboard(url));
-        } else {
-            copyToClipboard(url);
-        }
+    function timeAgo(dateStr) {
+        const date = new Date(dateStr);
+        const now = new Date();
+        const sec = Math.floor((now - date) / 1000);
+        if (sec < 60) return `${sec}s ago`;
+        const min = Math.floor(sec / 60);
+        if (min < 60) return `${min}m ago`;
+        const hrs = Math.floor(min / 60);
+        if (hrs < 24) return `${hrs}h ago`;
+        const days = Math.floor(hrs / 24);
+        if (days < 7) return `${days}d ago`;
+        return date.toLocaleDateString();
     }
-    
-    function copyToClipboard(text) { 
-        navigator.clipboard.writeText(text); 
-        showToast('Link copied to clipboard!'); 
-    }
-    
-    function showToast(message, type = 'success') {
-        const toast = document.createElement('div');
-        toast.className = 'toast-message';
-        toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}" style="color: ${type === 'success' ? '#10b981' : '#ef4444'};"></i>${message}`;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
-    }
-    
-    function refreshFeed() { location.reload(); }
-
-    // Infinite scroll with error handling
-    feed.addEventListener('scroll', () => {
-        if (feed.scrollTop + feed.clientHeight >= feed.scrollHeight - 300) {
-            loadMorePosts();
-        }
-    });
-
-    function loadMorePosts() {
-        if (loading || !hasMore) return;
-        
-        loading = true;
-        currentPage++;
-        
-        const loadingMore = document.getElementById('loadingMore');
-        loadingMore.style.display = 'flex';
-        
-        fetch(`/social/api/feed/?page=${currentPage}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.posts && data.posts.length > 0) {
-                    appendPosts(data.posts);
-                    hasMore = data.has_next;
-                    console.log(`Loaded page ${currentPage}, has more: ${hasMore}`);
-                } else {
-                    hasMore = false;
-                    loadingMore.querySelector('.text-post-content p').innerHTML = 'No more posts';
-                }
-                loadingMore.style.display = 'none';
-                loading = false;
-            })
-            .catch(error => {
-                console.error('Error loading posts:', error);
-                loading = false;
-                loadingMore.style.display = 'none';
-                if (error.message.includes('404')) {
-                    hasMore = false;
-                }
-            });
-    }
-
-    function appendPosts(posts) {
-        const container = document.getElementById('feed');
-        const loadingMore = document.getElementById('loadingMore');
-        
-        posts.forEach(post => {
-            const postElement = createPostElement(post);
-            container.insertBefore(postElement, loadingMore);
-            videoObserver.observe(postElement);
+    function escapeHtml(str) {
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
         });
     }
 
-    function createPostElement(post) {
+    // Infinite scroll + Chrome hide/show for feed container
+    feed.addEventListener('scroll', () => {
+        // Chrome hide/show based on feed scroll
+        if (window.NusuChrome) {
+            if (feed.scrollTop > 100 && feed.scrollTop > lastScrollTop) {
+                window.NusuChrome.hide();
+            } else if (feed.scrollTop < lastScrollTop - 10 || feed.scrollTop < 30) {
+                window.NusuChrome.show();
+            }
+        }
+        lastScrollTop = feed.scrollTop;
+        
+        // Load more
+        if (feed.scrollTop + feed.clientHeight >= feed.scrollHeight - 200) {
+            loadMore();
+        }
+    });
+    let lastScrollTop = 0;
+    
+    function loadMore() {
+        if (loading || !hasMore) return;
+        loading = true;
+        currentPage++;
+        const loader = document.getElementById('loadingMore');
+        loader.style.display = 'flex';
+        fetch(`/social/api/feed/?page=${currentPage}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.posts?.length) {
+                    data.posts.forEach(post => appendPost(post));
+                    hasMore = data.has_next;
+                } else hasMore = false;
+                loader.style.display = 'none';
+                loading = false;
+            })
+            .catch(() => { loader.style.display = 'none'; loading = false; });
+    }
+    
+    function appendPost(post) {
+        const container = document.getElementById('feed');
+        const loader = document.getElementById('loadingMore');
         const div = document.createElement('div');
         div.className = 'post';
         div.dataset.postId = post.id;
-        
-        const isVideo = post.post_type === 'video' || (post.media && post.media.type === 'video');
-        
+        const isVideo = post.media?.type === 'video';
         div.innerHTML = `
             <div class="post-header">
                 <div class="post-user-info">
-                    <img src="${post.author.profile_pic || 'https://ui-avatars.com/api/?name=' + post.author.username}" class="post-avatar" onerror="this.src='https://ui-avatars.com/api/?name=${post.author.username}'">
+                    <img src="${post.author.profile_pic || 'https://ui-avatars.com/api/?name=' + post.author.username + '&background=3b82f6&color=fff&size=44&bold=true&length=1'}" class="post-avatar" onerror="this.src='https://ui-avatars.com/api/?name=${post.author.username}&background=3b82f6&color=fff&size=44&bold=true&length=1'">
                     <a href="/users/profile/${post.author.username}/" class="post-username">@${post.author.username}${post.author.verified ? '<i class="fas fa-check-circle verified"></i>' : ''}</a>
                 </div>
-                <button class="delete-post-btn" onclick="showDeleteModal('${post.id}')"><i class="fas fa-trash-alt"></i></button>
+                <div style="position: relative;">
+                    <button class="post-menu-btn" onclick="toggleMenu(event, ${post.id})"><i class="fas fa-ellipsis-h"></i></button>
+                    <div class="dropdown-menu-custom" id="menu-${post.id}">
+                        ${post.is_owner ? '<div class="dropdown-item-custom" onclick="deletePost(' + post.id + ')"><i class="fas fa-trash-alt"></i> Delete</div>' : ''}
+                        <div class="dropdown-item-custom" onclick="downloadPost(${post.id})"><i class="fas fa-download"></i> Download</div>
+                        <div class="dropdown-divider"></div>
+                        <div class="dropdown-item-custom" onclick="sharePost(${post.id})"><i class="fas fa-share-alt"></i> Share</div>
+                    </div>
+                </div>
             </div>
             ${isVideo ? `
-                <video class="post-video" autoplay loop muted playsinline preload="auto" poster="${post.media?.thumbnail_url || ''}">
-                    <source src="${post.media?.url}" type="video/mp4">
+                <video class="post-video" autoplay loop muted playsinline>
+                    <source src="${post.media.url}" type="video/mp4">
                 </video>
                 <div class="video-progress"><div class="video-progress-bar" id="progress-${post.id}"></div></div>
             ` : `
                 <div class="text-post-container gradient-sunset">
-                    <div class="text-post-content" style="text-align: ${post.text_alignment || 'center'}; font-size: ${post.text_size || 1.8}rem; color: ${post.text_color || '#ffffff'}">
-                        ${post.content || ''}
-                    </div>
+                    <div class="text-post-content">${post.content || ''}</div>
                 </div>
             `}
             <div class="action-buttons">
-                <div class="action-item" onclick="likePost('${post.id}', this)">
-                    <i class="fas fa-heart ${post.is_liked ? 'active' : ''}"></i>
-                    <span class="likes-count">${post.likes_count || 0}</span>
-                </div>
-                <div class="action-item" onclick="openComments('${post.id}')">
-                    <i class="fas fa-comment"></i>
-                    <span class="comments-count">${post.comments_count || 0}</span>
-                </div>
+                <div class="action-item" onclick="likePost('${post.id}', this)"><i class="fas fa-heart"></i><span class="likes-count">0</span></div>
+                <div class="action-item" onclick="openComments('${post.id}')"><i class="fas fa-comment"></i><span class="comments-count">0</span></div>
                 <div class="action-item" onclick="sharePost('${post.id}')"><i class="fas fa-share"></i><span>Share</span></div>
-                <div class="action-item" onclick="savePost('${post.id}', this)">
-                    <i class="fas fa-bookmark ${post.is_saved ? 'active' : ''}"></i>
-                </div>
+                <div class="action-item" onclick="savePost('${post.id}', this)"><i class="fas fa-bookmark"></i></div>
             </div>
             <div class="post-info">
                 <a href="/users/profile/${post.author.username}/" class="username">@${post.author.username}</a>
@@ -1087,14 +851,22 @@
                 <div class="audio"><i class="fas fa-music"></i>${post.song_name || 'Original Audio'}</div>
             </div>
         `;
-        return div;
+        container.insertBefore(div, loader);
+        videoObserver.observe(div);
     }
-
-    document.addEventListener('click', (e) => {
-        const modal = document.getElementById('commentsModal');
-        if (modal.classList.contains('show') && !modal.contains(e.target) && !e.target.closest('.action-item[onclick*="openComments"]')) {
-            closeComments();
-        }
+    
+    function showToast(msg, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = 'toast-message';
+        toast.textContent = msg;
+        toast.style.cssText = 'position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#1e293b;color:white;padding:8px 16px;border-radius:30px;z-index:3000;animation:fadeIn 0.2s;';
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2500);
+    }
+    
+    // Close dropdown on scroll
+    feed.addEventListener('scroll', () => {
+        document.querySelectorAll('.dropdown-menu-custom.show').forEach(m => m.classList.remove('show'));
     });
 </script>
 {% endblock %}

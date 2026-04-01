@@ -36,4 +36,7 @@ urlpatterns = [
     path('api/user/<str:username>/stats/', views.get_user_stats, name='user_stats'),
     path('api/video-status/<str:task_id>/', views.video_upload_status, name='video_upload_status'),
     path('check-my-uploads/', views.check_my_uploads, name='check_my_uploads'),
+    path('api/search/', views.search_users_api, name='search_users_api'),
+    path('api/comments/<int:post_id>/', views.get_comments, name='get_comments'),
+    path('api/comments/<int:post_id>/add/', views.add_comment, name='add_comment'),
 ]

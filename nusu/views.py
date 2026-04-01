@@ -1,4 +1,3 @@
-# nusu/views.py
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -60,7 +59,33 @@ def home(request):
         except FeedCache.DoesNotExist:
             context['new_posts_count'] = Post.objects.filter(is_reply=False).count()
         
-        # ========== NEW DATA FOR MODERN HOME PAGE ==========
+        # ========== ADDITIONS FOR MODERN HOME PAGE ==========
+        
+        # 1. Friends who are currently mining (for Stories row)
+        following_ids = Follow.objects.filter(follower=user).values_list('following_id', flat=True)
+        mining_friends = CustomUser.objects.filter(
+            id__in=following_ids,
+            userminingstate__is_mining=True
+        ).select_related('userprofile')[:10]
+        context['mining_friends'] = mining_friends
+        
+        # 2. Immersive posts (first 3 most engaging media posts from followed users + self)
+        immersive_posts = Post.objects.filter(
+            Q(user__in=following_ids) | Q(user=user),
+            post_type__in=['media', 'mixed']
+        ).select_related('user', 'user__userprofile').prefetch_related('media_items', 'likes').annotate(
+            total_likes=Count('likes')  # Changed from 'likes_count' to 'total_likes'
+        ).order_by('-total_likes', '-created_at')[:3]
+        context['immersive_posts'] = immersive_posts
+        
+        # 3. Card posts (next 10 posts, ordered by date)
+        card_posts = Post.objects.filter(
+            Q(user__in=following_ids) | Q(user=user),
+            post_type__in=['media', 'mixed']
+        ).select_related('user', 'user__userprofile').prefetch_related('media_items', 'likes').order_by('-created_at')[3:13]
+        context['card_posts'] = card_posts
+        
+        # ========== END OF ADDITIONS ==========
         
         # Get trending posts (most engagement in last 7 days)
         last_week = timezone.now() - timedelta(days=7)
@@ -104,7 +129,6 @@ def home(request):
             participant_count=Count('completions')
         ).order_by('-participant_count').first()
         
-        # If no featured task, get any active task user hasn't completed
         if not featured_task:
             featured_task = Task.objects.filter(
                 is_active=True,

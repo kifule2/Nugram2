@@ -1,0 +1,1273 @@
+
+=== templates/airdrop/dashboard.html ===
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+{% include 'airdrop/mining_widget.html' %}
+<span class="badge bg-dark">{{ multiplier.current|floatformat:2 }}x</span>
+<div class="progress-bar bg-dark" style="width: {{ multiplier.progress }}%"></div>
+<small class="text-muted">Next level at {{ multiplier.next_level|floatformat:2 }}x</small>
+<span class="fw-bold">{{ total_mined|floatformat:2 }} NSU</span>
+<span class="fw-bold">{{ sessions_completed }}</span>
+<span>Badge Bonus ({{ badge_level }})</span>
+<span>{{ badge_multiplier|floatformat:2 }}x</span>
+<span>{{ streak_multiplier|floatformat:2 }}x</span>
+<span>{{ referral_multiplier|floatformat:2 }}x</span>
+<span>{{ multiplier.current|floatformat:2 }}x</span>
+{% for session in recent_sessions %}
+<span class="fw-bold">{{ session.date|date:"M d" }}</span>
+<span class="text-muted ms-2">{{ session.duration }} hours</span>
+<span class="fw-bold">{{ session.points|floatformat:2 }} NSU</span>
+<span class="text-muted ms-2">{{ session.multiplier|floatformat:2 }}x</span>
+{% empty %}
+{% endfor %}
+{% endblock %}
+{% block extra_css %}
+{% endblock %}
+
+=== templates/airdrop/mining_widget.html ===
+<span class="badge bg-{% if state.is_mining %}dark{% else %}secondary{% endif %}" id="miningStatusBadge">
+{% if state.is_mining %}ACTIVE{% else %}READY{% endif %}
+<span id="progressText">{{ state.elapsed_hours|floatformat:1 }} / 24 hours</span>
+<div id="progressBar" class="progress-bar bg-dark {% if state.is_mining %}progress-bar-striped progress-bar-animated{% endif %}"
+style="width: {{ state.progress_percentage }}%"
+aria-valuenow="{{ state.elapsed_hours }}"
+<span class="fw-bold" id="rateText">{{ state.current_rate|floatformat:2 }}x</span>
+<span class="fw-bold" id="todayPoints">{{ state.points_earned_today|floatformat:2 }}</span>
+<span class="fw-bold" id="totalPoints">{{ state.total_points|floatformat:2 }}</span>
+{% if state.progress_percentage >= 100 %}disabled{% endif %}>
+{% if state.is_mining %}
+{% else %}
+{% endif %}
+{% if state.is_mining %}
+<i class="bi bi-clock"></i> <span id="countdown">{{ state.remaining_hours|floatformat:1 }}</span> hours remaining
+{% elif state.progress_percentage >= 100 %}
+{% else %}
+{% endif %}
+fetch("{% url 'airdrop:mining_status' %}")
+fetch("{% url 'airdrop:toggle_mining' %}", {
+'X-CSRFToken': "{{ csrf_token }}",
+{% if state.is_mining %}
+{% endif %}
+
+=== templates/base.html ===
+<title>NUSU | {% block title %}Social-Finance{% endblock %}</title>
+{% block extra_css %}{% endblock %}
+<a href="{% url 'home' %}" class="brand">NUSU<span style="color:var(--accent);">.</span></a>
+{% if user.is_authenticated %}
+<a href="{% url 'social:notifications' %}" class="text-dim position-relative notification-badge" id="notificationBell">
+<a href="{% url 'users:user_profile' user.username %}" class="username-link">
+{{ user.username }}
+<a href="{% url 'users:user_profile' user.username %}">
+{% if user.userprofile.profile_picture %}
+<img src="{{ user.userprofile.profile_picture.url }}"
+alt="{{ user.username }}"
+data-username="{{ user.username }}"
+onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ user.username }}&background=3b82f6&color=fff&size=40&bold=true&length=2&font-size=0.33';">
+{% else %}
+<img src="https://ui-avatars.com/api/?name={{ user.username }}&background=3b82f6&color=fff&size=40&bold=true&length=2&font-size=0.33"
+alt="{{ user.username }}">
+{% endif %}
+<a href="{% url 'users:logout' %}" class="logout-btn" title="Logout">
+{% else %}
+<a href="{% url 'users:login' %}" class="btn btn-sm btn-outline-primary rounded-pill px-4">Login</a>
+<a href="{% url 'users:register' %}" class="btn btn-sm btn-primary rounded-pill px-4">Register</a>
+{% endif %}
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+{{ message }}
+{% endfor %}
+{% endif %}
+{% block content %}{% endblock %}
+<a href="{% url 'home' %}" class="dock-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+<a href="{% url 'social:feed' %}" class="dock-item {% if request.resolver_match.app_name == 'social' %}active{% endif %}" id="socialTab">
+{% if user.is_authenticated %}
+<a href="{% url 'airdrop:dashboard' %}" class="mine-btn">
+{% else %}
+{% endif %}
+<a href="{% url 'tasks:marketplace' %}" class="dock-item {% if request.resolver_match.app_name == 'tasks' %}active{% endif %}">
+{% if user.is_authenticated %}
+<a href="{% url 'users:user_profile' user.username %}" class="dock-item {% if request.resolver_match.url_name == 'user_profile' %}active{% endif %}">
+{% else %}
+{% endif %}
+{% if not user.is_authenticated %}
+<a href="{% url 'users:login' %}" class="btn btn-primary rounded-pill py-2">Login</a>
+<a href="{% url 'users:register' %}" class="btn btn-outline-primary rounded-pill py-2">Create Account</a>
+{% endif %}
+{% if user.is_authenticated %}
+{% endif %}
+{% block extra_scripts %}{% endblock %}
+
+=== templates/home.html ===
+{% extends "base.html" %}
+{% load static %}
+{% load task_filters %}
+{% block title %}Home{% endblock %}
+{% block content %}
+{% if not user.is_authenticated %}
+<a href="{% url 'users:register' %}" class="btn btn-primary rounded-pill px-4 py-2">
+<a href="{% url 'users:login' %}" class="btn btn-outline-primary rounded-pill px-4 py-2">
+{% endif %}
+{% if user.is_authenticated %}
+<div class="balance-amount-large" id="tokenBalance">{{ user.userprofile.token_balance|floatformat:2 }}</div>
+<span class="text-dim small" id="ugxBalance">≈ UGX {{ user.userprofile.get_ugx_balance|floatformat:2 }}</span>
+<div class="stat-number" id="followersCount">{{ user.userprofile.get_followers_count }}</div>
+<div class="stat-number" id="followingCount">{{ user.userprofile.get_following_count }}</div>
+<div class="stat-number" id="referralsCount">{{ user.referrals.count }}</div>
+{% if mining_state %}
+<small class="text-dim" id="miningTime">{{ mining_state.elapsed_hours|floatformat:1 }} / 24 hours</small>
+<span class="badge {% if mining_state.is_mining %}bg-success{% else %}bg-secondary{% endif %} rounded-pill px-3" id="miningStatus">
+{% if mining_state.is_mining %}MINING{% else %}IDLE{% endif %}
+<div class="progress-bar bg-gradient" id="miningProgress" style="width: {{ mining_state.progress_percentage }}%"></div>
+<div class="fw-bold" id="miningPoints">{{ mining_state.points_earned_today|floatformat:2 }} NSU</div>
+{% if mining_state.is_mining %}
+{% else %}
+{% endif %}
+<a href="{% url 'airdrop:dashboard' %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+{% endif %}
+<a href="{% url 'transactions:public_ledger' %}" class="action-pill">
+<a href="{% url 'airdrop:dashboard' %}" class="action-pill highlight">
+{% if trending_posts %}
+{% for post in trending_posts %}
+<div class="post-card" onclick="window.location.href='{% url 'social:post_detail' post.id %}'">
+<img src="{% if post.user.userprofile.profile_picture %}{{ post.user.userprofile.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ post.user.username|first }}&background=3b82f6&color=fff&size=32{% endif %}"
+<div class="fw-bold small">{{ post.user.userprofile.display_name|default:post.user.username }}</div>
+<div class="text-dim small">@{{ post.user.username }} • {{ post.created_at|timesince }} ago</div>
+{% if post.likes_count > 50 %}
+{% endif %}
+{{ post.content|truncatechars:100 }}
+{% if post.media_items.first %}
+<img src="{{ post.media_items.first.url }}" class="img-fluid rounded-3" style="max-height: 200px; width: 100%; object-fit: cover;">
+{% endif %}
+<span class="small text-dim"><i class="fas fa-heart"></i> {{ post.likes_count }}</span>
+<span class="small text-dim"><i class="fas fa-comment"></i> {{ post.replies_count }}</span>
+<span class="small text-dim"><i class="fas fa-eye"></i> {{ post.views_count }}</span>
+{% endfor %}
+{% else %}
+<a href="{% url 'social:feed' %}" class="btn btn-sm btn-primary rounded-pill">Explore Feed</a>
+{% endif %}
+{% if recent_transactions %}
+{% for tx in recent_transactions %}
+<div class="activity-card" onclick="window.location.href='{% url 'transactions:transaction_detail' tx.id %}'">
+<div class="activity-icon {% if tx.transaction_type == 'deposit' %}deposit{% else %}transfer{% endif %}">
+<i class="fas fa-{% if tx.transaction_type == 'deposit' %}arrow-down{% else %}exchange-alt{% endif %}"></i>
+<div class="fw-bold small">{{ tx.get_transaction_type_display }}</div>
+<div class="text-dim small">{{ tx.timestamp|timesince }} ago</div>
+<div class="fw-bold {% if tx.amount > 0 %}text-success{% else %}text-warning{% endif %}">
+{{ tx.amount }} NSU
+{% endfor %}
+<a href="{% url 'transactions:public_ledger' %}" class="btn btn-sm btn-outline-primary rounded-pill px-4">
+{% else %}
+<a href="{% url 'airdrop:dashboard' %}" class="btn btn-sm btn-primary rounded-pill">Start Mining</a>
+{% endif %}
+{% if system_updates %}
+{% for update in system_updates %}
+<div class="update-icon {{ update.type }}">
+<i class="fas fa-{% if update.type == 'announcement' %}megaphone{% elif update.type == 'feature' %}rocket{% else %}info-circle{% endif %}"></i>
+<div class="fw-bold small">{{ update.title }}</div>
+<div class="text-dim small">{{ update.message|truncatechars:120 }}</div>
+<div class="text-dim small mt-1">{{ update.created_at|timesince }} ago</div>
+{% endfor %}
+{% else %}
+{% endif %}
+{% if featured_task %}
+<div class="featured-task-card mt-3" onclick="window.location.href='{% url 'tasks:task_detail' featured_task.task_code %}'">
+<span class="text-success fw-bold">+{{ featured_task.points_reward }} NSU</span>
+<h6 class="mb-1">{{ featured_task.name }}</h6>
+<p class="small text-dim mb-2">{{ featured_task.description|truncatechars:80 }}</p>
+<span class="small text-dim"><i class="fas fa-users"></i> {{ featured_task.participants_count }} completed</span>
+{% endif %}
+<div class="small fw-bold" id="globalMiningRate">{{ global_stats.current_multiplier|default:"1.0" }}x</div>
+<div class="small fw-bold" id="globalUgxRate">UGX {{ global_stats.ugx_rate|default:"3800" }}</div>
+<div class="small fw-bold" id="globalTotalUsers">{{ global_stats.total_users|default:"0" }}</div>
+{% endif %}
+{% csrf_token %}
+{% endblock %}
+{% block extra_scripts %}
+fetch("{% url 'airdrop:toggle_mining' %}", {
+'X-CSRFToken': '{{ csrf_token }}',
+fetch("{% url 'user_stats_api' %}")
+fetch("{% url 'global_stats' %}")
+{% endblock %}
+
+=== templates/social/create_post.html ===
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Create Post - NUSU Social{% endblock %}
+{% block extra_css %}
+{% endblock %}
+{% block content %}
+<a href="{% url 'social:feed' %}" class="back-btn">
+fetch('{% url "social:get_templates" %}')
+fetch('{% url "social:create_post" %}', {
+'X-CSRFToken': '{{ csrf_token }}',
+window.location.href = data.redirect_url || '{% url "social:feed" %}';
+window.location.href = data.redirect_url || '{% url "social:feed" %}';
+xhr.open('POST', '{% url "social:create_post" %}', true);
+xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+{% endblock %}
+
+=== templates/social/feed.html ===
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ feed_title }} - NUSU Social{% endblock %}
+{% block extra_css %}
+{% endblock %}
+{% block content %}
+<a href="{% url 'social:feed' %}" class="feed-tab {% if feed_title == 'For You' %}active{% endif %}">For You</a>
+<a href="{% url 'social:following_feed' %}" class="feed-tab {% if feed_title == 'Following' %}active{% endif %}">Following</a>
+<a href="{% url 'social:create_post' %}" class="create-btn"><i class="fas fa-plus"></i></a>
+{% for post in posts %}
+<div class="post" data-post-id="{{ post.id }}">
+<img src="{% if post.user.userprofile.profile_picture %}{{ post.user.userprofile.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ post.user.username }}&background=3b82f6&color=fff&size=40{% endif %}"
+onerror="this.src='https://ui-avatars.com/api/?name={{ post.user.username }}&background=3b82f6&color=fff&size=40'">
+<a href="{% url 'users:user_profile' post.user.username %}" class="post-username">
+@{{ post.user.username }}
+{% if post.user.userprofile.verified %}<i class="fas fa-check-circle verified"></i>{% endif %}
+{% if post.user == request.user %}
+<button class="delete-post-btn" onclick="showDeleteModal('{{ post.id }}')"><i class="fas fa-trash-alt"></i></button>
+{% endif %}
+{% if post.post_type == 'text' %}
+{% if post.background_template and post.background_template.css_class %}{{ post.background_template.css_class }}{% else %}gradient-sunset{% endif %}"
+{% if post.background_template and post.background_template.gradient_css and not post.background_template.css_class %}
+style="background: {{ post.background_template.gradient_css }}; background-size: {% if post.background_template.is_animated %}300% 300%{% else %}cover{% endif %}; animation: {% if post.background_template.is_animated %}gradientShift {{ post.background_template.animation_duration }}s ease infinite{% endif %};">
+{% endif %}>
+style="text-align: {{ post.text_alignment }}; font-size: {{ post.text_size }}rem; color: {{ post.text_color }}; font-family: {% if post.text_font == 'bold' %}Arial Black{% elif post.text_font == 'handwriting' %}Caveat, cursive{% elif post.text_font == 'typewriter' %}Courier New{% else %}inherit{% endif %};">
+{{ post.content|linebreaksbr }}
+{% elif post.media_items.all %}
+{% with media=post.media_items.first %}
+{% if media.is_video %}
+data-post-id="{{ post.id }}"
+poster="{% if media.thumbnail_url %}{{ media.thumbnail_url }}{% endif %}">
+<source src="{{ media.url }}" type="video/mp4">
+<source src="{{ media.url }}" type="video/webm">
+<div class="video-progress-bar" id="progress-{{ post.id }}"></div>
+{% elif media.is_image %}
+<img src="{{ media.url }}" class="post-video" alt="Post image" loading="lazy">
+{% endif %}
+{% endwith %}
+{% endif %}
+<div class="action-item" onclick="likePost('{{ post.id }}', this)">
+<i class="fas fa-heart {% if post.is_liked %}active{% endif %}"></i>
+<span class="likes-count">{{ post.likes_count }}</span>
+<div class="action-item" onclick="openComments('{{ post.id }}')">
+<span class="comments-count">{{ post.comments_count }}</span>
+<div class="action-item" onclick="sharePost('{{ post.id }}')">
+<div class="action-item" onclick="savePost('{{ post.id }}', this)">
+<i class="fas fa-bookmark {% if post.is_saved %}active{% endif %}"></i>
+<a href="{% url 'users:user_profile' post.user.username %}" class="username">
+@{{ post.user.username }}
+{% if post.user.userprofile.verified %}<i class="fas fa-check-circle verified"></i>{% endif %}
+{% if post.content %}
+<div class="caption">{{ post.content|truncatechars:120 }}</div>
+{% endif %}
+{{ post.song_name }}
+{% empty %}
+<a href="{% url 'social:create_post' %}" class="btn btn-primary mt-3" style="background: #3b82f6; border: none; padding: 10px 30px; border-radius: 50px; text-decoration: none; color: white;">
+{% endfor %}
+headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json' },
+{% endblock %}
+
+=== templates/social/notifications.html ===
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Notifications | NUSU{% endblock %}
+{% block content %}
+{% if notifications %}
+{% for notification in notifications %}
+<div class="notification-item {% if not notification.is_read %}unread{% endif %}">
+<div class="notification-icon icon-{{ notification.notification_type }}">
+{% if notification.notification_type == 'like' %}
+{% elif notification.notification_type == 'repost' %}
+{% elif notification.notification_type == 'reply' %}
+{% elif notification.notification_type == 'follow' %}
+{% elif notification.notification_type == 'mention' %}
+{% elif notification.notification_type == 'post' %}
+{% endif %}
+{% if notification.notification_type == 'like' %}
+<strong>{{ notification.sender.username }}</strong> liked your post
+{% elif notification.notification_type == 'repost' %}
+<strong>{{ notification.sender.username }}</strong> reposted your post
+{% elif notification.notification_type == 'reply' %}
+<strong>{{ notification.sender.username }}</strong> replied to your post
+{% elif notification.notification_type == 'follow' %}
+<strong>{{ notification.sender.username }}</strong> started following you
+{% elif notification.notification_type == 'mention' %}
+<strong>{{ notification.sender.username }}</strong> mentioned you in a post
+{% elif notification.notification_type == 'post' %}
+<strong>{{ notification.sender.username }}</strong> created a new post
+{% endif %}
+<span>{{ notification.created_at|timesince }} ago</span>
+{% if notification.post %}
+<a href="{% url 'social:post_detail' notification.post.id %}" class="btn btn-sm btn-outline-primary rounded-pill">
+{% endif %}
+{% endfor %}
+{% if notifications.has_other_pages %}
+{% if notifications.has_previous %}
+<a class="page-link" href="?page={{ notifications.previous_page_number }}">Previous</a>
+{% endif %}
+{% for num in notifications.paginator.page_range %}
+<li class="page-item {% if notifications.number == num %}active{% endif %}">
+<a class="page-link" href="?page={{ num }}">{{ num }}</a>
+{% endfor %}
+{% if notifications.has_next %}
+<a class="page-link" href="?page={{ notifications.next_page_number }}">Next</a>
+{% endif %}
+{% endif %}
+{% else %}
+<a href="{% url 'social:feed' %}" class="btn btn-primary rounded-pill mt-3">
+{% endif %}
+{% endblock %}
+
+=== templates/social/post_detail.html ===
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Post by @{{ post.user.username }} - NUSU Social{% endblock %}
+{% block extra_css %}
+{% endblock %}
+{% block content %}
+<a href="{% url 'social:feed' %}" class="back-btn">
+<img src="{% if post.user.userprofile.profile_picture %}{{ post.user.userprofile.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ post.user.username }}{% endif %}" class="post-avatar">
+<a href="{% url 'users:user_profile' post.user.username %}" class="post-username">
+@{{ post.user.username }}
+{% if post.user.userprofile.verified %}
+{% endif %}
+<div class="post-time">{{ post.created_at|timesince }} ago</div>
+{% if post.media_items.all %}
+{% with media=post.media_items.first %}
+{% if media.media_type == 'video' %}
+<source src="{{ media.url }}" type="video/webm">
+<source src="{{ media.url }}" type="video/mp4">
+{% else %}
+<img src="{{ media.url }}" class="post-media">
+{% endif %}
+{% endwith %}
+{% endif %}
+{{ post.content|linebreaksbr }}
+<div class="stat"><strong>{{ post.likes_count }}</strong> likes</div>
+<div class="stat"><strong>{{ post.replies_count }}</strong> comments</div>
+<div class="stat"><strong>{{ post.views_count }}</strong> views</div>
+<button class="action-btn {% if post.is_liked %}active{% endif %}" onclick="likePost('{{ post.id }}', this)">
+<i class="{% if post.is_liked %}fas{% else %}far{% endif %} fa-heart"></i>
+<button class="action-btn" onclick="sharePost('{{ post.id }}')">
+<h5>Comments ({{ post.replies_count }})</h5>
+{% csrf_token %}
+{% for reply in replies %}
+<img src="{% if reply.user.userprofile.profile_picture %}{{ reply.user.userprofile.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ reply.user.username }}{% endif %}" class="reply-avatar">
+<a href="{% url 'users:user_profile' reply.user.username %}" class="reply-author">
+@{{ reply.user.username }}
+{% if reply.user.userprofile.verified %}
+{% endif %}
+<span class="reply-time">{{ reply.created_at|timesince }} ago</span>
+<div class="reply-text">{{ reply.content }}</div>
+{% empty %}
+{% endfor %}
+'X-CSRFToken': '{{ csrf_token }}',
+{% endblock %}
+
+=== templates/social/search_users.html ===
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Search Users | NUSU{% endblock %}
+{% block content %}
+<form method="get" action="{% url 'social:search_users' %}">
+<input type="text" name="q" placeholder="Search users by username or name..." value="{{ query }}">
+{% if query %}
+<h5 class="mb-3">Results for "{{ query }}"</h5>
+{% if users %}
+{% for user in users %}
+<a href="{% url 'users:user_profile' user.username %}">
+{% if user.userprofile.profile_picture %}
+<img src="{{ user.userprofile.profile_picture.url }}" class="user-avatar">
+{% else %}
+<img src="https://ui-avatars.com/api/?name={{ user.username|first }}&background=3b82f6&color=fff&size=60" class="user-avatar">
+{% endif %}
+<a href="{% url 'users:user_profile' user.username %}" class="text-decoration-none">
+<div class="user-name">{{ user.userprofile.display_name|default:user.username }}</div>
+<div class="user-username">@{{ user.username }}</div>
+{% if user.userprofile.bio %}
+<div class="user-bio">{{ user.userprofile.bio|truncatechars:60 }}</div>
+{% endif %}
+{% if user != request.user %}
+<button class="follow-btn {% if user.is_following %}following{% else %}follow{% endif %}"
+onclick="toggleFollow('{{ user.username }}', this)">
+{% if user.is_following %}
+{% else %}
+{% endif %}
+{% endif %}
+{% endfor %}
+{% else %}
+{% endif %}
+{% else %}
+{% endif %}
+'X-CSRFToken': '{{ csrf_token }}',
+{% endblock %}
+
+=== templates/tasks/connect_social.html ===
+{% extends 'base.html' %}
+{% load static %}
+{% load task_filters %}
+{% block title %}Connect Social Accounts | eNusu{% endblock %}
+{% block content %}
+<a href="{% url 'tasks:marketplace' %}" class="btn btn-link text-dim p-0 me-3">
+{% if profiles.twitter %}
+Connected as <strong>@{{ profiles.twitter.handle }}</strong>
+<form method="POST" action="{% url 'tasks:connect_social' %}">
+{% csrf_token %}
+{% else %}
+<form method="POST" action="{% url 'tasks:connect_social' %}">
+{% csrf_token %}
+{% endif %}
+{% if profiles.youtube %}
+Connected as <strong>{{ profiles.youtube.handle }}</strong>
+<form method="POST" action="{% url 'tasks:connect_social' %}">
+{% csrf_token %}
+{% else %}
+<form method="POST" action="{% url 'tasks:connect_social' %}">
+{% csrf_token %}
+{% endif %}
+{% if profiles.tiktok %}
+Connected as <strong>@{{ profiles.tiktok.handle }}</strong>
+<form method="POST" action="{% url 'tasks:connect_social' %}">
+{% csrf_token %}
+{% else %}
+<form method="POST" action="{% url 'tasks:connect_social' %}">
+{% csrf_token %}
+{% endif %}
+{% endblock %}
+
+=== templates/tasks/create_task.html ===
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Create Task | eNusu{% endblock %}
+{% block content %}
+<a href="{% url 'tasks:my_created_tasks' %}" class="btn btn-link text-dim p-0 me-3">
+{% csrf_token %}
+{% for code, name in task_types %}
+<option value="{{ code }}">{{ name }}</option>
+{% endfor %}
+{% for code, name in actions %}
+<option value="{{ code }}">{{ name }}</option>
+{% endfor %}
+{% endblock %}
+
+=== templates/tasks/creator_dashboard.html ===
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}My Tasks | eNusu{% endblock %}
+{% block content %}
+<a href="{% url 'tasks:create_task' %}" class="btn btn-primary">
+<div class="fs-3 fw-bold text-primary">{{ total_tasks }}</div>
+<div class="fs-3 fw-bold text-success">{{ total_participants }}</div>
+<div class="fs-3 fw-bold text-warning">{{ pending_requests|length }}</div>
+{% if pending_requests %}
+{% for req in pending_requests %}
+<strong>{{ req.user.username }}</strong>
+<small class="text-dim ms-2">wants to join "{{ req.task.name }}"</small>
+{% if req.message %}
+<div class="small text-dim mt-1">"{{ req.message }}"</div>
+{% endif %}
+<button class="btn btn-sm btn-success me-2" onclick="approveRequest({{ req.id }})">
+<button class="btn btn-sm btn-danger" onclick="rejectRequest({{ req.id }})">
+{% endfor %}
+{% endif %}
+{% if tasks %}
+{% for task in tasks %}
+<h6 class="mb-1">{{ task.name }}</h6>
+<small class="text-dim">{{ task.task_code }}</small>
+<i class="fas fa-check-circle"></i> {{ task.completed_count }} completed
+<i class="fas fa-clock"></i> {{ task.pending_count }} active
+<i class="fas fa-users"></i> {{ task.requests_count }} pending requests
+<div class="fw-bold text-success">+{{ task.points_reward }} pts</div>
+<small class="text-dim">{{ task.participants_count }}/{{ task.max_participants|default:'∞' }}</small>
+{% with progress=task.completed_count|default:0|divisibleby:task.max_participants|default:1 %}
+<div class="progress-bar bg-success" style="width: {{ task.completed_count|default:0 }}%"></div>
+{% endwith %}
+<a href="{% url 'tasks:task_detail' task.task_code %}" class="btn btn-sm btn-outline-primary">
+<a href="{% url 'tasks:edit_task' task.id %}" class="btn btn-sm btn-outline-secondary">
+<button class="btn btn-sm btn-outline-danger" onclick="deleteTask({{ task.id }}, '{{ task.name|escapejs }}')">
+{% if not task.is_active %}
+{% endif %}
+{% endfor %}
+{% else %}
+<a href="{% url 'tasks:create_task' %}" class="btn btn-primary">Create Your First Task</a>
+{% endif %}
+'X-CSRFToken': '{{ csrf_token }}'
+'X-CSRFToken': '{{ csrf_token }}',
+'X-CSRFToken': '{{ csrf_token }}'
+{% endblock %}
+
+=== templates/tasks/edit_task.html ===
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Edit Task | eNusu{% endblock %}
+{% block content %}
+<a href="{% url 'tasks:my_created_tasks' %}" class="btn btn-link text-dim p-0 me-3">
+<h2 class="h4 mb-0 fw-bold">Edit Task: {{ task.name }}</h2>
+{% csrf_token %}
+value="{{ task.name }}" required>
+rows="3" required>{{ task.description }}</textarea>
+<option value="{{ task.task_type }}">{{ task.get_task_type_display }}</option>
+{% for code, name in actions %}
+<option value="{{ code }}" {% if task.action == code %}selected{% endif %}>{{ name }}</option>
+{% endfor %}
+value="{{ task.target_url }}" required>
+value="{{ task.target_identifier }}">
+value="{{ task.points_reward }}" min="10" step="10" required>
+value="{{ task.mining_boost }}" min="1.0" max="2.0" step="0.01">
+value="{{ task.boost_duration_hours }}" min="1" max="24">
+<option value="auto" {% if task.verification_method == 'auto' %}selected{% endif %}>Auto Verification</option>
+<option value="manual" {% if task.verification_method == 'manual' %}selected{% endif %}>Manual Review</option>
+<option value="hybrid" {% if task.verification_method == 'hybrid' %}selected{% endif %}>Hybrid</option>
+value="{{ task.max_participants }}" placeholder="Unlimited" min="1">
+{% if task.requires_approval %}checked{% endif %}>
+{% if task.is_active %}checked{% endif %}>
+<a href="{% url 'tasks:my_created_tasks' %}" class="btn btn-secondary">
+{% endblock %}
+
+=== templates/tasks/marketplace.html ===
+{% extends 'base.html' %}
+{% load static %}
+{% load task_filters %}
+{% block title %}Tasks | eNusu{% endblock %}
+{% block content %}
+<h2 class="display-6 fw-bold mb-0">{{ user_points|format_points }}</h2>
+<small class="text-white-50">≈ {{ user_points|divide:100|floatformat:2 }} NSU Tokens (future)</small>
+<div class="fs-4 fw-bold">+{{ today_points|format_points }}</div>
+<small class="text-white-50">This week: {{ week_points|format_points }}</small>
+<form method="GET" action="{% url 'tasks:marketplace' %}" id="search-form">
+placeholder="Enter task name or code..." value="{{ query }}">
+{% if query %}
+<h5 class="mb-3">Results for "{{ query }}"</h5>
+{% if search_results %}
+{% for task in search_results %}
+<div class="task-card mb-3" onclick="window.location.href='{% url 'tasks:task_detail' task.task_code %}'">
+<div class="task-icon" style="background: {{ task.platform|platform_color }}20; color: {{ task.platform|platform_color }};">
+<i class="{{ task.platform|platform_icon }}"></i>
+<h6 class="mb-0 fw-bold">{{ task.name }}</h6>
+<small class="text-dim">{{ task.task_code }}</small>
+<span class="fw-bold text-success">+{{ task.points_reward }}</span>
+<p class="small text-dim mt-1 mb-0">{{ task.description|truncatechars:80 }}</p>
+<i class="fas fa-users"></i> {{ task.participants_count }} joined
+{% if task.mining_boost > 1 %}
+<i class="fas fa-bolt"></i> {{ task.mining_boost|floatformat:2 }}x boost
+{% endif %}
+{% endfor %}
+{% else %}
+<p class="text-dim">No tasks found for "{{ query }}"</p>
+{% endif %}
+{% endif %}
+{% if active_tasks %}
+Active Tasks ({{ active_tasks.count }})
+{% for completion in active_tasks %}
+<div class="task-card active mb-3" onclick="window.location.href='{% url 'tasks:task_work' completion.task.task_code %}'">
+<div class="task-icon" style="background: {{ completion.task.platform|platform_color }}20; color: {{ completion.task.platform|platform_color }};">
+<i class="{{ completion.task.platform|platform_icon }}"></i>
+<h6 class="mb-0 fw-bold">{{ completion.task.name }}</h6>
+<small class="text-dim">{{ completion.task.task_code }}</small>
+<span class="fw-bold text-success">+{{ completion.task.points_reward }}</span>
+<div class="progress-bar bg-primary" style="width: {{ completion.progress_percentage }}%"></div>
+<small class="text-dim">Status: {{ completion.get_status_display }}</small>
+<button class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation(); window.location.href='{% url 'tasks:task_work' completion.task.task_code %}'">
+{% endfor %}
+{% endif %}
+{% if pending_requests %}
+Pending Approval ({{ pending_requests.count }})
+{% for request in pending_requests %}
+<h6 class="mb-0 fw-bold">{{ request.task.name }}</h6>
+<small class="text-dim">Requested {{ request.created_at|timesince }} ago</small>
+<button class="btn btn-sm btn-outline-danger" onclick="cancelRequest('{{ request.task.task_code }}')">
+{% endfor %}
+{% endif %}
+{% if completed_tasks %}
+Completed ({{ completed_tasks.count }})
+{% for completion in completed_tasks %}
+<h6 class="mb-0">{{ completion.task.name }}</h6>
+<small class="text-success">+{{ completion.task.points_reward }}</small>
+<small class="text-dim">{{ completion.verified_at|timesince }} ago</small>
+{% endfor %}
+{% endif %}
+{% if not social_profiles.twitter and not social_profiles.youtube and not social_profiles.tiktok %}
+<a href="{% url 'tasks:connect_social' %}" class="btn btn-sm btn-warning ms-2">Connect Now</a>
+{% endif %}
+{% if user.is_agent or user.is_superuser %}
+<a href="{% url 'tasks:my_created_tasks' %}" class="btn btn-outline-primary btn-sm">
+{% endif %}
+'X-CSRFToken': '{{ csrf_token }}',
+{% endblock %}
+
+=== templates/tasks/task_detail.html ===
+{% extends 'base.html' %}
+{% load static %}
+{% load task_filters %}
+{% block title %}{{ task.name }} | eNusu{% endblock %}
+{% block content %}
+<a href="{% url 'tasks:marketplace' %}" class="btn btn-link text-dim p-0 me-3">
+<h2 class="h4 mb-0 fw-bold">{{ task.name }}</h2>
+<span class="badge" style="background: {{ task.task_type|platform_color }};">
+<i class="{{ task.task_type|platform_icon }} me-1"></i>
+{{ task.get_task_type_display }}
+<span class="badge bg-secondary ms-2">{{ task.task_code }}</span>
+<div class="fw-bold text-success fs-4">+{{ task.points_reward }}</div>
+<p class="mb-3">{{ task.description }}</p>
+{% if task.mining_boost > 1 %}
+<i class="fas fa-bolt"></i> {{ task.mining_boost }}x Mining Boost ({{ task.boost_duration_hours }}h)
+{% endif %}
+<i class="fas fa-users"></i> {{ total_completed }} completed
+{% if task.max_participants %}
+<i class="fas fa-limit"></i> Max {{ task.max_participants }} participants
+{% endif %}
+{% if not has_profile and task.platform and task.platform != 'custom' %}
+<strong>Connect your {{ task.get_platform_display }} account first!</strong>
+<a href="{% url 'tasks:connect_social' %}" class="btn btn-sm btn-warning ms-2">Connect Now</a>
+{% endif %}
+{% if task.target_url %}
+<code class="text-primary">{{ task.target_url }}</code>
+<button class="btn btn-sm btn-outline-primary ms-2" onclick="copyToClipboard('{{ task.target_url }}')">
+{% endif %}
+{% if task.action == 'follow' %}
+Follow <strong>{{ task.target_identifier|default:task.name }}</strong> on {{ task.get_platform_display }}
+{% elif task.action == 'like' %}
+{% elif task.action == 'comment' %}
+{% elif task.action == 'subscribe' %}
+{% else %}
+{% endif %}
+{% if completion %}
+{% if completion.status == 'verified' %}
+<p>You earned {{ task.points_reward }} points!</p>
+<a href="{% url 'tasks:marketplace' %}" class="btn btn-primary">Find More Tasks</a>
+{% elif completion.status == 'pending' or completion.status == 'processing' %}
+{% elif completion.status == 'failed' %}
+{% endif %}
+{% elif pending_request %}
+{% else %}
+<form method="POST" action="{% url 'tasks:join_task' task.task_code %}">
+{% csrf_token %}
+<button type="submit" class="btn btn-primary btn-lg w-100" {% if not has_profile and task.platform and task.platform != 'custom' %}disabled{% endif %}>
+{% endif %}
+{% if recent_completions %}
+{% for c in recent_completions %}
+<i class="fas fa-user-check"></i> {{ c.user.username }}
+{% endfor %}
+{% endif %}
+fetch('{% url 'tasks:verify_task' task.task_code %}', {
+'X-CSRFToken': '{{ csrf_token }}',
+fetch('{% url 'tasks:cancel_request' task.task_code %}', {
+'X-CSRFToken': '{{ csrf_token }}'
+window.location.href = '{% url 'tasks:marketplace' %}';
+{% endblock %}
+
+=== templates/tasks/task_redirect.html ===
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Complete Task | eNusu{% endblock %}
+{% block content %}
+<h3>{{ task.name }}</h3>
+<p class="text-dim">{{ task.description }}</p>
+<strong>How it works:</strong> Click the button below to visit {{ task.get_platform_display|default:task.task_type }}.
+<a href="{{ task.target_url }}" target="_blank" class="btn btn-primary btn-lg" id="visitLink">
+Visit {{ task.get_platform_display|default:task.task_type }}
+<div class="fw-bold text-success">+{{ task.points_reward }} NSU</div>
+{% if completion.submission_data.clicked %}
+{% else %}
+{% endif %}
+fetch('{% url 'tasks:track_click' task.task_code %}', {
+'X-CSRFToken': '{{ csrf_token }}'
+fetch('{% url 'tasks:verify_task' task.task_code %}', {
+'X-CSRFToken': '{{ csrf_token }}'
+window.location.href = '{% url 'tasks:task_detail' task.task_code %}';
+{% endblock %}
+
+=== templates/transactions/process_withdrawal.html ===
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Process Withdrawal{% endblock %}
+{% block content %}
+<a href="{% url 'users:dashboard' %}" class="text-dim">
+{% csrf_token %}
+{% if recent_withdrawals %}
+{% for withdrawal in recent_withdrawals %}
+<span class="fw-bold">{{ withdrawal.user.username }}</span>
+<span class="text-dim small d-block">{{ withdrawal.timestamp|timesince }} ago</span>
+<span class="fw-bold text-success">{{ withdrawal.amount }} NSU</span>
+{% endfor %}
+{% else %}
+{% endif %}
+{% endblock %}
+
+=== templates/transactions/public_ledger.html ===
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Public Ledger{% endblock %}
+{% block content %}
+<div class="stat-value">{{ total_transactions }}</div>
+<div class="stat-value">{{ total_volume|floatformat:0 }}</div>
+<div class="stat-value">{{ unique_users }}</div>
+{% if transactions %}
+{% for tx in transactions %}
+<a href="{% url 'transactions:transaction_detail' tx.id %}" class="text-decoration-none">
+<div class="tx-card" data-type="{{ tx.transaction_type }}">
+<img src="{% if tx.user.userprofile.profile_picture %}{{ tx.user.userprofile.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ tx.user.username|first }}&background=3b82f6&color=fff{% endif %}"
+<div class="user-name">{{ tx.user.userprofile.display_name|default:tx.user.username }}</div>
+<div class="text-dim small" style="font-size: 0.7rem;">{{ tx.timestamp|timesince }} ago</div>
+<span class="badge bg-{% if tx.transaction_type == 'deposit' %}success{% elif tx.transaction_type == 'withdrawal' %}warning{% else %}info{% endif %}">
+{{ tx.get_transaction_type_display }}
+<span class="text-dim small">#{{ tx.id }}</span>
+<div class="fw-bold {% if tx.amount > 0 %}text-success{% else %}text-warning{% endif %}">
+{{ tx.amount }} NSU
+{% if tx.agent %}
+<span>Agent: {{ tx.agent.username }}</span>
+{% endif %}
+<span><i class="fa-regular fa-clock me-1"></i> {{ tx.timestamp|date:"M d, H:i" }}</span>
+{% if tx.status %}
+<span class="badge bg-{% if tx.status == 'completed' %}success{% elif tx.status == 'pending' %}warning{% else %}secondary{% endif %}">
+{{ tx.get_status_display }}
+{% endif %}
+{% endfor %}
+{% if transactions.has_other_pages %}
+{% if transactions.has_previous %}
+<a href="?page={{ transactions.previous_page_number }}" class="btn btn-outline-primary rounded-circle" style="width: 45px; height: 45px;">
+{% endif %}
+{{ transactions.number }}
+{% if transactions.has_next %}
+<a href="?page={{ transactions.next_page_number }}" class="btn btn-outline-primary rounded-circle" style="width: 45px; height: 45px;">
+{% endif %}
+{% endif %}
+{% else %}
+{% if user.is_authenticated %}
+<a href="{% url 'transactions:transfer_tokens' %}" class="btn btn-primary rounded-pill px-4 mt-3">
+{% endif %}
+{% endif %}
+{% endblock %}
+{% block extra_scripts %}
+fetch("{% url 'transactions:public_ledger' %}?ajax=1")
+{% endblock %}
+
+=== templates/transactions/receipt.html ===
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Receipt #{{ transaction.id }}{% endblock %}
+{% block content %}
+<div class="small text-dim">#{{ transaction.id }}</div>
+<div class="small text-dim">{{ transaction.timestamp|date:"F d, Y" }}</div>
+<div class="small text-dim">{{ transaction.timestamp|date:"H:i:s" }}</div>
+<div class="display-6 fw-bold {% if transaction.amount > 0 %}text-success{% endif %}">
+{{ transaction.amount }} NSU
+<span class="badge bg-{% if transaction.transaction_type == 'deposit' %}success{% elif transaction.transaction_type == 'withdrawal' %}warning{% else %}info{% endif %}">
+{{ transaction.get_transaction_type_display }}
+<td class="fw-bold text-end text-success">✓ {{ transaction.get_status_display|upper }}</td>
+<td class="fw-bold text-end">{{ transaction.user.username }}</td>
+{% if transaction.agent %}
+<td class="fw-bold text-end">{{ transaction.agent.username }}</td>
+{% endif %}
+<td class="fw-bold text-end">{{ transaction.timestamp|date:"H:i:s" }}</td>
+{{ transaction.hashed_detail }}
+<a href="{% url 'transactions:public_ledger' %}" class="btn btn-primary w-50 rounded-pill">
+{% endblock %}
+
+=== templates/transactions/receipt_print.html ===
+<title>Receipt #{{ transaction.id }}</title>
+<span class="badge badge-success">{{ transaction.get_status_display|upper }}</span>
+{{ transaction.amount }} NSU
+<span class="value">#{{ transaction.id }}</span>
+<span class="value">{{ transaction.get_transaction_type_display }}</span>
+<span class="value">{{ transaction.timestamp|date:"M d, Y" }}</span>
+<span class="value">{{ transaction.timestamp|date:"H:i:s" }}</span>
+<span class="value">{{ transaction.user.username }}</span>
+{% if transaction.agent %}
+<span class="value">{{ transaction.agent.username }}</span>
+{% endif %}
+<div class="hash">{{ transaction.hashed_detail }}</div>
+
+=== templates/transactions/request_withdrawal.html ===
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Request Withdrawal{% endblock %}
+{% block content %}
+<a href="{% url 'users:dashboard' %}" class="text-dim">
+<div class="balance-amount">{{ user.userprofile.token_balance|floatformat:2 }} NSU</div>
+{% csrf_token %}
+max="{{ user.userprofile.token_balance }}" required>
+You will receive UGX {{ user.userprofile.get_ugx_balance|floatformat:2 }} at current rate
+const balance = {{ user.userprofile.token_balance }};
+{% endblock %}
+
+=== templates/transactions/transaction_detail.html ===
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Transaction #{{ transaction.id }}{% endblock %}
+{% block content %}
+<a href="{% url 'transactions:public_ledger' %}" class="text-decoration-none text-dim">
+<div class="rounded-circle bg-{% if transaction.transaction_type == 'deposit' %}success{% elif transaction.transaction_type == 'withdrawal' %}warning{% else %}info{% bg-light d-inline-flex p-3" style="width: 80px; height: 80px;">
+<i class="fa-solid {% if transaction.transaction_type == 'deposit' %}fa-arrow-down{% elif transaction.transaction_type == 'withdrawal' %}fa-arrow-up{% else %}fa-arrow-right-arrow-left{% endif %} fa-2x text-accent m-auto"></i>
+<h2 class="h4 mb-1">{{ transaction.get_transaction_type_display }}</h2>
+<span class="badge bg-{% if transaction.status == 'completed' %}success{% elif transaction.status == 'pending' %}warning{% else %}secondary{% endif %} fs-6 px-3 py-2">
+{{ transaction.get_status_display|upper }}
+<div class="balance-amount {% if transaction.amount > 0 %}text-success{% endif %}">
+{{ transaction.amount }} NSU
+<span class="fw-bold">#{{ transaction.id }}</span>
+<span>{{ transaction.timestamp|date:"M d, Y H:i:s" }}</span>
+<a href="{% url 'users:user_profile' transaction.user.username %}" class="text-decoration-none text-accent">
+{{ transaction.user.username }}
+{% if transaction.agent %}
+<a href="{% url 'users:user_profile' transaction.agent.username %}" class="text-decoration-none text-accent">
+{{ transaction.agent.username }}
+{% endif %}
+<span class="font-monospace">{{ transaction.hashed_detail|truncatechars:20 }}</span>
+<span class="font-monospace">{{ transaction.previous_hash|default:"Genesis"|truncatechars:20 }}</span>
+<a href="{% url 'transactions:transaction_receipt' transaction.id %}?print=1" class="btn btn-primary w-50 rounded-pill" target="_blank">
+{% if user.is_superuser or user == transaction.agent %}
+{% endif %}
+{% endblock %}
+
+=== templates/transactions/transfer_tokens.html ===
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Transfer Tokens{% endblock %}
+{% block content %}
+<a href="{% url 'users:dashboard' %}" class="text-dim">
+<div class="balance-amount">{{ user.userprofile.token_balance|floatformat:2 }} NSU</div>
+{% csrf_token %}
+max="{{ user.userprofile.token_balance }}" required>
+{% if recent_transfers %}
+{% for transfer in recent_transfers %}
+<a href="{% url 'transactions:transaction_detail' transfer.id %}" class="text-decoration-none">
+<img src="https://ui-avatars.com/api/?name={{ transfer.recipient.username|default:transfer.user.username|first }}&background=3b82f6&color=fff"
+<span class="fw-bold d-block">{{ transfer.recipient.username|default:transfer.user.username }}</span>
+<span class="text-dim small">{{ transfer.timestamp|timesince }} ago</span>
+<span class="fw-bold text-success">{{ transfer.amount }} NSU</span>
+{% endfor %}
+{% else %}
+{% endif %}
+document.getElementById('amount').value = {{ user.userprofile.token_balance }};
+const balance = {{ user.userprofile.token_balance }};
+{% endblock %}
+
+=== templates/transactions/withdrawal_pin.html ===
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Withdrawal PIN{% endblock %}
+{% block content %}
+{{ pin }}
+<span class="fw-bold">{{ amount }} NSU</span>
+<span class="fw-bold text-danger" id="expiry">{{ expiry|date:"H:i:s" }}</span>
+<img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=PIN:{{ pin }}"
+<a href="{% url 'users:dashboard' %}" class="btn btn-outline-primary w-50 rounded-pill">
+<a href="{% url 'transactions:public_ledger' %}" class="btn btn-primary w-50 rounded-pill">
+const expiryTime = new Date("{{ expiry|date:'Y-m-d H:i:s' }}").getTime();
+const pin = "{{ pin }}";
+{% endblock %}
+
+=== templates/users/create_agent.html ===
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+{% csrf_token %}
+{{ form.email }}
+{{ form.password1 }}
+{{ form.password2 }}
+{% endblock %}
+
+=== templates/users/dashboard.html ===
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Dashboard | NUSU{% endblock %}
+{% block content %}
+<h1 class="welcome-title">Welcome back, {{ user.username }}! 👋</h1>
+<span>Member since {{ user.date_joined|date:"F d, Y" }}</span>
+<span>{{ user.userprofile.token_balance|floatformat:2 }} NSU Tokens</span>
+{% if current_rate %}
+<span>1 NSU = UGX {{ current_rate.rate|floatformat:2 }}</span>
+{% endif %}
+<div class="stat-value" id="followersCount">{{ followers_count }}</div>
+<div class="stat-value" id="followingCount">{{ following_count }}</div>
+<div class="stat-value">{{ referrals_count }}</div>
+<i class="fas fa-code me-1"></i>{{ user.username }}
+<div class="stat-value">{{ user.userprofile.token_balance|floatformat:0 }}</div>
+UGX {{ user.userprofile.get_ugx_balance|floatformat:0 }}
+{% if user.userprofile.profile_picture %}
+<img src="{{ user.userprofile.profile_picture.url }}" class="profile-avatar">
+{% else %}
+<img src="https://ui-avatars.com/api/?name={{ user.username|first }}&background=3b82f6&color=fff&size=120" class="profile-avatar">
+{% endif %}
+<h2 class="profile-name">{{ user.userprofile.display_name|default:user.username }}</h2>
+<i class="fas fa-at"></i>{{ user.username }}
+{% if user.userprofile.bio %}
+{{ user.userprofile.bio }}
+{% endif %}
+{% if user.email %}
+<div class="detail-value">{{ user.email }}</div>
+{% endif %}
+{% if user.userprofile.location %}
+<div class="detail-value">{{ user.userprofile.location }}</div>
+{% endif %}
+{% if user.userprofile.work %}
+<div class="detail-value">{{ user.userprofile.work }}</div>
+{% endif %}
+<div class="detail-value">{{ user.date_joined|date:"M d, Y" }}</div>
+<a href="{% url 'users:edit_profile' %}" class="profile-action-btn primary">
+<a href="{% url 'social:feed' %}" class="profile-action-btn secondary">
+<a href="{% url 'users:followers_list' user.username %}" class="profile-action-btn secondary">
+<a href="{% url 'users:following_list' user.username %}" class="profile-action-btn secondary">
+<i class="fas fa-bolt me-1"></i>{{ mining_state.current_rate|floatformat:1 }}x
+<span id="progressPercent">{{ mining_state.progress_percentage|floatformat:1 }}%</span>
+<div class="progress-fill" id="miningProgress" style="width: {{ mining_state.progress_percentage }}%;"></div>
+<div class="mining-stat-value" id="elapsedHours">{{ mining_state.elapsed_hours|floatformat:1 }}h</div>
+{% with hours=mining_state.remaining_time.0 minutes=mining_state.remaining_time.1 %}
+{{ hours }}h {{ minutes }}m
+{% endwith %}
+<div class="mining-stat-value" id="todayEarnings">{{ mining_state.points_earned_today|floatformat:2 }}</div>
+<button id="toggleMining" class="mining-btn {% if mining_state.is_mining %}stop{% else %}start{% endif %}">
+{% if mining_state.is_mining %}
+{% else %}
+{% endif %}
+<input type="text" class="form-control" value="{{ user.username }}" id="mobileReferralCode" readonly>
+{% if user.referrals.count > 0 %}
+<strong>{{ user.referrals.count }}</strong> people joined using your code
+{% endif %}
+<a href="{% url 'social:notifications' %}" class="view-all-link">
+{% for follow in recent_followers %}
+<a href="{% url 'users:user_profile' follow.follower.username %}">
+{% if follow.follower.userprofile.profile_picture %}
+<img src="{{ follow.follower.userprofile.profile_picture.url }}" class="activity-avatar">
+{% else %}
+<img src="https://ui-avatars.com/api/?name={{ follow.follower.username|first }}&background=3b82f6&color=fff&size=40" class="activity-avatar">
+{% endif %}
+<a href="{% url 'users:user_profile' follow.follower.username %}" class="activity-name">
+{{ follow.follower.userprofile.display_name|default:follow.follower.username }}
+@{{ follow.follower.username }} • {{ follow.created_at|timesince }} ago
+{% empty %}
+{% endfor %}
+{% for referral in user.referrals.all|slice:":5" %}
+<span class="activity-name">{{ referral.username }}</span>
+Joined {{ referral.date_joined|timesince }} ago
+{% empty %}
+{% endfor %}
+{% if recent_transactions %}
+<a href="{% url 'transactions:public_ledger' %}" class="view-all-link">
+{% for transaction in recent_transactions %}
+{% if transaction.transaction_type == 'deposit' %}
+{% elif transaction.transaction_type == 'withdrawal' %}
+{% else %}
+{% endif %}
+<div class="transaction-type">{{ transaction.get_transaction_type_display }}</div>
+<div class="transaction-time">{{ transaction.timestamp|timesince }} ago</div>
+<div class="transaction-amount {% if transaction.transaction_type == 'withdrawal' %}negative{% endif %}">
+{{ transaction.amount }} NSU
+{% endfor %}
+{% endif %}
+{% csrf_token %}
+fetch('{% url "airdrop:toggle_mining" %}', {
+'X-CSRFToken': '{{ csrf_token }}',
+fetch('{% url "airdrop:mining_status" %}', {
+fetch('{% url "users:dashboard_stats" %}', {
+{% endblock %}
+
+=== templates/users/edit_profile.html ===
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Edit Profile | NUSU{% endblock %}
+{% block extra_css %}
+{% endblock %}
+{% block content %}
+{% if form.instance.cover_photo %}
+<img src="{{ form.instance.cover_photo.url }}" alt="Cover Photo" id="coverImage">
+{% else %}
+<img src="{% static 'images/default-cover.jpg' %}" alt="Default Cover" id="coverImage">
+{% endif %}
+<label for="{{ form.cover_photo.id_for_label }}" class="cover-upload-btn">
+{% if form.instance.profile_picture %}
+<img src="{{ form.instance.profile_picture.url }}" alt="Profile Picture" id="profilePreview">
+{% else %}
+<img src="https://ui-avatars.com/api/?name={{ user.username|first }}&background=3b82f6&color=fff" alt="Profile Picture" id="profilePreview">
+{% endif %}
+<label for="{{ form.profile_picture.id_for_label }}">
+{{ form.instance.display_name|default:user.username }}
+@{{ user.username }}
+{{ form.instance.bio|default:"No bio yet. Tell us about yourself!" }}
+<div class="stat-value-preview">{{ user.userprofile.followers.count }}</div>
+<div class="stat-value-preview">{{ user.userprofile.following.count }}</div>
+<div class="stat-value-preview">{{ user.posts.count }}</div>
+{% if form.instance.location %}
+<span id="previewLocation">{{ form.instance.location }}</span>
+{% endif %}
+{% if form.instance.work %}
+<span id="previewWork">{{ form.instance.work }}</span>
+{% endif %}
+{% csrf_token %}
+<input type="file" name="{{ form.profile_picture.name }}" id="{{ form.profile_picture.id_for_label }}" class="d-none" accept="image/*">
+<input type="file" name="{{ form.cover_photo.name }}" id="{{ form.cover_photo.id_for_label }}" class="d-none" accept="image/*">
+<label for="{{ form.display_name.id_for_label }}">
+name="{{ form.display_name.name }}"
+id="{{ form.display_name.id_for_label }}"
+value="{{ form.display_name.value|default:'' }}"
+<label for="{{ form.bio.id_for_label }}">
+<textarea name="{{ form.bio.name }}"
+id="{{ form.bio.id_for_label }}"
+maxlength="500">{{ form.bio.value|default:'' }}</textarea>
+<label for="{{ form.location.id_for_label }}">
+name="{{ form.location.name }}"
+id="{{ form.location.id_for_label }}"
+value="{{ form.location.value|default:'' }}"
+<label for="{{ form.work.id_for_label }}">
+name="{{ form.work.name }}"
+id="{{ form.work.id_for_label }}"
+value="{{ form.work.value|default:'' }}"
+<label for="{{ form.gender.id_for_label }}">
+<select name="{{ form.gender.name }}"
+id="{{ form.gender.id_for_label }}"
+<option value="M" {% if form.gender.value == 'M' %}selected{% endif %}>Male</option>
+<option value="F" {% if form.gender.value == 'F' %}selected{% endif %}>Female</option>
+<option value="N" {% if form.gender.value == 'N' %}selected{% endif %}>Other</option>
+<label for="{{ form.birthday.id_for_label }}">
+name="{{ form.birthday.name }}"
+id="{{ form.birthday.id_for_label }}"
+value="{{ form.birthday.value|date:'Y-m-d'|default:'' }}">
+<label for="{{ form.phone_number.id_for_label }}">
+name="{{ form.phone_number.name }}"
+id="{{ form.phone_number.id_for_label }}"
+value="{{ form.phone_number.value|default:'' }}"
+<label for="{{ form.show_birthday.id_for_label }}">
+name="{{ form.show_birthday.name }}"
+id="{{ form.show_birthday.id_for_label }}"
+{% if form.show_birthday.value %}checked{% endif %}>
+<label for="{{ form.show_phone.id_for_label }}">
+name="{{ form.show_phone.name }}"
+id="{{ form.show_phone.id_for_label }}"
+{% if form.show_phone.value %}checked{% endif %}>
+<label for="{{ form.show_email.id_for_label }}">
+name="{{ form.show_email.name }}"
+id="{{ form.show_email.id_for_label }}"
+{% if form.show_email.value %}checked{% endif %}>
+<a href="{% url 'users:user_profile' user.username %}" class="btn-cancel">
+{% endblock %}
+{% block extra_scripts %}
+const displayName = document.getElementById('{{ form.display_name.id_for_label }}').value;
+document.getElementById('previewName').textContent = displayName || '{{ user.username }}';
+const bio = document.getElementById('{{ form.bio.id_for_label }}').value;
+const location = document.getElementById('{{ form.location.id_for_label }}').value;
+const work = document.getElementById('{{ form.work.id_for_label }}').value;
+document.getElementById('{{ form.profile_picture.id_for_label }}').addEventListener('change', function(e) {
+document.getElementById('{{ form.cover_photo.id_for_label }}').addEventListener('change', function(e) {
+document.getElementById('{{ form.profile_picture.id_for_label }}').click();
+const bioField = document.getElementById('{{ form.bio.id_for_label }}');
+{% if messages %}
+{% for message in messages %}
+text: '{{ message }}',
+{% endfor %}
+{% endif %}
+const bioField = document.getElementById('{{ form.bio.id_for_label }}');
+{% endblock %}
+
+=== templates/users/follow_list.html ===
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ list_title }} | NUSU{% endblock %}
+{% block content %}
+<a href="{% url 'users:user_profile' profile_user.username %}" class="back-btn">
+<h2>{{ list_title }}</h2>
+{% if users %}
+{% for user in users %}
+<a href="{% url 'users:user_profile' user.username %}">
+{% if user.userprofile.profile_picture %}
+<img src="{{ user.userprofile.profile_picture.url }}" class="user-avatar">
+{% else %}
+<img src="https://ui-avatars.com/api/?name={{ user.username|first }}&background=3b82f6&color=fff&size=60" class="user-avatar">
+{% endif %}
+<a href="{% url 'users:user_profile' user.username %}" class="text-decoration-none">
+<div class="user-name">{{ user.userprofile.display_name|default:user.username }}</div>
+<div class="user-username">@{{ user.username }}</div>
+{% if user != request.user %}
+<button class="follow-btn-small {% if user.id in current_user_following %}following{% else %}follow{% endif %}"
+onclick="toggleFollow('{{ user.username }}', this)">
+{% if user.id in current_user_following %}
+{% else %}
+{% endif %}
+{% endif %}
+{% endfor %}
+{% else %}
+{% endif %}
+'X-CSRFToken': '{{ csrf_token }}',
+{% endblock %}
+
+=== templates/users/login.html ===
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+{% if error %}
+<div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+{% csrf_token %}
+<a href="{% url 'users:password_reset' %}" class="text-decoration-none">Forgot Password?</a>
+<p class="mt-3">Don't have an account? <a href="{% url 'users:register' %}" class="text-decoration-none">Register</a></p>
+{% endblock %}
+
+=== templates/users/profile.html ===
+{% extends 'base.html' %}
+{% load static %}
+{% load task_filters %}
+{% block title %}{{ profile_user.username }} | eNusu{% endblock %}
+{% block extra_css %}
+{% endblock %}
+{% block content %}
+{% if profile_user.userprofile.cover_photo %}
+<img src="{{ profile_user.userprofile.cover_photo.url }}" alt="Cover">
+{% endif %}
+{% if profile_user.userprofile.profile_picture %}
+<img src="{{ profile_user.userprofile.profile_picture.url }}" class="avatar-img" alt="{{ profile_user.username }}">
+{% else %}
+<img src="https://ui-avatars.com/api/?name={{ profile_user.username|first }}&background=3b82f6&color=fff&size=100&bold=true&length=2&font-size=0.5" class="avatar-img" alt="{{ profile_user.username }}">
+{% endif %}
+{% if profile_user.userprofile.verified or profile_user.is_verified %}
+{% endif %}
+<h5 class="display-name">{{ profile_user.userprofile.display_name|default:profile_user.username }}</h5>
+<p class="username">@{{ profile_user.username }}</p>
+{% if profile_user.userprofile.bio %}
+<p class="bio">{{ profile_user.userprofile.bio }}</p>
+{% endif %}
+{% if profile_user.userprofile.location %}
+<i class="fas fa-map-marker-alt"></i> {{ profile_user.userprofile.location }}
+{% endif %}
+{% if profile_user.userprofile.work %}
+<i class="fas fa-briefcase"></i> {{ profile_user.userprofile.work }}
+{% endif %}
+<i class="fas fa-calendar-alt"></i> Joined {{ profile_user.date_joined|date:"M Y" }}
+{% if profile_user.userprofile.token_balance %}
+<i class="fas fa-coins"></i> {{ profile_user.userprofile.token_balance|floatformat:0 }} NSU
+{% endif %}
+<div class="stat-item" onclick="window.location.href='{% url 'users:followers_list' profile_user.username %}'">
+<span class="stat-num" id="followersCount">{{ followers_count }}</span>
+<div class="stat-item" onclick="window.location.href='{% url 'users:following_list' profile_user.username %}'">
+<span class="stat-num" id="followingCount">{{ following_count }}</span>
+<span class="stat-num">{{ posts.paginator.count }}</span>
+{% if is_owner %}
+<a href="{% url 'users:edit_profile' %}" class="action-btn edit-btn">
+{% else %}
+<button class="action-btn follow-btn {% if is_following %}following{% endif %}"
+onclick="toggleFollow('{{ profile_user.username }}', this)">
+{% if is_following %}
+{% else %}
+{% endif %}
+<button class="action-btn message-btn" onclick="sendMessage('{{ profile_user.username }}')">
+{% endif %}
+{% if is_owner %}
+<div class="referral-code">{{ profile_user.username }}</div>
+<button class="btn btn-primary btn-sm rounded-pill" onclick="copyReferralCode('{{ profile_user.username }}')">
+{% endif %}
+{% if media_posts %}
+{% for post in media_posts %}
+<div class="video-thumb" onclick="window.location.href='{% url 'social:post_detail' post.id %}'">
+{% with media=post.media_items.first %}
+{% if media.media_type == 'video' %}
+<video src="{{ media.url }}" preload="metadata"></video>
+{% else %}
+<img src="{{ media.url }}" alt="Post">
+{% endif %}
+{% endwith %}
+<i class="fas fa-eye"></i> {{ post.views_count|default:0 }}
+{% endfor %}
+{% else %}
+{% if is_owner %}
+<a href="{% url 'social:create_post' %}" class="btn btn-primary btn-sm rounded-pill mt-2">
+{% endif %}
+{% endif %}
+{% if text_posts %}
+{% for post in text_posts %}
+<div class="text-post" onclick="window.location.href='{% url 'social:post_detail' post.id %}'">
+{{ post.content|linebreaksbr }}
+<span class="small text-dim">{{ post.created_at|timesince }} ago</span>
+<span><i class="far fa-heart"></i> {{ post.likes_count }}</span>
+<span><i class="far fa-comment"></i> {{ post.replies_count }}</span>
+{% endfor %}
+{% else %}
+{% if is_owner %}
+<a href="{% url 'social:create_post' %}" class="btn btn-primary btn-sm rounded-pill mt-2">
+{% endif %}
+{% endif %}
+{% if completed_tasks %}
+{% for completion in completed_tasks %}
+<div class="task-list-item" onclick="window.location.href='{% url 'tasks:task_detail' completion.task.task_code %}'">
+<h6>{{ completion.task.name }}</h6>
+<small>{{ completion.verified_at|timesince }} ago</small>
+<div class="task-reward">+{{ completion.task.points_reward }}</div>
+{% endfor %}
+{% else %}
+{% if is_owner %}
+<a href="{% url 'tasks:marketplace' %}" class="btn btn-primary btn-sm rounded-pill mt-2">
+{% endif %}
+{% endif %}
+'X-CSRFToken': '{{ csrf_token }}',
+{% endblock %}
+
+=== templates/users/receipt.html ===
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<span>{{ transaction.id }}</span>
+<span>{{ transaction.timestamp }}</span>
+<span>{{ transaction.get_transaction_type_display }}</span>
+<span class="fw-bold">{{ transaction.amount }} NSU</span>
+{% if transaction.agent %}
+<span>{{ transaction.agent.username }}</span>
+{% endif %}
+<span class="badge bg-success">{{ transaction.get_status_display }}</span>
+<a href="{% url 'dashboard' %}" class="btn btn-outline-primary ms-2">
+{% endblock %}
+
+=== templates/users/register.html ===
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Register | NUSU{% endblock %}
+{% block content %}
+{% csrf_token %}
+<label for="{{ form.username.id_for_label }}">
+{{ form.username }}
+{% if form.username.errors %}
+{% for error in form.username.errors %}
+<li>{{ error }}</li>
+{% endfor %}
+{% endif %}
+<label for="{{ form.email.id_for_label }}">
+{{ form.email }}
+{% if form.email.errors %}
+{% for error in form.email.errors %}
+<li>{{ error }}</li>
+{% endfor %}
+{% endif %}
+<label for="{{ form.password1.id_for_label }}">
+{{ form.password1 }}
+{% if form.password1.errors %}
+{% for error in form.password1.errors %}
+<li>{{ error }}</li>
+{% endfor %}
+{% endif %}
+<label for="{{ form.password2.id_for_label }}">
+{{ form.password2 }}
+{% if form.password2.errors %}
+{% for error in form.password2.errors %}
+<li>{{ error }}</li>
+{% endfor %}
+{% endif %}
+<label for="{{ form.referral_code.id_for_label }}">
+{{ form.referral_code }}
+{% if form.referral_code.errors %}
+{% for error in form.referral_code.errors %}
+<li>{{ error }}</li>
+{% endfor %}
+{% endif %}
+Already have an account? <a href="{% url 'users:login' %}">Login</a>
+{% endblock %}
+
+=== templates/users/send_tokens.html ===
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+{% csrf_token %}
+{{ form.username }}
+{{ form.amount }}
+<div class="form-text">Current balance: {{ request.user.userprofile.token_balance }} NSU</div>
+{% endblock %}

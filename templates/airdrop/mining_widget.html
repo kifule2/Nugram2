@@ -1,228 +1,303 @@
-<div class="card border-0 shadow-sm rounded-4 mb-3" id="miningWidget">
-    <div class="card-header bg-black text-white d-flex justify-content-between align-items-center">
-        <h5 class="mb-0 fw-bold">
-            <i class="bi bi-lightning-charge"></i> NUSU Mining
-        </h5>
-        <span class="badge bg-{% if state.is_mining %}dark{% else %}secondary{% endif %}" id="miningStatusBadge">
-            {% if state.is_mining %}ACTIVE{% else %}READY{% endif %}
+{% load static %}
+<div class="mining-widget glass-card" data-mining-active="{{ state.is_mining|yesno:'true,false' }}">
+    <div class="mining-header">
+        <div>
+            <h3 class="mining-title">⚡ Mining Active</h3>
+            <span class="mining-rate" id="rateText">{{ state.current_rate|floatformat:2 }}x</span>
+        </div>
+        <span class="mining-badge" id="miningStatusBadge">
+            {% if state.is_mining %}
+            <i class="fas fa-play-circle"></i> MINING
+            {% else %}
+            <i class="fas fa-pause-circle"></i> READY
+            {% endif %}
         </span>
     </div>
-    <div class="card-body">
-        <!-- Progress Bar -->
-        <div class="mb-3">
-            <div class="d-flex justify-content-between small text-muted mb-1">
-                <span>Session Progress</span>
-                <span id="progressText">{{ state.elapsed_hours|floatformat:1 }} / 24 hours</span>
-            </div>
-            <div class="progress rounded-pill" style="height: 8px;">
-                <div id="progressBar" class="progress-bar bg-dark {% if state.is_mining %}progress-bar-striped progress-bar-animated{% endif %}" 
-                     role="progressbar" 
-                     style="width: {{ state.progress_percentage }}%"
-                     aria-valuenow="{{ state.elapsed_hours }}" 
-                     aria-valuemin="0" 
-                     aria-valuemax="24">
-                </div>
-            </div>
+    
+    <div class="mining-progress-section">
+        <div class="progress-label">
+            <span>Today's Progress</span>
+            <span id="progressText">{{ state.elapsed_hours|floatformat:1 }} / 24 hours</span>
         </div>
-
-        <!-- Stats Row -->
-        <div class="row g-2 mb-3">
-            <div class="col-4">
-                <div class="p-2 bg-light rounded-3">
-                    <small class="text-muted d-block">Rate</small>
-                    <span class="fw-bold" id="rateText">{{ state.current_rate|floatformat:2 }}x</span>
-                </div>
+        <div class="progress-bar-container">
+            <div id="progressBar" class="progress-fill" 
+                 style="width: {{ state.progress_percentage }}%"
+                 data-progress="{{ state.progress_percentage }}">
+                <div class="progress-glow"></div>
             </div>
-            <div class="col-4">
-                <div class="p-2 bg-light rounded-3">
-                    <small class="text-muted d-block">Today</small>
-                    <span class="fw-bold" id="todayPoints">{{ state.points_earned_today|floatformat:2 }}</span>
-                </div>
-            </div>
-            <div class="col-4">
-                <div class="p-2 bg-light rounded-3">
-                    <small class="text-muted d-block">Total</small>
-                    <span class="fw-bold" id="totalPoints">{{ state.total_points|floatformat:2 }}</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Control Button -->
-        <button class="btn btn-dark rounded-pill w-100 py-2 fw-bold" id="miningButton"
-                {% if state.progress_percentage >= 100 %}disabled{% endif %}>
-            {% if state.is_mining %}
-                <i class="bi bi-pause-fill"></i> STOP MINING
-            {% else %}
-                <i class="bi bi-play-fill"></i> START MINING
-            {% endif %}
-        </button>
-
-        <!-- Status Message -->
-        <div class="text-center mt-2" id="statusMessage">
-            {% if state.is_mining %}
-                <small class="text-muted">
-                    <i class="bi bi-clock"></i> <span id="countdown">{{ state.remaining_hours|floatformat:1 }}</span> hours remaining
-                </small>
-            {% elif state.progress_percentage >= 100 %}
-                <small class="text-success">
-                    <i class="bi bi-check-circle"></i> Session completed
-                </small>
-            {% else %}
-                <small class="text-muted">
-                    24 hour mining sessions
-                </small>
-            {% endif %}
         </div>
     </div>
+    
+    <div class="mining-stats">
+        <div class="stat-card">
+            <span class="stat-label">Today's Earnings</span>
+            <span class="stat-value" id="todayPoints">{{ state.points_earned_today|floatformat:2 }}</span>
+            <span class="stat-unit">NSU</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">Total Points</span>
+            <span class="stat-value" id="totalPoints">{{ state.total_points|floatformat:2 }}</span>
+            <span class="stat-unit">NSU</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">Multiplier</span>
+            <span class="stat-value" id="rateText2">{{ state.current_rate|floatformat:2 }}</span>
+            <span class="stat-unit">x</span>
+        </div>
+    </div>
+    
+    <button id="toggleMiningBtn" class="mining-action-btn {% if state.is_mining %}active{% endif %}" 
+            data-mining="{{ state.is_mining|yesno:'true,false' }}">
+        {% if state.is_mining %}
+        <i class="fas fa-stop-circle"></i> Stop Mining
+        {% else %}
+        <i class="fas fa-play-circle"></i> Start Mining
+        {% endif %}
+    </button>
+    
+    {% if state.is_mining %}
+    <div class="countdown-timer">
+        <i class="fas fa-hourglass-half"></i>
+        <span id="countdown">{{ state.remaining_hours|floatformat:1 }}</span> hours remaining
+    </div>
+    {% elif state.progress_percentage >= 100 %}
+    <div class="reward-ready">
+        <i class="fas fa-gift"></i> Daily reward ready! Start mining to claim.
+    </div>
+    {% endif %}
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const miningButton = document.getElementById('miningButton');
-    const progressBar = document.getElementById('progressBar');
-    const progressText = document.getElementById('progressText');
-    const statusMessage = document.getElementById('statusMessage');
-    const countdown = document.getElementById('countdown');
-    const miningStatusBadge = document.getElementById('miningStatusBadge');
-    const rateText = document.getElementById('rateText');
-    const todayPoints = document.getElementById('todayPoints');
-    const totalPoints = document.getElementById('totalPoints');
+<style>
+    .mining-widget {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        padding: 20px;
+        margin-bottom: 20px;
+    }
     
-    let countdownInterval;
+    .mining-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
+    }
+    
+    .mining-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin: 0;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+    
+    .mining-rate {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--primary);
+        display: block;
+        line-height: 1;
+    }
+    
+    .mining-badge {
+        background: rgba(59, 130, 246, 0.2);
+        padding: 6px 12px;
+        border-radius: 40px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--primary);
+    }
+    
+    .mining-progress-section {
+        margin-bottom: 20px;
+    }
+    
+    .progress-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.8rem;
+        color: var(--text-dim);
+        margin-bottom: 8px;
+    }
+    
+    .progress-bar-container {
+        background: var(--gray);
+        border-radius: 20px;
+        height: 12px;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .progress-fill {
+        background: linear-gradient(90deg, var(--primary), var(--accent));
+        height: 100%;
+        border-radius: 20px;
+        position: relative;
+        transition: width 0.3s ease;
+    }
+    
+    .progress-glow {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 30px;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3));
+        animation: shimmer 1.5s infinite;
+    }
+    
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+    
+    .mining-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+    
+    .stat-card {
+        background: var(--glass-bg);
+        border-radius: 12px;
+        padding: 12px;
+        text-align: center;
+    }
+    
+    .stat-label {
+        font-size: 0.7rem;
+        color: var(--text-dim);
+        display: block;
+        margin-bottom: 4px;
+    }
+    
+    .stat-value {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+    
+    .stat-unit {
+        font-size: 0.7rem;
+        color: var(--text-dim);
+        margin-left: 2px;
+    }
+    
+    .mining-action-btn {
+        width: 100%;
+        padding: 14px;
+        border: none;
+        border-radius: 40px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        color: white;
+    }
+    
+    .mining-action-btn.active {
+        background: var(--gray);
+        color: var(--danger);
+    }
+    
+    .mining-action-btn:active {
+        transform: scale(0.98);
+    }
+    
+    .countdown-timer {
+        text-align: center;
+        margin-top: 12px;
+        font-size: 0.8rem;
+        color: var(--text-dim);
+    }
+    
+    .reward-ready {
+        text-align: center;
+        margin-top: 12px;
+        padding: 8px;
+        background: rgba(16, 185, 129, 0.1);
+        border-radius: 40px;
+        color: var(--success);
+        font-size: 0.8rem;
+    }
+</style>
 
-    function updateUI(data) {
-        // Update progress bar
-        progressBar.style.width = data.progress_percentage + '%';
-        progressText.textContent = data.elapsed_hours.toFixed(1) + ' / 24 hours';
+<script>
+    (function() {
+        let miningInterval;
+        const toggleBtn = document.getElementById('toggleMiningBtn');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const todayPoints = document.getElementById('todayPoints');
+        const totalPoints = document.getElementById('totalPoints');
+        const rateText = document.getElementById('rateText');
+        const countdownSpan = document.getElementById('countdown');
         
-        // Update stats
-        rateText.textContent = data.current_rate.toFixed(2) + 'x';
-        todayPoints.textContent = data.session_points.toFixed(2);
-        totalPoints.textContent = data.total_points.toFixed(2);
-        
-        // Update button and status
-        if (data.is_mining) {
-            miningButton.innerHTML = '<i class="bi bi-pause-fill"></i> STOP MINING';
-            miningButton.className = 'btn btn-dark rounded-pill w-100 py-2 fw-bold';
-            progressBar.classList.add('progress-bar-striped', 'progress-bar-animated');
-            miningStatusBadge.className = 'badge bg-dark';
-            miningStatusBadge.textContent = 'ACTIVE';
-            
-            // Start countdown
-            startCountdown(data.remaining_time);
-        } else {
-            miningButton.innerHTML = '<i class="bi bi-play-fill"></i> START MINING';
-            miningButton.className = 'btn btn-dark rounded-pill w-100 py-2 fw-bold';
-            progressBar.classList.remove('progress-bar-striped', 'progress-bar-animated');
-            miningStatusBadge.className = 'badge bg-secondary';
-            miningStatusBadge.textContent = 'READY';
-            
-            // Stop countdown
-            clearInterval(countdownInterval);
-            countdownInterval = null;
+        function updateMiningStatus() {
+            fetch("{% url 'airdrop:mining_status' %}")
+                .then(res => res.json())
+                .then(data => {
+                    if (progressBar) {
+                        progressBar.style.width = data.progress_percentage + '%';
+                        progressBar.setAttribute('data-progress', data.progress_percentage);
+                    }
+                    if (progressText) progressText.textContent = data.elapsed_hours.toFixed(1) + ' / 24 hours';
+                    if (todayPoints) todayPoints.textContent = data.session_points.toFixed(2);
+                    if (totalPoints) totalPoints.textContent = data.total_points.toFixed(2);
+                    if (rateText) rateText.textContent = data.current_rate.toFixed(2) + 'x';
+                    if (countdownSpan) countdownSpan.textContent = data.remaining_time;
+                    
+                    const badge = document.getElementById('miningStatusBadge');
+                    if (badge) {
+                        if (data.is_mining) {
+                            badge.innerHTML = '<i class="fas fa-play-circle"></i> MINING';
+                        } else {
+                            badge.innerHTML = '<i class="fas fa-pause-circle"></i> READY';
+                        }
+                    }
+                    
+                    if (toggleBtn) {
+                        const isActive = data.is_mining;
+                        if (isActive) {
+                            toggleBtn.classList.add('active');
+                            toggleBtn.innerHTML = '<i class="fas fa-stop-circle"></i> Stop Mining';
+                        } else {
+                            toggleBtn.classList.remove('active');
+                            toggleBtn.innerHTML = '<i class="fas fa-play-circle"></i> Start Mining';
+                        }
+                        toggleBtn.setAttribute('data-mining', isActive);
+                    }
+                })
+                .catch(err => console.error('Failed to update mining status:', err));
         }
         
-        // Handle completed session
-        if (data.session_completed) {
-            miningButton.disabled = true;
-            if (statusMessage) {
-                statusMessage.innerHTML = '<small class="text-success"><i class="bi bi-check-circle"></i> Session completed</small>';
-            }
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', function() {
+                fetch("{% url 'airdrop:toggle_mining' %}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrftoken,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    updateMiningStatus();
+                    showToast(data.status === 'started' ? 'Mining started!' : 'Mining stopped');
+                })
+                .catch(err => console.error('Failed to toggle mining:', err));
+            });
         }
-    }
-    
-    function startCountdown(timeString) {
-        // Parse the time string (HH:MM:SS)
-        const [hours, minutes, seconds] = timeString.split(':').map(Number);
-        let totalSeconds = hours * 3600 + minutes * 60 + seconds;
         
-        // Update immediately
-        updateCountdownDisplay(totalSeconds);
+        // Update mining status every 5 seconds
+        miningInterval = setInterval(updateMiningStatus, 5000);
         
-        // Clear any existing interval
-        clearInterval(countdownInterval);
-        
-        // Start new countdown
-        countdownInterval = setInterval(() => {
-            totalSeconds--;
-            
-            if (totalSeconds <= 0) {
-                clearInterval(countdownInterval);
-                checkMiningStatus();
-                return;
-            }
-            
-            updateCountdownDisplay(totalSeconds);
-        }, 1000);
-    }
-    
-    function updateCountdownDisplay(totalSeconds) {
-        if (countdown) {
-            const hours = Math.floor(totalSeconds / 3600);
-            const minutes = Math.floor((totalSeconds % 3600) / 60);
-            const seconds = Math.floor(totalSeconds % 60);
-            
-            countdown.textContent = 
-                `${hours.toString().padStart(2, '0')}h ` +
-                `${minutes.toString().padStart(2, '0')}m ` +
-                `${seconds.toString().padStart(2, '0')}s`;
-        }
-    }
-    
-    function checkMiningStatus() {
-        fetch("{% url 'airdrop:mining_status' %}")
-            .then(response => response.json())
-            .then(data => updateUI(data))
-            .catch(error => console.error('Error:', error));
-    }
-    
-    // Initialize
-    checkMiningStatus();
-    
-    // Set up button click handler - THIS IS THE MODIFIED SECTION
-    miningButton.addEventListener('click', function(e) {
-        e.preventDefault();
-        
-        // Immediately toggle the button text for instant feedback
-        const wasMining = miningButton.innerHTML.includes('STOP');
-        miningButton.innerHTML = wasMining 
-            ? '<i class="bi bi-play-fill"></i> START MINING' 
-            : '<i class="bi bi-pause-fill"></i> STOP MINING';
-        
-        // Disable button during processing
-        miningButton.disabled = true;
-        
-        fetch("{% url 'airdrop:toggle_mining' %}", {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': "{{ csrf_token }}",
-                'Content-Type': 'application/json',
-            },
-        })
-        .then(response => response.json())
-        .then(data => {
-            // This will handle any corrections if the server state differs
-            updateUI(data);
-            if (data.is_mining) {
-                // Start polling every 30 seconds if mining is active
-                setInterval(checkMiningStatus, 30000);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            // Revert button text if error occurs
-            miningButton.innerHTML = wasMining 
-                ? '<i class="bi bi-pause-fill"></i> STOP MINING' 
-                : '<i class="bi bi-play-fill"></i> START MINING';
-        })
-        .finally(() => {
-            miningButton.disabled = false;
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            if (miningInterval) clearInterval(miningInterval);
         });
-    });
-    
-    // Check status every 30 seconds if mining is active
-    {% if state.is_mining %}
-    setInterval(checkMiningStatus, 30000);
-    {% endif %}
-});
+    })();
 </script>
