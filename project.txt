@@ -1275,6 +1275,9 @@ path('api/unread-notifications/', views.get_unread_notifications_count, name='un
 path('api/user/<str:username>/stats/', views.get_user_stats, name='user_stats'),
 path('api/video-status/<str:task_id>/', views.video_upload_status, name='video_upload_status'),
 path('check-my-uploads/', views.check_my_uploads, name='check_my_uploads'),
+path('api/search/', views.search_users_api, name='search_users_api'),
+path('api/comments/<int:post_id>/', views.get_comments, name='get_comments'),
+path('api/comments/<int:post_id>/add/', views.add_comment, name='add_comment'),
 ]
 
 === social/video_utils.py ===
@@ -1639,6 +1642,62 @@ return JsonResponse({
 'status': 'processing',
 'progress': 50
 })
+from django.http import JsonResponse
+from django.db.models import Q
+from social.models import Follow
+def search_users_api(request):
+query = request.GET.get('q', '').strip()
+if not query:
+return JsonResponse({'users': []})
+users = CustomUser.objects.filter(
+Q(username__icontains=query) | Q(userprofile__display_name__icontains=query)
+).select_related('userprofile')[:10]
+user_list = []
+for u in users:
+user_list.append({
+'username': u.username,
+'display_name': u.userprofile.display_name if hasattr(u, 'userprofile') else '',
+'profile_picture_url': u.userprofile.profile_picture.url if hasattr(u, 'userprofile') and u.userprofile.profile_picture else None,
+'verified': getattr(u.userprofile, 'verified', False),
+'followers_count': Follow.objects.filter(following=u).count(),
+'is_following': Follow.objects.filter(follower=request.user, following=u).exists() if request.user.is_authenticated else False,
+})
+return JsonResponse({'users': user_list})
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+import json
+def get_comments(request, post_id):
+post = get_object_or_404(Post, id=post_id)
+replies = post.replies.all().select_related('user', 'user__userprofile').order_by('-created_at')
+comments_data = []
+for reply in replies:
+comments_data.append({
+'id': reply.id,
+'content': reply.content,
+'created_at': reply.created_at.isoformat(),
+'author': {
+'username': reply.user.username,
+'profile_pic': reply.user.userprofile.profile_picture.url if hasattr(reply.user, 'userprofile') and reply.user.userprofile.profile_picture else None,
+'verified': getattr(reply.user.userprofile, 'verified', False),
+}
+})
+return JsonResponse({'comments': comments_data})
+@require_POST
+@csrf_exempt
+def add_comment(request, post_id):
+data = json.loads(request.body)
+content = data.get('content', '').strip()
+if not content:
+return JsonResponse({'error': 'Empty comment'}, status=400)
+post = get_object_or_404(Post, id=post_id)
+comment = Post.objects.create(
+user=request.user,
+content=content,
+is_reply=True,
+parent_post=post,
+post_type='text'
+)
+return JsonResponse({'status': 'success', 'comment_id': comment.id})
 
 === tasks/management/commands/cleanup_tasks.py ===
 from django.core.management.base import BaseCommand
@@ -2723,76 +2782,63 @@ return colors.get(platform, '
 {% endblock %}
 
 === templates/airdrop/mining_widget.html ===
-<span class="badge bg-{% if state.is_mining %}dark{% else %}secondary{% endif %}" id="miningStatusBadge">
-{% if state.is_mining %}ACTIVE{% else %}READY{% endif %}
+{% load static %}
+<div class="mining-widget glass-card" data-mining-active="{{ state.is_mining|yesno:'true,false' }}">
+<span class="mining-rate" id="rateText">{{ state.current_rate|floatformat:2 }}x</span>
+{% if state.is_mining %}
+{% else %}
+{% endif %}
 <span id="progressText">{{ state.elapsed_hours|floatformat:1 }} / 24 hours</span>
-<div id="progressBar" class="progress-bar bg-dark {% if state.is_mining %}progress-bar-striped progress-bar-animated{% endif %}"
 style="width: {{ state.progress_percentage }}%"
-aria-valuenow="{{ state.elapsed_hours }}"
-<span class="fw-bold" id="rateText">{{ state.current_rate|floatformat:2 }}x</span>
-<span class="fw-bold" id="todayPoints">{{ state.points_earned_today|floatformat:2 }}</span>
-<span class="fw-bold" id="totalPoints">{{ state.total_points|floatformat:2 }}</span>
-{% if state.progress_percentage >= 100 %}disabled{% endif %}>
+data-progress="{{ state.progress_percentage }}">
+<span class="stat-value" id="todayPoints">{{ state.points_earned_today|floatformat:2 }}</span>
+<span class="stat-value" id="totalPoints">{{ state.total_points|floatformat:2 }}</span>
+<span class="stat-value" id="rateText2">{{ state.current_rate|floatformat:2 }}</span>
+<button id="toggleMiningBtn" class="mining-action-btn {% if state.is_mining %}active{% endif %}"
+data-mining="{{ state.is_mining|yesno:'true,false' }}">
 {% if state.is_mining %}
 {% else %}
 {% endif %}
 {% if state.is_mining %}
-<i class="bi bi-clock"></i> <span id="countdown">{{ state.remaining_hours|floatformat:1 }}</span> hours remaining
+<span id="countdown">{{ state.remaining_hours|floatformat:1 }}</span> hours remaining
 {% elif state.progress_percentage >= 100 %}
-{% else %}
 {% endif %}
 fetch("{% url 'airdrop:mining_status' %}")
 fetch("{% url 'airdrop:toggle_mining' %}", {
-'X-CSRFToken': "{{ csrf_token }}",
-{% if state.is_mining %}
-{% endif %}
 
 === templates/base.html ===
 <title>NUSU | {% block title %}Social-Finance{% endblock %}</title>
 {% block extra_css %}{% endblock %}
-<a href="{% url 'home' %}" class="brand">NUSU<span style="color:var(--accent);">.</span></a>
+<body class="{% if request.resolver_match.app_name == 'social' and request.resolver_match.url_name == 'feed' %}feed-page{% endif %}">
+<a href="{% url 'home' %}" class="brand">NUSU<span style="color:var(--blue);">.</span></a>
 {% if user.is_authenticated %}
-<a href="{% url 'social:notifications' %}" class="text-dim position-relative notification-badge" id="notificationBell">
-<a href="{% url 'users:user_profile' user.username %}" class="username-link">
-{{ user.username }}
+<a href="{% url 'social:notifications' %}" class="top-icon-btn" style="position:relative;">
 <a href="{% url 'users:user_profile' user.username %}">
 {% if user.userprofile.profile_picture %}
-<img src="{{ user.userprofile.profile_picture.url }}"
-alt="{{ user.username }}"
-data-username="{{ user.username }}"
-onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ user.username }}&background=3b82f6&color=fff&size=40&bold=true&length=2&font-size=0.33';">
+<img src="{{ user.userprofile.profile_picture.url }}" class="avatar-btn">
 {% else %}
-<img src="https://ui-avatars.com/api/?name={{ user.username }}&background=3b82f6&color=fff&size=40&bold=true&length=2&font-size=0.33"
-alt="{{ user.username }}">
+<img src="https://ui-avatars.com/api/?name={{ user.username }}&background=3b82f6&color=fff&size=38&bold=true" class="avatar-btn">
 {% endif %}
-<a href="{% url 'users:logout' %}" class="logout-btn" title="Logout">
+<a href="{% url 'users:logout' %}" class="top-icon-btn"><i class="fas fa-sign-out-alt"></i></a>
 {% else %}
-<a href="{% url 'users:login' %}" class="btn btn-sm btn-outline-primary rounded-pill px-4">Login</a>
-<a href="{% url 'users:register' %}" class="btn btn-sm btn-primary rounded-pill px-4">Register</a>
-{% endif %}
-{% if messages %}
-{% for message in messages %}
-<div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-{{ message }}
-{% endfor %}
+<a href="{% url 'users:login' %}" class="btn btn-sm btn-outline-light rounded-pill px-3">Login</a>
+<a href="{% url 'users:register' %}" class="btn btn-sm rounded-pill px-3" style="background:var(--blue);color:#fff;">Sign Up</a>
 {% endif %}
 {% block content %}{% endblock %}
-<a href="{% url 'home' %}" class="dock-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
-<a href="{% url 'social:feed' %}" class="dock-item {% if request.resolver_match.app_name == 'social' %}active{% endif %}" id="socialTab">
+<a href="{% url 'home' %}" class="dock-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}"><i class="fas fa-home"></i></a>
+<a href="{% url 'social:feed' %}" class="dock-item {% if request.resolver_match.app_name == 'social' %}active{% endif %}"><i class="fas fa-play-circle"></i></a>
 {% if user.is_authenticated %}
-<a href="{% url 'airdrop:dashboard' %}" class="mine-btn">
+<a href="{% url 'airdrop:dashboard' %}" class="mine-btn"><i class="fas fa-pickaxe"></i></a>
 {% else %}
 {% endif %}
-<a href="{% url 'tasks:marketplace' %}" class="dock-item {% if request.resolver_match.app_name == 'tasks' %}active{% endif %}">
+<a href="{% url 'tasks:marketplace' %}" class="dock-item"><i class="fas fa-tasks"></i></a>
 {% if user.is_authenticated %}
-<a href="{% url 'users:user_profile' user.username %}" class="dock-item {% if request.resolver_match.url_name == 'user_profile' %}active{% endif %}">
+<a href="{% url 'users:user_profile' user.username %}" class="dock-item"><i class="fas fa-user"></i></a>
 {% else %}
 {% endif %}
 {% if not user.is_authenticated %}
-<a href="{% url 'users:login' %}" class="btn btn-primary rounded-pill py-2">Login</a>
-<a href="{% url 'users:register' %}" class="btn btn-outline-primary rounded-pill py-2">Create Account</a>
-{% endif %}
-{% if user.is_authenticated %}
+<a href="{% url 'users:login' %}" class="btn btn-primary rounded-pill">Login</a>
+<a href="{% url 'users:register' %}" class="btn btn-outline-light rounded-pill">Sign Up</a>
 {% endif %}
 {% block extra_scripts %}{% endblock %}
 
@@ -2801,89 +2847,132 @@ alt="{{ user.username }}">
 {% load static %}
 {% load task_filters %}
 {% block title %}Home{% endblock %}
+{% block extra_css %}
+{% endblock %}
 {% block content %}
 {% if not user.is_authenticated %}
-<a href="{% url 'users:register' %}" class="btn btn-primary rounded-pill px-4 py-2">
-<a href="{% url 'users:login' %}" class="btn btn-outline-primary rounded-pill px-4 py-2">
+<a href="{% url 'users:register' %}" class="btn-primary-hero">
+<a href="{% url 'users:login' %}" class="btn-outline-hero">Login</a>
+{% else %}
+<h2>{{ user.userprofile.display_name|default:user.username }} 👋</h2>
+{% if user.is_verified or user.userprofile.verified %}
 {% endif %}
-{% if user.is_authenticated %}
-<div class="balance-amount-large" id="tokenBalance">{{ user.userprofile.token_balance|floatformat:2 }}</div>
-<span class="text-dim small" id="ugxBalance">≈ UGX {{ user.userprofile.get_ugx_balance|floatformat:2 }}</span>
-<div class="stat-number" id="followersCount">{{ user.userprofile.get_followers_count }}</div>
-<div class="stat-number" id="followingCount">{{ user.userprofile.get_following_count }}</div>
-<div class="stat-number" id="referralsCount">{{ user.referrals.count }}</div>
+{{ user.userprofile.token_balance|floatformat:2 }}<span class="balance-currency">NSU</span>
+≈ <strong id="ugxBalance">UGX {{ user.userprofile.get_ugx_balance|floatformat:2 }}</strong>
+<a href="{% url 'transactions:public_ledger' %}" class="bal-action-btn">
+<a href="{% url 'airdrop:dashboard' %}" class="bal-action-btn primary-action">
+<a href="{% url 'users:followers_list' user.username %}" class="q-stat">
+<div class="q-stat-num" id="followersCount">{{ user.userprofile.get_followers_count }}</div>
+<a href="{% url 'users:following_list' user.username %}" class="q-stat">
+<div class="q-stat-num" id="followingCount">{{ user.userprofile.get_following_count }}</div>
+<div class="q-stat-num" id="referralsCount">{{ user.referrals.count }}</div>
+{% if mining_state or active_miners %}
+<a href="{% url 'airdrop:dashboard' %}" class="story-item">
+{% if mining_state and mining_state.is_mining %}
+stroke-dashoffset="{{ mining_state.progress_percentage|floatformat:0|default:0 }}"
+{% else %}
+{% endif %}
+{% if mining_state and mining_state.is_mining %}Mining{% else %}Start{% endif %}
+{% if active_miners %}
+{% for miner in active_miners %}
+<a href="{% url 'users:user_profile' miner.user.username %}" class="story-item">
+stroke-dashoffset="{{ miner.progress_percentage|floatformat:0|default:50 }}"
+{% if miner.user.userprofile.profile_picture %}
+<img src="{{ miner.user.userprofile.profile_picture.url }}"
+alt="{{ miner.user.username }}">
+{% else %}
+<img src="https://ui-avatars.com/api/?name={{ miner.user.username|first }}&background=3b82f6&color=fff&size=56"
+alt="{{ miner.user.username }}">
+{% endif %}
+<span class="story-name">@{{ miner.user.username|truncatechars:8 }}</span>
+{% endfor %}
+{% endif %}
+{% endif %}
 {% if mining_state %}
-<small class="text-dim" id="miningTime">{{ mining_state.elapsed_hours|floatformat:1 }} / 24 hours</small>
-<span class="badge {% if mining_state.is_mining %}bg-success{% else %}bg-secondary{% endif %} rounded-pill px-3" id="miningStatus">
-{% if mining_state.is_mining %}MINING{% else %}IDLE{% endif %}
-<div class="progress-bar bg-gradient" id="miningProgress" style="width: {{ mining_state.progress_percentage }}%"></div>
-<div class="fw-bold" id="miningPoints">{{ mining_state.points_earned_today|floatformat:2 }} NSU</div>
+<div class="mining-strip-icon {% if mining_state.is_mining %}active{% else %}idle{% endif %}">
 {% if mining_state.is_mining %}
 {% else %}
 {% endif %}
-<a href="{% url 'airdrop:dashboard' %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+{% if mining_state.is_mining %}
+{{ mining_state.elapsed_hours|floatformat:1 }}h / 24h · <strong id="miningPoints">{{ mining_state.points_earned_today|floatformat:2 }} NSU</strong> earned
+{% else %}
+Tap to start · {{ mining_state.current_rate|floatformat:2 }}x rate
 {% endif %}
-<a href="{% url 'transactions:public_ledger' %}" class="action-pill">
-<a href="{% url 'airdrop:dashboard' %}" class="action-pill highlight">
+<div class="mining-progress-fill" id="miningProgress" style="width:{{ mining_state.progress_percentage }}%;"></div>
+<button class="mining-strip-toggle {% if mining_state.is_mining %}active{% else %}idle{% endif %}"
+{% if mining_state.is_mining %}Stop{% else %}Start{% endif %}
+{% endif %}
 {% if trending_posts %}
 {% for post in trending_posts %}
-<div class="post-card" onclick="window.location.href='{% url 'social:post_detail' post.id %}'">
-<img src="{% if post.user.userprofile.profile_picture %}{{ post.user.userprofile.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ post.user.username|first }}&background=3b82f6&color=fff&size=32{% endif %}"
-<div class="fw-bold small">{{ post.user.userprofile.display_name|default:post.user.username }}</div>
-<div class="text-dim small">@{{ post.user.username }} • {{ post.created_at|timesince }} ago</div>
+<a class="post-card" href="{% url 'social:post_detail' post.id %}">
+<img src="{% if post.user.userprofile.profile_picture %}{{ post.user.userprofile.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ post.user.username|first }}&background=3b82f6&color=fff&size=38{% endif %}"
+onerror="this.src='https://ui-avatars.com/api/?name={{ post.user.username|first }}&background=3b82f6&color=fff&size=38'">
+{{ post.user.userprofile.display_name|default:post.user.username }}
+{% if post.user.userprofile.verified %}<i class="fas fa-circle-check v-icon"></i>{% endif %}
+<div class="post-card-time">@{{ post.user.username }} · {{ post.created_at|timesince }} ago</div>
 {% if post.likes_count > 50 %}
 {% endif %}
-{{ post.content|truncatechars:100 }}
-{% if post.media_items.first %}
-<img src="{{ post.media_items.first.url }}" class="img-fluid rounded-3" style="max-height: 200px; width: 100%; object-fit: cover;">
+{% if post.content %}
+<div class="post-card-body">{{ post.content|truncatechars:120 }}</div>
 {% endif %}
-<span class="small text-dim"><i class="fas fa-heart"></i> {{ post.likes_count }}</span>
-<span class="small text-dim"><i class="fas fa-comment"></i> {{ post.replies_count }}</span>
-<span class="small text-dim"><i class="fas fa-eye"></i> {{ post.views_count }}</span>
+{% if post.media_items.first %}
+<img src="{{ post.media_items.first.url }}"
+{% endif %}
+<span><i class="fas fa-heart" style="color:var(--rose);"></i> {{ post.likes_count }}</span>
+<span><i class="fas fa-comment" style="color:var(--blue);"></i> {{ post.replies_count }}</span>
+<span><i class="fas fa-eye" style="color:var(--light-dim);"></i> {{ post.views_count }}</span>
 {% endfor %}
 {% else %}
-<a href="{% url 'social:feed' %}" class="btn btn-sm btn-primary rounded-pill">Explore Feed</a>
+<a href="{% url 'social:feed' %}" class="btn btn-primary btn-sm rounded-pill px-4">Explore Feed</a>
 {% endif %}
 {% if recent_transactions %}
 {% for tx in recent_transactions %}
-<div class="activity-card" onclick="window.location.href='{% url 'transactions:transaction_detail' tx.id %}'">
-<div class="activity-icon {% if tx.transaction_type == 'deposit' %}deposit{% else %}transfer{% endif %}">
-<i class="fas fa-{% if tx.transaction_type == 'deposit' %}arrow-down{% else %}exchange-alt{% endif %}"></i>
-<div class="fw-bold small">{{ tx.get_transaction_type_display }}</div>
-<div class="text-dim small">{{ tx.timestamp|timesince }} ago</div>
-<div class="fw-bold {% if tx.amount > 0 %}text-success{% else %}text-warning{% endif %}">
+<a href="{% url 'transactions:transaction_detail' tx.id %}" class="activity-card">
+{% if tx.transaction_type == 'deposit' %}icon-deposit
+{% elif tx.transaction_type == 'transfer' %}icon-transfer
+{% else %}icon-withdraw{% endif %}">
+{% if tx.transaction_type == 'deposit' %}fa-arrow-down
+{% elif tx.transaction_type == 'transfer' %}fa-arrow-right-arrow-left
+{% else %}fa-arrow-up{% endif %}"></i>
+<div class="activity-type">{{ tx.get_transaction_type_display }}</div>
+<div class="activity-time">{{ tx.timestamp|timesince }} ago</div>
+<div class="activity-amount {% if tx.transaction_type == 'deposit' %}amount-positive{% else %}amount-neutral{% endif %}">
 {{ tx.amount }} NSU
 {% endfor %}
 <a href="{% url 'transactions:public_ledger' %}" class="btn btn-sm btn-outline-primary rounded-pill px-4">
 {% else %}
-<a href="{% url 'airdrop:dashboard' %}" class="btn btn-sm btn-primary rounded-pill">Start Mining</a>
+<a href="{% url 'airdrop:dashboard' %}" class="btn btn-primary btn-sm rounded-pill px-4">Start Mining</a>
 {% endif %}
 {% if system_updates %}
 {% for update in system_updates %}
-<div class="update-icon {{ update.type }}">
-<i class="fas fa-{% if update.type == 'announcement' %}megaphone{% elif update.type == 'feature' %}rocket{% else %}info-circle{% endif %}"></i>
-<div class="fw-bold small">{{ update.title }}</div>
-<div class="text-dim small">{{ update.message|truncatechars:120 }}</div>
-<div class="text-dim small mt-1">{{ update.created_at|timesince }} ago</div>
+{% if update.type == 'announcement' %}icon-announce
+{% elif update.type == 'feature' %}icon-feature
+{% else %}icon-info{% endif %}">
+{% if update.type == 'announcement' %}fa-bullhorn
+{% elif update.type == 'feature' %}fa-rocket
+{% else %}fa-circle-info{% endif %}"></i>
+<div class="update-title">{{ update.title }}</div>
+<div class="update-body">{{ update.message|truncatechars:120 }}</div>
+<div class="update-time">{{ update.created_at|timesince }} ago</div>
 {% endfor %}
 {% else %}
 {% endif %}
 {% if featured_task %}
-<div class="featured-task-card mt-3" onclick="window.location.href='{% url 'tasks:task_detail' featured_task.task_code %}'">
-<span class="text-success fw-bold">+{{ featured_task.points_reward }} NSU</span>
-<h6 class="mb-1">{{ featured_task.name }}</h6>
-<p class="small text-dim mb-2">{{ featured_task.description|truncatechars:80 }}</p>
-<span class="small text-dim"><i class="fas fa-users"></i> {{ featured_task.participants_count }} completed</span>
+<a href="{% url 'tasks:task_detail' featured_task.task_code %}" class="featured-task">
+<h6 class="mb-0 fw-bold">{{ featured_task.name }}</h6>
+<span style="color:var(--emerald);font-weight:800;font-size:0.95rem;">+{{ featured_task.points_reward }} NSU</span>
+<p style="font-size:0.85rem;color:rgba(255,255,255,0.55);margin:0 0 10px;">{{ featured_task.description|truncatechars:80 }}</p>
+<i class="fas fa-users me-1"></i>{{ featured_task.participants_count }} completed
 {% endif %}
-<div class="small fw-bold" id="globalMiningRate">{{ global_stats.current_multiplier|default:"1.0" }}x</div>
-<div class="small fw-bold" id="globalUgxRate">UGX {{ global_stats.ugx_rate|default:"3800" }}</div>
-<div class="small fw-bold" id="globalTotalUsers">{{ global_stats.total_users|default:"0" }}</div>
+<div class="g-stat-val" id="globalMiningRate">{{ global_stats.current_multiplier|default:"1.0" }}x</div>
+<div class="g-stat-val" id="globalUgxRate">{{ global_stats.ugx_rate|default:"3800" }}</div>
+<div class="g-stat-val" id="globalTotalUsers">{{ global_stats.total_users|default:"0" }}</div>
 {% endif %}
 {% csrf_token %}
 {% endblock %}
 {% block extra_scripts %}
 fetch("{% url 'airdrop:toggle_mining' %}", {
-'X-CSRFToken': '{{ csrf_token }}',
+headers: { 'X-CSRFToken': '{{ csrf_token }}', 'Content-Type': 'application/json' }
 fetch("{% url 'user_stats_api' %}")
 fetch("{% url 'global_stats' %}")
 {% endblock %}
@@ -2917,31 +3006,29 @@ xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
 <a href="{% url 'social:create_post' %}" class="create-btn"><i class="fas fa-plus"></i></a>
 {% for post in posts %}
 <div class="post" data-post-id="{{ post.id }}">
-<img src="{% if post.user.userprofile.profile_picture %}{{ post.user.userprofile.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ post.user.username }}&background=3b82f6&color=fff&size=40{% endif %}"
-onerror="this.src='https://ui-avatars.com/api/?name={{ post.user.username }}&background=3b82f6&color=fff&size=40'">
+<img src="{% if post.user.userprofile.profile_picture %}{{ post.user.userprofile.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ post.user.username }}&background=3b82f6&color=fff&size=44&bold=true&length=1{% endif %}"
+onerror="this.src='https://ui-avatars.com/api/?name={{ post.user.username }}&background=3b82f6&color=fff&size=44&bold=true&length=1'">
 <a href="{% url 'users:user_profile' post.user.username %}" class="post-username">
 @{{ post.user.username }}
 {% if post.user.userprofile.verified %}<i class="fas fa-check-circle verified"></i>{% endif %}
+<button class="post-menu-btn" onclick="toggleMenu(event, {{ post.id }})">
+<div class="dropdown-menu-custom" id="menu-{{ post.id }}">
 {% if post.user == request.user %}
-<button class="delete-post-btn" onclick="showDeleteModal('{{ post.id }}')"><i class="fas fa-trash-alt"></i></button>
+<div class="dropdown-item-custom" onclick="deletePost('{{ post.id }}')">
 {% endif %}
+<div class="dropdown-item-custom" onclick="downloadPost('{{ post.id }}')">
+<div class="dropdown-item-custom" onclick="sharePost('{{ post.id }}')">
 {% if post.post_type == 'text' %}
-{% if post.background_template and post.background_template.css_class %}{{ post.background_template.css_class }}{% else %}gradient-sunset{% endif %}"
-{% if post.background_template and post.background_template.gradient_css and not post.background_template.css_class %}
-style="background: {{ post.background_template.gradient_css }}; background-size: {% if post.background_template.is_animated %}300% 300%{% else %}cover{% endif %}; animation: {% if post.background_template.is_animated %}gradientShift {{ post.background_template.animation_duration }}s ease infinite{% endif %};">
-{% endif %}>
-style="text-align: {{ post.text_alignment }}; font-size: {{ post.text_size }}rem; color: {{ post.text_color }}; font-family: {% if post.text_font == 'bold' %}Arial Black{% elif post.text_font == 'handwriting' %}Caveat, cursive{% elif post.text_font == 'typewriter' %}Courier New{% else %}inherit{% endif %};">
-{{ post.content|linebreaksbr }}
+{% if post.background_template and post.background_template.css_class %}{{ post.background_template.css_class }}{% else %}gradient-sunset{% endif %}">
+<div class="text-post-content">{{ post.content|linebreaksbr }}</div>
 {% elif post.media_items.all %}
 {% with media=post.media_items.first %}
 {% if media.is_video %}
-data-post-id="{{ post.id }}"
-poster="{% if media.thumbnail_url %}{{ media.thumbnail_url }}{% endif %}">
+<video class="post-video" autoplay loop muted playsinline preload="auto" data-post-id="{{ post.id }}">
 <source src="{{ media.url }}" type="video/mp4">
-<source src="{{ media.url }}" type="video/webm">
 <div class="video-progress-bar" id="progress-{{ post.id }}"></div>
 {% elif media.is_image %}
-<img src="{{ media.url }}" class="post-video" alt="Post image" loading="lazy">
+<img src="{{ media.url }}" class="post-video" alt="Post image">
 {% endif %}
 {% endwith %}
 {% endif %}
@@ -2949,7 +3036,7 @@ poster="{% if media.thumbnail_url %}{{ media.thumbnail_url }}{% endif %}">
 <i class="fas fa-heart {% if post.is_liked %}active{% endif %}"></i>
 <span class="likes-count">{{ post.likes_count }}</span>
 <div class="action-item" onclick="openComments('{{ post.id }}')">
-<span class="comments-count">{{ post.comments_count }}</span>
+<span class="comments-count" id="comments-count-{{ post.id }}">{{ post.replies_count }}</span>
 <div class="action-item" onclick="sharePost('{{ post.id }}')">
 <div class="action-item" onclick="savePost('{{ post.id }}', this)">
 <i class="fas fa-bookmark {% if post.is_saved %}active{% endif %}"></i>
@@ -2961,8 +3048,9 @@ poster="{% if media.thumbnail_url %}{{ media.thumbnail_url }}{% endif %}">
 {% endif %}
 {{ post.song_name }}
 {% empty %}
-<a href="{% url 'social:create_post' %}" class="btn btn-primary mt-3" style="background: #3b82f6; border: none; padding: 10px 30px; border-radius: 50px; text-decoration: none; color: white;">
+<a href="{% url 'social:create_post' %}" class="btn btn-primary mt-3 rounded-pill px-4">Create Post</a>
 {% endfor %}
+let hasMore = {{ posts.has_next|lower }};
 headers: { 'X-CSRFToken': '{{ csrf_token }}' }
 headers: { 'X-CSRFToken': '{{ csrf_token }}' }
 headers: { 'X-CSRFToken': '{{ csrf_token }}' }

@@ -19,6 +19,8 @@ urlpatterns = [
     path('api/user-stats/', views.user_stats_api, name='user_stats_api'),
     path('health/', views.health_check, name='health_check'),
     path('tasks/', include('tasks.urls')),  
+
+    path('chat/', include('chat.urls')),
 ]
 
 if settings.DEBUG:

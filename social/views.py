@@ -835,23 +835,43 @@ from django.http import JsonResponse
 from django.db.models import Q
 from social.models import Follow
 
+# social/views.py - Add this if not already present
+
+from django.db.models import Q
+from users.models import CustomUser
+
+@login_required
 def search_users_api(request):
+    """API endpoint for searching users with profile pictures"""
     query = request.GET.get('q', '').strip()
+    
     if not query:
         return JsonResponse({'users': []})
+    
+    # Search by username or display name
     users = CustomUser.objects.filter(
-        Q(username__icontains=query) | Q(userprofile__display_name__icontains=query)
-    ).select_related('userprofile')[:10]
+        Q(username__icontains=query) | 
+        Q(userprofile__display_name__icontains=query)
+    ).select_related('userprofile')[:20]  # Limit to 20 results
+    
+    # Get current user's following list
+    following_ids = set()
+    if request.user.is_authenticated:
+        from social.models import Follow
+        following_ids = set(Follow.objects.filter(
+            follower=request.user
+        ).values_list('following_id', flat=True))
+    
     user_list = []
-    for u in users:
+    for user in users:
         user_list.append({
-            'username': u.username,
-            'display_name': u.userprofile.display_name if hasattr(u, 'userprofile') else '',
-            'profile_picture_url': u.userprofile.profile_picture.url if hasattr(u, 'userprofile') and u.userprofile.profile_picture else None,
-            'verified': getattr(u.userprofile, 'verified', False),
-            'followers_count': Follow.objects.filter(following=u).count(),
-            'is_following': Follow.objects.filter(follower=request.user, following=u).exists() if request.user.is_authenticated else False,
+            'username': user.username,
+            'display_name': user.userprofile.display_name if hasattr(user, 'userprofile') else user.username,
+            'profile_picture_url': user.userprofile.profile_picture.url if hasattr(user, 'userprofile') and user.userprofile.profile_picture else None,
+            'verified': getattr(user.userprofile, 'verified', False) or user.is_verified,
+            'is_following': user.id in following_ids,
         })
+    
     return JsonResponse({'users': user_list})
     
 from django.views.decorators.http import require_POST

@@ -461,3 +461,32 @@ def send_tokens(request):
             messages.error(request, "Invalid amount")
     
     return render(request, 'users/send_tokens.html')
+    
+ # users/views.py - add this function
+from django.http import JsonResponse
+from django.shortcuts import redirect
+from chat.models import Chat, ChatMessage
+
+@login_required
+def start_chat(request, username):
+    """Start a chat with a user"""
+    target_user = get_object_or_404(CustomUser, username=username)
+    
+    # Check if DM already exists
+    existing_chat = Chat.objects.filter(
+        chat_type='dm',
+        participants=request.user
+    ).filter(participants=target_user).first()
+    
+    if existing_chat:
+        return redirect('chat:chat_detail', chat_id=existing_chat.id)
+    
+    # Create new DM
+    chat = Chat.objects.create(
+        chat_type='dm',
+        created_by=request.user
+    )
+    chat.participants.add(request.user, target_user)
+    chat.admins.add(request.user)
+    
+    return redirect('chat:chat_detail', chat_id=chat.id)   

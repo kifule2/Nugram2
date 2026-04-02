@@ -73,6 +73,7 @@
             cursor: pointer;
             text-decoration: none;
             transition: all 0.2s;
+            position: relative;
         }
         .top-icon-btn:hover { background: rgba(59,130,246,0.2); color: var(--blue); }
 
@@ -83,15 +84,17 @@
             border: 1px solid rgba(59,130,246,0.5);
         }
 
-        .notif-badge {
+        .notif-badge, .chat-badge {
             position: absolute;
-            top: -4px; right: -4px;
+            top: -4px;
+            right: -4px;
             background: #ef4444;
             color: white;
             font-size: 0.65rem;
             border-radius: 10px;
             padding: 2px 6px;
             min-width: 18px;
+            font-weight: bold;
             display: none;
         }
 
@@ -127,6 +130,7 @@
             justify-content: center;
             border-radius: 16px;
             transition: all 0.2s;
+            position: relative;
         }
         .dock-item.active { color: var(--blue); background: rgba(59,130,246,0.15); }
 
@@ -213,16 +217,31 @@
             border-radius: 12px;
             cursor: pointer;
             text-decoration: none;
+            transition: background 0.2s;
+            margin-bottom: 8px;
         }
         .search-result-item:hover { background: rgba(255,255,255,0.05); }
         .search-avatar {
-            width: 48px; height: 48px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
             object-fit: cover;
+            background: var(--gray);
         }
         .search-info { flex: 1; }
-        .search-name { font-weight: 600; color: white; display: flex; align-items: center; gap: 6px; }
-        .search-username { font-size: 0.75rem; color: rgba(255,255,255,0.5); }
+        .search-name { 
+            font-weight: 600; 
+            color: white; 
+            display: flex; 
+            align-items: center; 
+            gap: 6px;
+            font-size: 1rem;
+        }
+        .search-username { 
+            font-size: 0.75rem; 
+            color: rgba(255,255,255,0.5); 
+            margin-top: 2px;
+        }
         .search-follow-btn {
             background: rgba(59,130,246,0.2);
             border: 1px solid rgba(59,130,246,0.3);
@@ -232,6 +251,31 @@
             font-size: 0.75rem;
             font-weight: 600;
             cursor: pointer;
+            transition: all 0.2s;
+        }
+        .search-follow-btn:hover {
+            background: var(--blue);
+            color: white;
+        }
+        .search-follow-btn.following {
+            background: transparent;
+            border-color: rgba(255,255,255,0.2);
+            color: var(--text-dim);
+        }
+        .search-loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-dim);
+        }
+        .search-error {
+            text-align: center;
+            padding: 40px;
+            color: #ef4444;
+        }
+        .search-empty {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-dim);
         }
 
         .toast-msg {
@@ -290,12 +334,17 @@
             <div class="search-box">
                 <div class="search-input-wrapper">
                     <i class="fas fa-search"></i>
-                    <input type="text" id="search-input" placeholder="Search users..." autocomplete="off">
+                    <input type="text" id="search-input" placeholder="Search users by username or name..." autocomplete="off">
                 </div>
                 <button class="search-cancel" id="closeSearch">Cancel</button>
             </div>
         </div>
-        <div class="search-results" id="search-results"></div>
+        <div class="search-results" id="search-results">
+            <div class="search-empty">
+                <i class="fas fa-search" style="font-size: 2rem; margin-bottom: 12px; display: block;"></i>
+                <p>Search for users by username or display name</p>
+            </div>
+        </div>
     </div>
 
     <main class="main-content">
@@ -310,6 +359,10 @@
         {% else %}
         <button class="mine-btn" data-bs-toggle="modal" data-bs-target="#loginModal"><i class="fas fa-pickaxe"></i></button>
         {% endif %}
+        <a href="/chat/" class="dock-item" id="chatDockIcon">
+            <i class="fas fa-comment-dots"></i>
+            <span class="chat-badge" id="chatBadge"></span>
+        </a>
         <a href="{% url 'tasks:marketplace' %}" class="dock-item"><i class="fas fa-tasks"></i></a>
         {% if user.is_authenticated %}
         <a href="{% url 'users:user_profile' user.username %}" class="dock-item"><i class="fas fa-user"></i></a>
@@ -394,72 +447,234 @@
             setTimeout(() => toast.classList.remove('show'), 2500);
         }
 
-        // Search
+        // Search Functionality
         const searchOverlay = document.getElementById('search-overlay');
         const searchInput = document.getElementById('search-input');
         const searchResults = document.getElementById('search-results');
         let searchTimeout;
+        let currentSearchQuery = '';
 
+        // Open search
         document.getElementById('searchBtn')?.addEventListener('click', () => {
             searchOverlay.classList.add('open');
             setTimeout(() => searchInput.focus(), 100);
         });
+        
+        // Close search
         document.getElementById('closeSearch')?.addEventListener('click', () => {
             searchOverlay.classList.remove('open');
             searchInput.value = '';
+            currentSearchQuery = '';
+            searchResults.innerHTML = `
+                <div class="search-empty">
+                    <i class="fas fa-search" style="font-size: 2rem; margin-bottom: 12px; display: block;"></i>
+                    <p>Search for users by username or display name</p>
+                </div>
+            `;
         });
 
+        // Handle search input
         searchInput?.addEventListener('input', (e) => {
             clearTimeout(searchTimeout);
             const q = e.target.value.trim();
-            if (!q) { searchResults.innerHTML = ''; return; }
+            currentSearchQuery = q;
+            
+            if (!q) {
+                searchResults.innerHTML = `
+                    <div class="search-empty">
+                        <i class="fas fa-search" style="font-size: 2rem; margin-bottom: 12px; display: block;"></i>
+                        <p>Search for users by username or display name</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Show loading state
+            searchResults.innerHTML = `
+                <div class="search-loading">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Searching for "${escapeHtml(q)}"...</p>
+                </div>
+            `;
+            
+            // Debounce search
             searchTimeout = setTimeout(() => {
-                searchResults.innerHTML = '<div class="text-center p-4"><i class="fas fa-spinner fa-spin"></i> Searching...</div>';
-                fetch(`/social/search/users/?q=${encodeURIComponent(q)}`)
-                    .then(r => r.json())
-                    .then(data => {
-                        if (!data.users?.length) {
-                            searchResults.innerHTML = '<div class="text-center p-4 text-muted">No users found</div>';
-                            return;
-                        }
-                        searchResults.innerHTML = data.users.map(u => `
-                            <div class="search-result-item" onclick="location.href='/users/profile/${u.username}/'">
-                                <img src="${u.profile_picture_url || 'https://ui-avatars.com/api/?name=' + u.username + '&background=3b82f6&color=fff&size=48'}" 
-                                     class="search-avatar"
-                                     onerror="this.src='https://ui-avatars.com/api/?name=${u.username}&background=3b82f6&color=fff&size=48'">
-                                <div class="search-info">
-                                    <div class="search-name">${u.display_name || u.username} ${u.verified ? '<i class="fas fa-check-circle" style="color:#3b82f6; font-size:0.7rem;"></i>' : ''}</div>
-                                    <div class="search-username">@${u.username}</div>
-                                </div>
-                                <button class="search-follow-btn ${u.is_following ? 'following' : ''}" 
-                                        onclick="event.stopPropagation(); toggleFollowUser('${u.username}', this)">
-                                    ${u.is_following ? 'Following' : 'Follow'}
-                                </button>
-                            </div>
-                        `).join('');
-                    })
-                    .catch(() => { searchResults.innerHTML = '<div class="text-center p-4 text-danger">Failed to load</div>'; });
+                performSearch(q);
             }, 300);
         });
 
+        // Perform the actual search
+        async function performSearch(query) {
+            try {
+                const response = await fetch(`/social/api/search/?q=${encodeURIComponent(query)}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Check if this is still the current search
+                if (currentSearchQuery !== query) return;
+                
+                if (!data.users || data.users.length === 0) {
+                    searchResults.innerHTML = `
+                        <div class="search-empty">
+                            <i class="fas fa-user-slash" style="font-size: 2rem; margin-bottom: 12px; display: block;"></i>
+                            <p>No users found for "${escapeHtml(query)}"</p>
+                            <small class="text-muted">Try a different username or name</small>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Display results with pictures
+                searchResults.innerHTML = data.users.map(user => `
+                    <div class="search-result-item" onclick="goToUserProfile('${user.username}')">
+                        <img src="${user.profile_picture_url || 'https://ui-avatars.com/api/?name=' + user.username + '&background=3b82f6&color=fff&size=48&bold=true'}" 
+                             class="search-avatar"
+                             alt="${user.username}"
+                             onerror="this.src='https://ui-avatars.com/api/?name=${user.username}&background=3b82f6&color=fff&size=48&bold=true'">
+                        <div class="search-info">
+                            <div class="search-name">
+                                ${escapeHtml(user.display_name || user.username)}
+                                ${user.verified ? '<i class="fas fa-check-circle" style="color:#3b82f6; font-size:0.8rem;"></i>' : ''}
+                            </div>
+                            <div class="search-username">@${escapeHtml(user.username)}</div>
+                        </div>
+                        ${user.username !== '{{ user.username }}' ? `
+                            <button class="search-follow-btn ${user.is_following ? 'following' : ''}" 
+                                    onclick="event.stopPropagation(); toggleFollowUser('${user.username}', this)">
+                                ${user.is_following ? 'Following' : 'Follow'}
+                            </button>
+                        ` : `
+                            <button class="search-follow-btn" style="opacity:0.5; cursor:default;" disabled>
+                                You
+                            </button>
+                        `}
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Search error:', error);
+                searchResults.innerHTML = `
+                    <div class="search-error">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 12px; display: block;"></i>
+                        <p>Failed to search users</p>
+                        <small>Please try again later</small>
+                        <button class="btn btn-sm btn-primary mt-3" onclick="retrySearch()">Retry</button>
+                    </div>
+                `;
+            }
+        }
+
+        // Retry search function
+        window.retrySearch = function() {
+            if (currentSearchQuery) {
+                performSearch(currentSearchQuery);
+            }
+        };
+
+        // Go to user profile
+        window.goToUserProfile = function(username) {
+            window.location.href = `/users/profile/${username}/`;
+        };
+
+        // Toggle follow from search results
         window.toggleFollowUser = async (username, btn) => {
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = '...';
+            
             try {
                 const res = await fetch(`/social/follow/${username}/`, {
                     method: 'POST',
-                    headers: { 'X-CSRFToken': csrftoken }
+                    headers: { 
+                        'X-CSRFToken': csrftoken,
+                        'Content-Type': 'application/json'
+                    }
                 });
                 const data = await res.json();
+                
                 if (data.status === 'followed') {
                     btn.textContent = 'Following';
                     btn.classList.add('following');
+                    showToast(`Following @${username}`);
                 } else {
                     btn.textContent = 'Follow';
                     btn.classList.remove('following');
+                    showToast(`Unfollowed @${username}`);
                 }
-            } catch { showToast('Failed', 'error'); }
+            } catch (error) {
+                console.error('Follow error:', error);
+                btn.textContent = originalText;
+                showToast('Failed to update follow status', 'error');
+            } finally {
+                btn.disabled = false;
+            }
         };
 
+        // Escape HTML helper
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Chat Badge Update Function
+        async function updateChatBadge() {
+            {% if user.is_authenticated %}
+            try {
+                const response = await fetch('/chat/api/list/');
+                const data = await response.json();
+                
+                const chatBadge = document.getElementById('chatBadge');
+                if (data.total_unread > 0) {
+                    chatBadge.textContent = data.total_unread > 99 ? '99+' : data.total_unread;
+                    chatBadge.style.display = 'block';
+                } else {
+                    chatBadge.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Failed to fetch chat unread count:', error);
+            }
+            {% endif %}
+        }
+
+        // Update notifications badge
+        async function updateNotifBadge() {
+            {% if user.is_authenticated %}
+            try {
+                const response = await fetch('/social/api/unread-notifications/');
+                const data = await response.json();
+                const badge = document.getElementById('notifBadge');
+                if (data.count > 0) {
+                    badge.textContent = data.count > 99 ? '99+' : data.count;
+                    badge.style.display = 'block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Failed to fetch notifications:', error);
+            }
+            {% endif %}
+        }
+
+        // Initial badge updates
+        if ({% if user.is_authenticated %}true{% else %}false{% endif %}) {
+            updateChatBadge();
+            updateNotifBadge();
+            
+            // Update every 30 seconds
+            setInterval(updateChatBadge, 30000);
+            setInterval(updateNotifBadge, 30000);
+        }
+
         window.showToast = showToast;
+        window.updateChatBadge = updateChatBadge;
+        window.updateNotifBadge = updateNotifBadge;
     </script>
     {% block extra_scripts %}{% endblock %}
 </body>

@@ -1,0 +1,277 @@
+<!-- templates/chat/chat_list.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Messages | NUSU{% endblock %}
+
+{% block extra_css %}
+<style>
+.chat-container {
+    min-height: calc(100vh - 140px);
+}
+
+.chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.chat-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.new-chat-btn {
+    background: linear-gradient(135deg, var(--blue), var(--indigo));
+    border: none;
+    padding: 10px 20px;
+    border-radius: 30px;
+    color: white;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: transform 0.2s;
+}
+
+.new-chat-btn:hover {
+    transform: scale(1.02);
+    color: white;
+}
+
+.chat-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.chat-card {
+    background: var(--gray);
+    border-radius: 20px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.chat-card:hover {
+    background: rgba(255,255,255,0.05);
+    transform: translateX(4px);
+}
+
+.chat-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--blue), var(--indigo));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.chat-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.chat-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.chat-name {
+    font-weight: 600;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.chat-type-badge {
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.1);
+    color: var(--text-dim);
+}
+
+.chat-last-message {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chat-time {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.chat-unread {
+    background: var(--blue);
+    color: white;
+    border-radius: 20px;
+    padding: 2px 8px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    margin-top: 4px;
+    display: inline-block;
+}
+
+.empty-chats {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-dim);
+}
+
+.empty-chats i {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+
+.empty-chats h4 {
+    margin-bottom: 12px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="chat-container container">
+    <div class="chat-header">
+        <h2><i class="fas fa-comment-dots me-2" style="color: var(--blue);"></i>Messages</h2>
+        <button class="new-chat-btn" data-bs-toggle="modal" data-bs-target="#newChatModal">
+            <i class="fas fa-plus"></i> New Message
+        </button>
+    </div>
+    
+    <div id="chatListContainer" class="chat-list">
+        {% if chats %}
+            {% for chat in chats %}
+            <div class="chat-card" onclick="window.location.href='/chat/{{ chat.id }}/'">
+                <div class="chat-avatar">
+                    {% if chat.avatar %}
+                        <img src="{{ chat.avatar }}" alt="{{ chat.name }}">
+                    {% else %}
+                        <span>{{ chat.name|first|upper }}</span>
+                    {% endif %}
+                </div>
+                <div class="chat-info">
+                    <div class="chat-name">
+                        {{ chat.name }}
+                        <span class="chat-type-badge">{{ chat.chat_type|upper }}</span>
+                    </div>
+                    <div class="chat-last-message">
+                        {% if chat.last_message %}
+                            {{ chat.last_message.sender }}: {{ chat.last_message.content|truncatechars:40 }}
+                        {% else %}
+                            No messages yet
+                        {% endif %}
+                    </div>
+                    {% if chat.unread_count > 0 %}
+                        <div class="chat-unread">{{ chat.unread_count }} new</div>
+                    {% endif %}
+                </div>
+                <div class="chat-time">
+                    {% if chat.last_message %}
+                        {{ chat.last_message.time|slice:"0:10" }}
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-chats">
+                <i class="fas fa-comments"></i>
+                <h4>No messages yet</h4>
+                <p>Start a conversation with someone</p>
+                <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#newChatModal">
+                    <i class="fas fa-plus"></i> New Message
+                </button>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- New Chat Modal -->
+<div class="modal fade" id="newChatModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header">
+                <h5 class="modal-title">New Message</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    <input type="text" class="form-control" id="chatUsername" placeholder="Enter username">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Message (optional)</label>
+                    <textarea class="form-control" id="chatInitialMessage" rows="3" placeholder="Say something..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="createChatBtn">Start Chat</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.getElementById('createChatBtn')?.addEventListener('click', async () => {
+    const username = document.getElementById('chatUsername').value.trim();
+    const message = document.getElementById('chatInitialMessage').value.trim();
+    
+    if (!username) {
+        showToast('Please enter a username', 'error');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('username', username);
+    if (message) formData.append('initial_message', message);
+    
+    try {
+        const response = await fetch('/chat/create/', {
+            method: 'POST',
+            headers: { 'X-CSRFToken': csrftoken },
+            body: formData
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('newChatModal'));
+            modal.hide();
+            document.getElementById('chatUsername').value = '';
+            document.getElementById('chatInitialMessage').value = '';
+            window.location.href = `/chat/${data.chat_id}/`;
+        } else {
+            showToast('User not found', 'error');
+        }
+    } catch (error) {
+        console.error('Failed to create chat:', error);
+        showToast('Failed to create chat', 'error');
+    }
+});
+</script>
+{% endblock %}

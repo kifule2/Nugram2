@@ -1,0 +1,516 @@
+<!-- templates/chat/chat_main.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Chats | NUSU{% endblock %}
+
+{% block extra_css %}
+<style>
+.chat-container {
+    display: flex;
+    height: calc(100vh - 120px);
+    background: var(--dark-card);
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.chat-sidebar {
+    width: 320px;
+    border-right: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-header {
+    padding: 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.chat-list {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.chat-list-item {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    cursor: pointer;
+    transition: background 0.2s;
+    position: relative;
+}
+
+.chat-list-item:hover {
+    background: rgba(255,255,255,0.05);
+}
+
+.chat-list-item.active {
+    background: rgba(59,130,246,0.1);
+}
+
+.chat-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 12px;
+    background: var(--gradient-1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chat-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: bold;
+    color: white;
+}
+
+.chat-info {
+    flex: 1;
+}
+
+.chat-name {
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.chat-last-message {
+    font-size: 0.85rem;
+    color: var(--light-dim);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.unread-badge {
+    background: var(--blue);
+    color: white;
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+.chat-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-main-header {
+    padding: 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chat-title h3 {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.chat-title small {
+    color: var(--light-dim);
+    font-size: 0.85rem;
+}
+
+.chat-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.chat-actions button {
+    background: none;
+    border: none;
+    color: var(--light-dim);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.chat-actions button:hover {
+    background: rgba(255,255,255,0.1);
+    color: white;
+}
+
+.messages-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.message {
+    margin-bottom: 15px;
+    display: flex;
+}
+
+.message-sent {
+    justify-content: flex-end;
+}
+
+.message-received {
+    justify-content: flex-start;
+}
+
+.message-bubble {
+    max-width: 70%;
+    padding: 10px 15px;
+    border-radius: 18px;
+    position: relative;
+}
+
+.message-sent .message-bubble {
+    background: var(--blue);
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+.message-received .message-bubble {
+    background: rgba(255,255,255,0.1);
+    color: var(--text);
+    border-bottom-left-radius: 4px;
+}
+
+.message-content {
+    word-wrap: break-word;
+}
+
+.message-time {
+    font-size: 0.7rem;
+    margin-top: 4px;
+    opacity: 0.7;
+}
+
+.message-system {
+    text-align: center;
+    margin: 15px 0;
+}
+
+.system-message {
+    display: inline-block;
+    background: rgba(255,255,255,0.05);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    color: var(--light-dim);
+}
+
+.voice-message {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 200px;
+}
+
+.play-voice-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    border: none;
+    cursor: pointer;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.play-voice-btn:hover {
+    background: rgba(255,255,255,0.3);
+    transform: scale(1.05);
+}
+
+.voice-waveform {
+    flex: 1;
+    height: 30px;
+    background: linear-gradient(90deg, var(--blue) 0%, var(--purple) 100%);
+    opacity: 0.5;
+    border-radius: 15px;
+}
+
+.voice-duration {
+    font-size: 0.8rem;
+    min-width: 40px;
+}
+
+.chat-input-area {
+    padding: 20px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+}
+
+.chat-input-area textarea {
+    flex: 1;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 10px 15px;
+    color: white;
+    resize: none;
+    font-family: inherit;
+    max-height: 100px;
+}
+
+.chat-input-area textarea:focus {
+    outline: none;
+    border-color: var(--blue);
+}
+
+.chat-input-area button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--blue);
+    border: none;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.chat-input-area button:hover {
+    transform: scale(1.05);
+}
+
+.record-btn {
+    background: var(--rose) !important;
+}
+
+.record-btn.recording {
+    animation: pulse 1s infinite;
+    background: #ef4444 !important;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+.record-timer {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.9);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-family: monospace;
+    display: none;
+}
+
+.participants-section {
+    padding: 10px 20px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.participants-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.participant-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.05);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+}
+
+.participant-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+}
+
+.admin-icon {
+    color: #fbbf24;
+    font-size: 0.7rem;
+}
+
+.hidden {
+    display: none;
+}
+
+.empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--light-dim);
+}
+
+.empty-state i {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="chat-container">
+    <!-- Sidebar -->
+    <div class="chat-sidebar">
+        <div class="chat-header">
+            <h4 class="mb-0">Messages</h4>
+            <button class="btn btn-sm btn-primary mt-2" onclick="startNewChat()">
+                <i class="fas fa-plus"></i> New Chat
+            </button>
+        </div>
+        <div class="chat-list" id="chatList">
+            <!-- Chats loaded here -->
+        </div>
+    </div>
+    
+    <!-- Main Chat Area -->
+    <div class="chat-main">
+        <div class="chat-main-header">
+            <div class="chat-title">
+                <h3 id="currentChatName">Select a chat</h3>
+                <small id="chatType"></small>
+            </div>
+            <div class="chat-actions" id="groupFeatures" style="display: none;">
+                <button id="addParticipantBtn" title="Add Participant">
+                    <i class="fas fa-user-plus"></i>
+                </button>
+                <button id="requestsBtn" title="Pending Requests">
+                    <i class="fas fa-bell"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div id="emptyState" class="empty-state">
+            <i class="fas fa-comments"></i>
+            <h5>No chat selected</h5>
+            <p>Select a conversation or start a new one</p>
+            <button class="btn btn-primary" onclick="startNewChat()">
+                <i class="fas fa-plus"></i> New Message
+            </button>
+        </div>
+        
+        <div id="chatWindow" class="hidden" style="display: flex; flex-direction: column; height: 100%;">
+            <div class="messages-container" id="messagesContainer"></div>
+            
+            <div class="participants-section" id="participantsSection">
+                <small>Participants (<span id="participantCount">0</span>)</small>
+                <div class="participants-list" id="participantsList"></div>
+            </div>
+            
+            <div class="chat-input-area">
+                <textarea id="messageInput" placeholder="Type a message..." rows="1"></textarea>
+                <button id="recordBtn" class="record-btn" title="Voice Note (hold to record)">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                <button id="sendBtn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="recordTimer" class="record-timer">00:00</div>
+
+<!-- New Chat Modal -->
+<div id="newChatModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <h3>New Message</h3>
+        <input type="text" id="chatUsername" placeholder="Username" class="form-control">
+        <textarea id="chatInitialMessage" placeholder="Message (optional)" class="form-control mt-2" rows="3"></textarea>
+        <div class="modal-buttons mt-3">
+            <button onclick="closeModal()" class="btn btn-secondary">Cancel</button>
+            <button onclick="createNewChat()" class="btn btn-primary">Start Chat</button>
+        </div>
+    </div>
+</div>
+
+<!-- Requests Modal -->
+<div id="requestsModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <h3>Pending Requests</h3>
+        <div id="requestsList"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let chatManager;
+
+async function startNewChat() {
+    document.getElementById('newChatModal').style.display = 'flex';
+}
+
+async function createNewChat() {
+    const username = document.getElementById('chatUsername').value.trim();
+    const message = document.getElementById('chatInitialMessage').value.trim();
+    
+    if (!username) {
+        alert('Please enter a username');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('username', username);
+    if (message) formData.append('initial_message', message);
+    
+    const response = await fetch('/chat/create/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': chatManager.getCsrfToken() },
+        body: formData
+    });
+    
+    const data = await response.json();
+    if (data.success) {
+        closeModal();
+        chatManager.loadChatList();
+        chatManager.loadChat(data.chat_id);
+    } else {
+        alert('Error: ' + JSON.stringify(data.error));
+    }
+}
+
+function closeModal() {
+    document.getElementById('newChatModal').style.display = 'none';
+    document.getElementById('requestsModal').style.display = 'none';
+}
+
+// Initialize chat manager
+document.addEventListener('DOMContentLoaded', () => {
+    chatManager = new ChatManager();
+    chatManager.init();
+});
+
+// Handle modals
+window.onclick = function(event) {
+    if (event.target.classList.contains('modal')) {
+        event.target.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}
