@@ -1,4 +1,4 @@
-<!-- templates/chat/chat_detail.html - Fixed duplicate messages -->
+<!-- templates/chat/chat_detail.html - Final with ticks -->
 {% extends 'base.html' %}
 {% load static %}
 
@@ -6,12 +6,19 @@
 
 {% block extra_css %}
 <style>
+/* Make chat detail page use feed-page class for nav bar hiding */
+body.chat-page .main-content {
+    padding-top: 0;
+    padding-bottom: 0;
+    height: 100vh;
+    overflow: hidden;
+}
+
 .chat-detail-container {
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 140px);
+    height: 100vh;
     background: var(--gray);
-    border-radius: 20px;
     overflow: hidden;
 }
 
@@ -36,7 +43,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s;
 }
 
 .back-btn:hover {
@@ -113,21 +119,7 @@
     gap: 4px;
 }
 
-.message-system {
-    text-align: center;
-    margin: 8px 0;
-}
-
-.system-message {
-    display: inline-block;
-    background: rgba(255,255,255,0.05);
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    color: var(--text-dim);
-}
-
-/* Message Status Indicators - Green and Blue */
+/* Message Status Indicators - Always visible */
 .message-status {
     display: inline-flex;
     align-items: center;
@@ -139,13 +131,22 @@
 .status-sent {
     color: #9ca3af;
 }
+.status-sent i {
+    font-size: 0.7rem;
+}
 
 .status-delivered {
     color: #10b981;
 }
+.status-delivered i {
+    font-size: 0.7rem;
+}
 
 .status-read {
     color: #3b82f6;
+}
+.status-read i {
+    font-size: 0.7rem;
 }
 
 .sending-indicator {
@@ -155,7 +156,6 @@
     font-size: 0.65rem;
     color: #9ca3af;
 }
-
 .sending-indicator i {
     font-size: 0.5rem;
     animation: blink 1s infinite;
@@ -169,7 +169,6 @@
 .message-sending {
     opacity: 0.7;
 }
-
 .message-sending .message-bubble {
     background: rgba(59,130,246,0.5);
 }
@@ -245,14 +244,8 @@
 }
 
 @keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateX(-50%) translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-    }
+    from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
 .recording-red-dot {
@@ -322,11 +315,6 @@
     background: #22c55e;
     color: white;
     transform: scale(1.05);
-}
-
-.recording-send.disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
 }
 
 /* Chat Input Area */
@@ -450,30 +438,79 @@ let audioChunks = [];
 let recordingTimer = null;
 let recordingSeconds = 0;
 let currentStream = null;
-let existingMessageIds = new Set(); // Track existing message IDs to prevent duplicates
+let existingMessageIds = new Set();
+let isUserScrolling = false;
+let scrollTimeout = null;
+
+// Add chat-page class to body for nav bar hiding
+document.body.classList.add('chat-page');
+document.body.classList.remove('feed-page');
+
+// Chrome Controller for nav bar hiding on scroll
+(function() {
+    const top = document.getElementById('chrome-top');
+    const dock = document.getElementById('chrome-dock');
+    let lastScroll = 0;
+    let visible = true;
+    let ticking = false;
+    
+    function hide() {
+        if (!visible) return;
+        visible = false;
+        if (top) top.classList.add('chrome-hidden');
+        if (dock) dock.classList.add('chrome-hidden');
+    }
+    
+    function show() {
+        if (visible) return;
+        visible = true;
+        if (top) top.classList.remove('chrome-hidden');
+        if (dock) dock.classList.remove('chrome-hidden');
+    }
+    
+    function onScroll() {
+        const container = document.getElementById('messagesContainer');
+        if (!container) return;
+        const current = container.scrollTop;
+        const delta = current - lastScroll;
+        if (current <= 10) show();
+        else if (delta > 5 && current > 80) hide();
+        else if (delta < -5) show();
+        lastScroll = current;
+        ticking = false;
+    }
+    
+    const container = document.getElementById('messagesContainer');
+    if (container) {
+        container.addEventListener('scroll', function() {
+            if (!ticking) {
+                requestAnimationFrame(onScroll);
+                ticking = true;
+            }
+        });
+    }
+})();
 
 // Load messages
 async function loadMessages() {
     try {
         const response = await fetch(`/chat/${chatId}/api/`);
         const data = await response.json();
-        
         const container = document.getElementById('messagesContainer');
         container.innerHTML = '';
         existingMessageIds.clear();
         
         if (data.messages && data.messages.length > 0) {
-            data.messages.forEach(msg => {
+            const sortedMessages = [...data.messages].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+            sortedMessages.forEach(msg => {
                 existingMessageIds.add(msg.id);
                 container.appendChild(createMessageElement(msg));
             });
-            lastMessageTime = data.messages[data.messages.length - 1].created_at;
+            lastMessageTime = sortedMessages[sortedMessages.length - 1].created_at;
+            scrollToBottom();
         } else {
             container.innerHTML = '<div class="loading-indicator"><i class="fas fa-comment-dots" style="font-size: 2rem; margin-bottom: 12px; display: block;"></i><p>No messages yet</p><small>Send a message to start the conversation</small></div>';
         }
-        
-        scrollToBottom();
-        
     } catch (error) {
         console.error('Failed to load messages:', error);
         document.getElementById('messagesContainer').innerHTML = `
@@ -530,7 +567,6 @@ function createMessageElement(msg, isPending = false, tempId = null) {
             const progressBar = div.querySelector('.voice-progress');
             let audio = null;
             let isPlaying = false;
-            
             playBtn.addEventListener('click', () => {
                 if (!audio) {
                     audio = new Audio(msg.voice_url);
@@ -544,7 +580,6 @@ function createMessageElement(msg, isPending = false, tempId = null) {
                         progressBar.style.width = '0%';
                     });
                 }
-                
                 if (isPlaying) {
                     audio.pause();
                     playBtn.innerHTML = '<i class="fas fa-play"></i>';
@@ -560,7 +595,6 @@ function createMessageElement(msg, isPending = false, tempId = null) {
         div.className = 'message-system';
         div.innerHTML = `<div class="system-message">${escapeHtml(msg.content)}</div>`;
     }
-    
     return div;
 }
 
@@ -568,7 +602,7 @@ function getStatusIcon(status, isPending) {
     if (isPending) {
         return `<span class="sending-indicator"><i class="fas fa-circle"></i> Sending...</span>`;
     }
-    
+    // Ensure status is one of the expected values
     switch(status) {
         case 'sent':
             return `<span class="message-status status-sent"><i class="fas fa-check"></i></span>`;
@@ -577,45 +611,50 @@ function getStatusIcon(status, isPending) {
         case 'read':
             return `<span class="message-status status-read"><i class="fas fa-check-double"></i></span>`;
         default:
-            return '';
+            // Fallback: show grey single tick
+            return `<span class="message-status status-sent"><i class="fas fa-check"></i></span>`;
     }
+}
+
+function setupScrollTracking() {
+    const container = document.getElementById('messagesContainer');
+    container.addEventListener('scroll', () => {
+        isUserScrolling = true;
+        if (scrollTimeout) clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(() => { isUserScrolling = false; }, 1000);
+    });
+}
+
+function scrollToBottomIfNeeded() {
+    const container = document.getElementById('messagesContainer');
+    const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+    if (!isUserScrolling && isNearBottom) container.scrollTop = container.scrollHeight;
+}
+
+function scrollToBottom() {
+    const container = document.getElementById('messagesContainer');
+    container.scrollTop = container.scrollHeight;
 }
 
 // Voice Recording
 async function startRecording() {
     try {
         currentStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        
-        const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') 
-            ? 'audio/webm;codecs=opus' 
-            : 'audio/webm';
-        
-        mediaRecorder = new MediaRecorder(currentStream, { 
-            mimeType,
-            audioBitsPerSecond: 32000
-        });
+        const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 'audio/webm';
+        mediaRecorder = new MediaRecorder(currentStream, { mimeType, audioBitsPerSecond: 32000 });
         audioChunks = [];
         recordingSeconds = 0;
-        
-        mediaRecorder.ondataavailable = (event) => {
-            if (event.data.size > 0) {
-                audioChunks.push(event.data);
-            }
-        };
-        
+        mediaRecorder.ondataavailable = (event) => { if (event.data.size > 0) audioChunks.push(event.data); };
         mediaRecorder.start(100);
-        
         document.getElementById('recordBtn').classList.add('recording');
         document.getElementById('recordingModal').style.display = 'flex';
         document.getElementById('recordingTimer').textContent = '0:00';
-        
         recordingTimer = setInterval(() => {
             recordingSeconds++;
             const mins = Math.floor(recordingSeconds / 60);
             const secs = recordingSeconds % 60;
             document.getElementById('recordingTimer').textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
         }, 1000);
-        
     } catch (error) {
         console.error('Microphone error:', error);
         showToast('Microphone access denied', 'error');
@@ -624,50 +663,28 @@ async function startRecording() {
 
 function stopRecordingAndSend() {
     if (mediaRecorder && mediaRecorder.state === 'recording') {
-        if (recordingTimer) {
-            clearInterval(recordingTimer);
-            recordingTimer = null;
-        }
-        
+        if (recordingTimer) clearInterval(recordingTimer);
         document.getElementById('recordingModal').style.display = 'none';
         document.getElementById('recordBtn').classList.remove('recording');
-        
         mediaRecorder.onstop = async () => {
-            if (currentStream) {
-                currentStream.getTracks().forEach(track => track.stop());
-                currentStream = null;
-            }
-            
-            if (audioChunks.length > 0 && recordingSeconds >= 1) {
-                await sendVoiceNoteWithIndicator();
-            } else if (recordingSeconds < 1) {
-                showToast('Recording too short', 'error');
-            }
+            if (currentStream) currentStream.getTracks().forEach(track => track.stop());
+            if (audioChunks.length > 0 && recordingSeconds >= 1) await sendVoiceNoteWithIndicator();
+            else if (recordingSeconds < 1) showToast('Recording too short', 'error');
         };
-        
         mediaRecorder.stop();
     }
 }
 
 function stopRecordingAndCancel() {
     if (mediaRecorder && mediaRecorder.state === 'recording') {
-        if (recordingTimer) {
-            clearInterval(recordingTimer);
-            recordingTimer = null;
-        }
-        
+        if (recordingTimer) clearInterval(recordingTimer);
         document.getElementById('recordingModal').style.display = 'none';
         document.getElementById('recordBtn').classList.remove('recording');
-        
         mediaRecorder.onstop = () => {
-            if (currentStream) {
-                currentStream.getTracks().forEach(track => track.stop());
-                currentStream = null;
-            }
+            if (currentStream) currentStream.getTracks().forEach(track => track.stop());
             audioChunks = [];
             showToast('Recording cancelled', 'info');
         };
-        
         mediaRecorder.stop();
     }
 }
@@ -675,232 +692,156 @@ function stopRecordingAndCancel() {
 async function sendVoiceNoteWithIndicator() {
     const tempId = 'temp_' + Date.now();
     const tempMessage = {
-        id: tempId,
-        is_sender: true,
-        message_type: 'voice',
-        voice_duration: recordingSeconds,
-        voice_url: null,
-        created_at: new Date().toISOString(),
-        status: 'sending'
+        id: tempId, is_sender: true, message_type: 'voice',
+        voice_duration: recordingSeconds, voice_url: null,
+        created_at: new Date().toISOString(), status: 'sending'
     };
-    
     const container = document.getElementById('messagesContainer');
     const tempElement = createMessageElement(tempMessage, true, tempId);
     container.appendChild(tempElement);
     scrollToBottom();
-    
     const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
     const formData = new FormData();
     formData.append('voice_note', audioBlob);
     formData.append('message_type', 'voice');
     formData.append('voice_duration', recordingSeconds);
-    
     try {
-        const response = await fetch(`/chat/${chatId}/send/`, {
-            method: 'POST',
-            headers: { 'X-CSRFToken': csrftoken },
-            body: formData
-        });
-        
+        const response = await fetch(`/chat/${chatId}/send/`, { method: 'POST', headers: { 'X-CSRFToken': csrftoken }, body: formData });
         const data = await response.json();
         if (data.success) {
-            const tempElement = document.querySelector(`[data-temp-id="${tempId}"]`);
-            if (tempElement) {
-                // Remove temp message and add real one
-                tempElement.remove();
+            const tempElem = document.querySelector(`[data-temp-id="${tempId}"]`);
+            if (tempElem) {
+                tempElem.remove();
                 if (!existingMessageIds.has(data.message.id)) {
                     existingMessageIds.add(data.message.id);
-                    const realElement = createMessageElement(data.message);
-                    container.appendChild(realElement);
+                    container.appendChild(createMessageElement(data.message));
+                    scrollToBottom();
                 }
             }
             lastMessageTime = data.message.created_at;
-            scrollToBottom();
             showToast('Voice note sent!', 'success');
         } else {
-            const tempElement = document.querySelector(`[data-temp-id="${tempId}"]`);
-            if (tempElement) tempElement.remove();
+            const tempElem = document.querySelector(`[data-temp-id="${tempId}"]`);
+            if (tempElem) tempElem.remove();
             showToast('Failed to send voice note', 'error');
         }
     } catch (error) {
-        console.error('Send voice note failed:', error);
-        const tempElement = document.querySelector(`[data-temp-id="${tempId}"]`);
-        if (tempElement) tempElement.remove();
+        console.error(error);
+        const tempElem = document.querySelector(`[data-temp-id="${tempId}"]`);
+        if (tempElem) tempElem.remove();
         showToast('Failed to send voice note', 'error');
     }
 }
 
-// Send text message
 async function sendTextMessage() {
     const input = document.getElementById('messageInput');
     const content = input.value.trim();
-    
     if (!content) return;
-    
     const tempId = 'temp_' + Date.now();
     const tempMessage = {
-        id: tempId,
-        is_sender: true,
-        message_type: 'text',
-        content: content,
-        created_at: new Date().toISOString(),
-        status: 'sending'
+        id: tempId, is_sender: true, message_type: 'text', content: content,
+        created_at: new Date().toISOString(), status: 'sending'
     };
-    
     const container = document.getElementById('messagesContainer');
     const tempElement = createMessageElement(tempMessage, true, tempId);
     container.appendChild(tempElement);
     scrollToBottom();
-    
     input.value = '';
-    
     const formData = new FormData();
     formData.append('content', content);
     formData.append('message_type', 'text');
-    
     try {
-        const response = await fetch(`/chat/${chatId}/send/`, {
-            method: 'POST',
-            headers: { 'X-CSRFToken': csrftoken },
-            body: formData
-        });
-        
+        const response = await fetch(`/chat/${chatId}/send/`, { method: 'POST', headers: { 'X-CSRFToken': csrftoken }, body: formData });
         const data = await response.json();
         if (data.success) {
-            const tempElement = document.querySelector(`[data-temp-id="${tempId}"]`);
-            if (tempElement) {
-                tempElement.remove();
+            const tempElem = document.querySelector(`[data-temp-id="${tempId}"]`);
+            if (tempElem) {
+                tempElem.remove();
                 if (!existingMessageIds.has(data.message.id)) {
                     existingMessageIds.add(data.message.id);
-                    const realElement = createMessageElement(data.message);
-                    container.appendChild(realElement);
+                    container.appendChild(createMessageElement(data.message));
+                    scrollToBottom();
                 }
             }
             lastMessageTime = data.message.created_at;
-            scrollToBottom();
         } else {
-            const tempElement = document.querySelector(`[data-temp-id="${tempId}"]`);
-            if (tempElement) tempElement.remove();
+            const tempElem = document.querySelector(`[data-temp-id="${tempId}"]`);
+            if (tempElem) tempElem.remove();
             showToast('Failed to send message', 'error');
         }
     } catch (error) {
-        console.error('Send failed:', error);
-        const tempElement = document.querySelector(`[data-temp-id="${tempId}"]`);
-        if (tempElement) tempElement.remove();
+        console.error(error);
+        const tempElem = document.querySelector(`[data-temp-id="${tempId}"]`);
+        if (tempElem) tempElem.remove();
         showToast('Failed to send message', 'error');
     }
 }
 
-// Poll for new messages - FIXED to prevent duplicates
 function setupPolling() {
     if (pollingInterval) clearInterval(pollingInterval);
-    
     pollingInterval = setInterval(async () => {
         if (document.hasFocus()) {
             try {
                 let url = `/chat/${chatId}/api/`;
-                if (lastMessageTime) {
-                    url += `?since=${encodeURIComponent(lastMessageTime)}`;
-                }
-                
+                if (lastMessageTime) url += `?since=${encodeURIComponent(lastMessageTime)}`;
                 const response = await fetch(url);
                 const data = await response.json();
-                
                 if (data.messages && data.messages.length > 0) {
                     const container = document.getElementById('messagesContainer');
-                    let newLastMessageTime = lastMessageTime;
-                    
-                    data.messages.forEach(msg => {
-                        // Only add if not already in the DOM
+                    let newLast = lastMessageTime;
+                    const sortedNew = [...data.messages].sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+                    sortedNew.forEach(msg => {
                         if (!existingMessageIds.has(msg.id)) {
                             existingMessageIds.add(msg.id);
-                            const messageElement = createMessageElement(msg);
-                            container.appendChild(messageElement);
-                            
-                            // Update last message time
-                            if (msg.created_at > newLastMessageTime) {
-                                newLastMessageTime = msg.created_at;
-                            }
+                            container.appendChild(createMessageElement(msg));
+                            if (msg.created_at > newLast) newLast = msg.created_at;
                         }
                     });
-                    
-                    lastMessageTime = newLastMessageTime;
-                    scrollToBottom();
-                    
-                    if (window.updateChatBadge) {
-                        window.updateChatBadge();
-                    }
+                    lastMessageTime = newLast;
+                    scrollToBottomIfNeeded();
+                    if (window.updateChatBadge) window.updateChatBadge();
                 }
-            } catch (error) {
-                console.error('Polling failed:', error);
-            }
+            } catch (error) { console.error('Polling failed:', error); }
         }
     }, 2000);
-}
-
-// Helper functions
-function scrollToBottom() {
-    const container = document.getElementById('messagesContainer');
-    container.scrollTop = container.scrollHeight;
 }
 
 function formatTime(isoString) {
     const date = new Date(isoString);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
-
 function formatDuration(seconds) {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
-
 function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
 }
-
 function showToast(message, type = 'success') {
-    if (window.showToast) {
-        window.showToast(message, type);
-    } else {
-        alert(message);
-    }
+    if (window.showToast) window.showToast(message, type);
+    else alert(message);
 }
 
-// Event listeners
 document.addEventListener('DOMContentLoaded', () => {
     loadMessages();
     setupPolling();
-    
-    // Send text message
+    setupScrollTracking();
     document.getElementById('sendBtn').addEventListener('click', sendTextMessage);
     document.getElementById('messageInput').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendTextMessage();
-        }
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendTextMessage(); }
     });
-    
-    // Voice recording
     const recordBtn = document.getElementById('recordBtn');
     recordBtn.addEventListener('click', () => {
-        if (!mediaRecorder || mediaRecorder.state !== 'recording') {
-            startRecording();
-        }
+        if (!mediaRecorder || mediaRecorder.state !== 'recording') startRecording();
     });
-    
     document.getElementById('sendRecordingBtn').addEventListener('click', () => {
-        if (mediaRecorder && mediaRecorder.state === 'recording') {
-            stopRecordingAndSend();
-        }
+        if (mediaRecorder && mediaRecorder.state === 'recording') stopRecordingAndSend();
     });
-    
     document.getElementById('cancelRecordingBtn').addEventListener('click', () => {
-        if (mediaRecorder && mediaRecorder.state === 'recording') {
-            stopRecordingAndCancel();
-        }
+        if (mediaRecorder && mediaRecorder.state === 'recording') stopRecordingAndCancel();
     });
 });
 </script>

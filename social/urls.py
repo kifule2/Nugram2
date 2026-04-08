@@ -39,4 +39,9 @@ urlpatterns = [
     path('api/search/', views.search_users_api, name='search_users_api'),
     path('api/comments/<int:post_id>/', views.get_comments, name='get_comments'),
     path('api/comments/<int:post_id>/add/', views.add_comment, name='add_comment'),
+    path('api/video/process/', views.process_video_vp9, name='process_video_vp9'),
+    path('api/video/trim/', views.trim_video_vp9, name='trim_video_vp9'),
+    path('api/video/upload-chunk/', views.upload_video_chunk, name='upload_video_chunk'),
+
+    path('api/video-status/<int:media_id>/', views.check_video_status, name='check_video_status'),
 ]

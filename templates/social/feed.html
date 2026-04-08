@@ -234,6 +234,12 @@
         padding: 6px 16px;
         border-radius: 40px;
         border: 1px solid rgba(255,255,255,0.1);
+        transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1), opacity 0.3s ease;
+    }
+    .feed-tabs.chrome-hidden {
+        transform: translateY(-100px);
+        opacity: 0;
+        pointer-events: none;
     }
     .feed-tab {
         color: rgba(255,255,255,0.6);
@@ -264,7 +270,12 @@
         z-index: 100;
         text-decoration: none;
         box-shadow: 0 4px 15px rgba(59,130,246,0.4);
-        transition: all 0.2s;
+        transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1), opacity 0.3s ease;
+    }
+    .create-btn.chrome-hidden {
+        transform: translateY(100px);
+        opacity: 0;
+        pointer-events: none;
     }
     .create-btn:hover { transform: scale(1.05); }
     
@@ -398,7 +409,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="feed-tabs">
+<div class="feed-tabs" id="feedTabs">
     <a href="{% url 'social:feed' %}" class="feed-tab {% if feed_title == 'For You' %}active{% endif %}">For You</a>
     <a href="{% url 'social:following_feed' %}" class="feed-tab {% if feed_title == 'Following' %}active{% endif %}">Following</a>
 </div>
@@ -408,7 +419,7 @@
     <div class="nav-arrow" onclick="scrollDown()"><i class="fas fa-chevron-down"></i></div>
 </div>
 
-<a href="{% url 'social:create_post' %}" class="create-btn"><i class="fas fa-plus"></i></a>
+<a href="{% url 'social:create_post' %}" class="create-btn" id="createBtn"><i class="fas fa-plus"></i></a>
 
 <div class="delete-modal" id="deleteModal">
     <h3>Delete Post?</h3>
@@ -546,10 +557,95 @@
     let videoIntervals = {};
     let currentPostId = null;
     let postToDelete = null;
+    let lastScrollTop = 0;
+    let scrollTimeout;
+
+    // Get elements for hide/show
+    const feedTabs = document.getElementById('feedTabs');
+    const createBtn = document.getElementById('createBtn');
 
     // Scroll functions
     function scrollUp() { feed.scrollBy({ top: -window.innerHeight, behavior: 'smooth' }); }
     function scrollDown() { feed.scrollBy({ top: window.innerHeight, behavior: 'smooth' }); }
+
+    // Function to hide feed tabs and create button
+    function hideFeedChrome() {
+        if (feedTabs) feedTabs.classList.add('chrome-hidden');
+        if (createBtn) createBtn.classList.add('chrome-hidden');
+        // Also hide the main chrome if NusuChrome is available
+        if (window.NusuChrome) {
+            window.NusuChrome.hide();
+        }
+    }
+
+    // Function to show feed tabs and create button
+    function showFeedChrome() {
+        if (feedTabs) feedTabs.classList.remove('chrome-hidden');
+        if (createBtn) createBtn.classList.remove('chrome-hidden');
+        // Also show the main chrome if NusuChrome is available
+        if (window.NusuChrome) {
+            window.NusuChrome.show();
+        }
+    }
+
+    // Handle scroll with debounce for better performance
+    function handleFeedScroll() {
+        const currentScroll = feed.scrollTop;
+        const delta = currentScroll - lastScrollTop;
+        
+        // Show chrome when at top or scrolling up significantly
+        if (currentScroll <= 30) {
+            showFeedChrome();
+        } 
+        // Hide when scrolling down and not at top
+        else if (delta > 8 && currentScroll > 80) {
+            hideFeedChrome();
+        }
+        // Show when scrolling up significantly
+        else if (delta < -10) {
+            showFeedChrome();
+        }
+        
+        lastScrollTop = currentScroll;
+        
+        // Clear previous timeout
+        if (scrollTimeout) clearTimeout(scrollTimeout);
+        
+        // Auto-show after user stops scrolling for 1 second
+        scrollTimeout = setTimeout(() => {
+            if (feed.scrollTop <= 100) {
+                showFeedChrome();
+            }
+        }, 1000);
+        
+        // Load more posts
+        if (feed.scrollTop + feed.clientHeight >= feed.scrollHeight - 500) {
+            loadMore();
+        }
+    }
+
+    // Attach scroll event
+    feed.addEventListener('scroll', handleFeedScroll);
+
+    // Also listen for touch events on mobile for smoother experience
+    let touchStartY = 0;
+    feed.addEventListener('touchstart', (e) => {
+        touchStartY = e.touches[0].clientY;
+    });
+    
+    feed.addEventListener('touchmove', (e) => {
+        const touchEndY = e.touches[0].clientY;
+        const deltaY = touchEndY - touchStartY;
+        
+        // Scrolling up (showing chrome)
+        if (deltaY > 10 && feed.scrollTop > 30) {
+            showFeedChrome();
+        }
+        // Scrolling down (hiding chrome)
+        else if (deltaY < -10 && feed.scrollTop > 80) {
+            hideFeedChrome();
+        }
+    });
 
     // Keyboard
     window.addEventListener('keydown', (e) => {
@@ -768,25 +864,6 @@
         });
     }
 
-    // Infinite scroll + Chrome hide/show for feed container
-    feed.addEventListener('scroll', () => {
-        // Chrome hide/show based on feed scroll
-        if (window.NusuChrome) {
-            if (feed.scrollTop > 100 && feed.scrollTop > lastScrollTop) {
-                window.NusuChrome.hide();
-            } else if (feed.scrollTop < lastScrollTop - 10 || feed.scrollTop < 30) {
-                window.NusuChrome.show();
-            }
-        }
-        lastScrollTop = feed.scrollTop;
-        
-        // Load more
-        if (feed.scrollTop + feed.clientHeight >= feed.scrollHeight - 200) {
-            loadMore();
-        }
-    });
-    let lastScrollTop = 0;
-    
     function loadMore() {
         if (loading || !hasMore) return;
         loading = true;

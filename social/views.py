@@ -10,7 +10,7 @@ from django.contrib import messages
 from .models import Post, PostMedia, Like, Follow, Notification, FeedCache, BackgroundTemplate
 from .forms import PostForm
 from users.models import CustomUser
-from .video_utils import VideoOptimizer
+#from .video_utils import VideoOptimizer
 import cloudinary.uploader
 import json
 import re
@@ -21,6 +21,7 @@ import time
 from django.urls import reverse
 from io import BytesIO
 from django.conf import settings
+import uuid  # Add this import at the top with other imports
 
 
 logger = logging.getLogger(__name__)
@@ -147,233 +148,113 @@ def following_feed(request):
     return render(request, 'social/feed.html', context)
 
 
+import uuid
+import os
+import tempfile
+import cloudinary.uploader
+from django.shortcuts import render, reverse
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+
 @login_required
-@csrf_exempt
 def create_post(request):
-    """Create a new post - handles both text posts with templates and video/image posts"""
-    
-    # GET request - show create post page with templates
-    if request.method == 'GET':
-        templates = BackgroundTemplate.objects.filter(is_active=True)
-        return render(request, 'social/create_post.html', {'templates': templates})
-    
-    # POST request - handle post creation
-    if request.method == 'POST':
-        # Check if it's a JSON request (text post with template)
-        if request.content_type == 'application/json':
-            try:
-                data = json.loads(request.body)
-                content = data.get('content', '').strip()
-                template_id = data.get('template_id')
-                text_alignment = data.get('alignment', 'center')
-                text_size = float(data.get('fontSize', 1.8))
-                text_color = data.get('textColor', '#ffffff')
-                text_font = data.get('font', 'default')
-                
-                if not content:
-                    return JsonResponse({'status': 'error', 'message': 'Content is required'}, status=400)
-                
-                # Create text post with background template
-                post = Post.objects.create(
-                    user=request.user,
-                    content=content,
-                    post_type='text',
-                    background_template_id=template_id if template_id else None,
-                    text_alignment=text_alignment,
-                    text_size=text_size,
-                    text_color=text_color,
-                    text_font=text_font,
-                    song_name='Original Audio'
-                )
-                
-                # Notify followers
-                for follow in Follow.objects.filter(following=request.user):
-                    Notification.objects.create(
-                        recipient=follow.follower,
-                        sender=request.user,
-                        notification_type='post',
-                        post=post
-                    )
-                
-                return JsonResponse({
-                    'status': 'success', 
-                    'post_id': post.id,
-                    'message': 'Text post created successfully',
-                    'redirect_url': reverse('social:feed')
-                })
-                
-            except json.JSONDecodeError:
-                return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
-            except Exception as e:
-                logger.error(f"Text post creation failed: {e}")
-                return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    if request.method == 'POST' and request.FILES.get('video'):
+        video_file = request.FILES['video']
+        content = request.POST.get('content', '').strip()
         
-        # Handle multipart form data (media posts with files)
-        else:
-            content = request.POST.get('content', '').strip()
-            song_name = request.POST.get('song_name', 'Original Audio')
-            
-            # Handle media files directly
-            media_files = request.FILES.getlist('media_files')
-            
-            logger.info(f"Received {len(media_files)} files from user {request.user.id}")
-            for f in media_files:
-                logger.info(f"File: {f.name}, Size: {f.size}, Type: {f.content_type}")
-            
-            # Validate files
-            if len(media_files) > 4:
-                return JsonResponse({'status': 'error', 'message': 'Maximum 4 files allowed'}, status=400)
-            
-            # Determine post type
-            post_type = 'text'
-            if media_files:
-                post_type = 'media' if not content else 'mixed'
-            
-            # Create post first
+        # Get trim parameters from the frontend
+        start_time = request.POST.get('start_time', 0)
+        end_time = request.POST.get('end_time', None)
+
+        # 1. Validation
+        if video_file.size > 90 * 1024 * 1024:
+            return JsonResponse({'status': 'error', 'message': 'File too large (Max 90MB)'}, status=400)
+
+        # 2. Save to Temp File
+        suffix = os.path.splitext(video_file.name)[1]
+        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp_file:
+            for chunk in video_file.chunks():
+                tmp_file.write(chunk)
+            input_path = tmp_file.name
+
+        try:
+            # 3. Cloudinary Async Upload with Trimming
+            # We tell Cloudinary to do the trimming on THEIR servers
+            eager_transformations = [
+                {
+                    "format": "webm", 
+                    "codec": "vp9", 
+                    "start_offset": start_time,
+                }
+            ]
+            if end_time:
+                eager_transformations[0]["end_offset"] = end_time
+
+            upload_result = cloudinary.uploader.upload(
+                input_path,
+                folder=f'nusu/users/{request.user.id}/videos',
+                resource_type='video',
+                public_id=f"video_{uuid.uuid4().hex[:8]}",
+                eager=eager_transformations,
+                eager_async=True, # THIS STOPS THE TERMINAL LAG
+            )
+
+            # 4. Create Post Record
             post = Post.objects.create(
                 user=request.user,
                 content=content,
-                post_type=post_type,
-                song_name=song_name
+                post_type='media'
             )
-            
-            logger.info(f"Created post {post.id} for user {request.user.id}")
-            
-            # Process each media file
-            upload_results = []
-            
-            for index, media_file in enumerate(media_files):
-                try:
-                    is_video = media_file.content_type.startswith('video/')
-                    
-                    # Generate timestamp for unique filename
-                    timestamp = int(time.time())
-                    
-                    # Read the file content
-                    file_content = media_file.read()
-                    file_size = len(file_content)
-                    logger.info(f"Processing file {index}: {media_file.name}, size: {file_size} bytes")
-                    
-                    # Create a BytesIO object from the content
-                    file_data = BytesIO(file_content)
-                    
-                    # Get Cloudinary settings
-                    cloud_name = settings.CLOUDINARY_STORAGE['CLOUD_NAME']
-                    api_key = settings.CLOUDINARY_STORAGE['API_KEY']
-                    api_secret = settings.CLOUDINARY_STORAGE['API_SECRET']
-                    
-                    # Configure Cloudinary
-                    cloudinary.config(
-                        cloud_name=cloud_name,
-                        api_key=api_key,
-                        api_secret=api_secret,
-                        secure=True
-                    )
-                    
-                    # Determine folder and public_id based on media type
-                    if is_video:
-                        folder_path = f"nusu/users/{request.user.id}/videos"
-                        public_id = f"video_{timestamp}_{index}"
-                        resource_type = 'video'
-                        logger.info(f"Uploading video to folder: {folder_path}")
-                    else:
-                        folder_path = f"nusu/users/{request.user.id}/images"
-                        public_id = f"image_{timestamp}_{index}"
-                        resource_type = 'image'
-                        logger.info(f"Uploading image to folder: {folder_path}")
-                    
-                    # Upload to Cloudinary
-                    upload_result = cloudinary.uploader.upload(
-                        file_data,
-                        folder=folder_path,
-                        public_id=public_id,
-                        resource_type=resource_type,
-                        overwrite=True,
-                        invalidate=True,
-                        quality='auto',
-                        fetch_format='auto'
-                    )
-                    
-                    logger.info(f"✅ Upload successful! Public ID: {upload_result['public_id']}")
-                    logger.info(f"   URL: {upload_result['secure_url']}")
-                    
-                    # Create PostMedia entry with correct media_type
-                    if is_video:
-                        post_media = PostMedia.objects.create(
-                            post=post,
-                            media_type='video',  # IMPORTANT: Must be 'video'
-                            order=index,
-                            video=upload_result['public_id'],
-                            duration=upload_result.get('duration'),
-                            width=upload_result.get('width'),
-                            height=upload_result.get('height'),
-                            file_size=upload_result.get('bytes'),
-                            format=upload_result.get('format')
-                        )
-                        if upload_result.get('duration'):
-                            post.video_duration = upload_result['duration']
-                            post.save(update_fields=['video_duration'])
-                    else:
-                        post_media = PostMedia.objects.create(
-                            post=post,
-                            media_type='image',  # IMPORTANT: Must be 'image'
-                            order=index,
-                            image=upload_result['public_id'],
-                            width=upload_result.get('width'),
-                            height=upload_result.get('height'),
-                            file_size=upload_result.get('bytes'),
-                            format=upload_result.get('format')
-                        )
-                    
-                    logger.info(f"✅ PostMedia {post_media.id} saved for post {post.id}")
-                    
-                    upload_results.append({
-                        'success': True,
-                        'type': 'video' if is_video else 'image',
-                        'url': upload_result['secure_url'],
-                        'public_id': upload_result['public_id'],
-                        'folder': folder_path,
-                        'size': file_size
-                    })
-                    
-                except Exception as e:
-                    logger.error(f"❌ Media upload error for file {index}: {str(e)}")
-                    import traceback
-                    traceback.print_exc()
-                    upload_results.append({
-                        'success': False,
-                        'error': str(e),
-                        'file': media_file.name if media_file else 'Unknown'
-                    })
-            
-            # Notify followers about the post
-            successful_uploads = [r for r in upload_results if r.get('success')]
-            if successful_uploads:
-                for follow in Follow.objects.filter(following=request.user):
-                    Notification.objects.create(
-                        recipient=follow.follower,
-                        sender=request.user,
-                        notification_type='post',
-                        post=post
-                    )
-                logger.info(f"Notified followers about new post")
-            
-            # Return JSON response for AJAX requests
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                response_data = {
-                    'status': 'success' if successful_uploads else 'error',
-                    'post_id': post.id,
-                    'message': f'Posted {len(successful_uploads)} of {len(media_files)} files' if successful_uploads else 'Failed to upload any files',
-                    'uploads': upload_results,
-                    'redirect_url': reverse('social:feed')
-                }
-                return JsonResponse(response_data)
-            else:
-                if successful_uploads:
-                    messages.success(request, f'Posted {len(successful_uploads)} files successfully!')
-                else:
-                    messages.error(request, 'Failed to upload files')
-                return redirect('social:feed')
+
+            PostMedia.objects.create(
+                post=post,
+                media_type='video',
+                video=upload_result['public_id'],
+                file_size=video_file.size
+            )
+
+            return JsonResponse({'status': 'success', 'redirect_url': reverse('social:feed')})
+
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+        finally:
+            if os.path.exists(input_path):
+                os.unlink(input_path)
+
+    # Handle GET request
+    templates = BackgroundTemplate.objects.filter(is_active=True)
+    return render(request, 'social/create_post.html', {'templates': templates})
+    
+@login_required
+def check_video_status(request, media_id):
+    """Check if video processing is complete on Cloudinary"""
+    media = get_object_or_404(PostMedia, id=media_id, post__user=request.user)
+    
+    try:
+        # Get resource info from Cloudinary
+        result = cloudinary.api.resource(media.video, resource_type='video')
+        is_ready = result.get('status') == 'active'
+        
+        # Update local record with video info if available
+        if is_ready and media.duration == 0:
+            media.duration = result.get('duration', 0)
+            media.width = result.get('width', 0)
+            media.height = result.get('height', 0)
+            media.format = result.get('format', 'mp4')
+            media.save()
+        
+        return JsonResponse({
+            'ready': is_ready,
+            'duration': media.duration,
+            'width': media.width,
+            'height': media.height,
+            'url': media.url,
+            'thumbnail': media.thumbnail_url
+        })
+    except Exception as e:
+        logger.error(f"Error checking video status: {e}")
+        return JsonResponse({'ready': False, 'error': str(e)})
+
 
 @login_required
 def check_my_uploads(request):
@@ -911,3 +792,205 @@ def add_comment(request, post_id):
         post_type='text'
     )
     return JsonResponse({'status': 'success', 'comment_id': comment.id})
+    
+# Add these imports at the top if not already there
+import uuid
+import tempfile
+import os
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import login_required
+from .video_utils import VideoOptimizer
+import cloudinary.uploader
+
+@login_required
+@require_POST
+@csrf_exempt
+def process_video_vp9(request):
+    """
+    Process uploaded video to VP9 WebM format
+    """
+    if not request.FILES.get('video'):
+        return JsonResponse({'error': 'No video file provided'}, status=400)
+    
+    video_file = request.FILES['video']
+    quality = request.POST.get('quality', 'balanced')
+    
+    # Save uploaded file
+    with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(video_file.name)[1]) as tmp_file:
+        for chunk in video_file.chunks():
+            tmp_file.write(chunk)
+        input_path = tmp_file.name
+    
+    try:
+        # Get original info
+        original_info = VideoOptimizer.get_video_info(input_path)
+        
+        # Process video to VP9
+        result = VideoOptimizer.optimize_video(input_path, output_format='webm', quality=quality)
+        
+        if not result['success']:
+            # Fallback to H.264 if VP9 fails
+            logger.warning(f"VP9 failed, falling back to H.264: {result.get('error')}")
+            result = VideoOptimizer.optimize_video(input_path, output_format='mp4', quality=quality)
+        
+        if not result['success']:
+            return JsonResponse({'error': result.get('error', 'Video processing failed')}, status=500)
+        
+        # Upload to Cloudinary
+        upload_result = cloudinary.uploader.upload(
+            result['output_path'],
+            folder=f'nusu/users/{request.user.id}/videos',
+            resource_type='video',
+            public_id=f"video_{uuid.uuid4().hex[:8]}",
+            transformation=[
+                {'quality': 'auto'},
+                {'fetch_format': 'auto'},
+                {'format': 'webm' if result['format'] == 'webm' else 'mp4'}
+            ]
+        )
+        
+        # Clean up temp files
+        os.unlink(input_path)
+        os.unlink(result['output_path'])
+        
+        return JsonResponse({
+            'success': True,
+            'url': upload_result['secure_url'],
+            'public_id': upload_result['public_id'],
+            'duration': result['duration'],
+            'width': result['width'],
+            'height': result['height'],
+            'size_mb': result['size_mb'],
+            'original_size_mb': original_info.get('size_mb', 0),
+            'format': result['format'],
+            'codec': result['codec'],
+            'compression_ratio': round((1 - result['size_mb'] / original_info.get('size_mb', 1)) * 100, 1) if original_info.get('size_mb') else 0
+        })
+        
+    except Exception as e:
+        logger.error(f"Video processing error: {e}")
+        if os.path.exists(input_path):
+            os.unlink(input_path)
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+@require_POST
+@csrf_exempt
+def trim_video_vp9(request):
+    """
+    Trim video and convert to VP9 WebM
+    """
+    video_file = request.FILES.get('video')
+    start_time = float(request.POST.get('start', 0))
+    end_time = float(request.POST.get('end'))
+    
+    if not video_file:
+        return JsonResponse({'error': 'No video file'}, status=400)
+    
+    # Save uploaded file
+    with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(video_file.name)[1]) as tmp_file:
+        for chunk in video_file.chunks():
+            tmp_file.write(chunk)
+        input_path = tmp_file.name
+    
+    try:
+        # Trim video
+        trim_result = VideoOptimizer.trim_video(input_path, start_time, end_time, output_format='webm')
+        
+        if not trim_result['success']:
+            return JsonResponse({'error': trim_result.get('error')}, status=500)
+        
+        # Upload to Cloudinary
+        upload_result = cloudinary.uploader.upload(
+            trim_result['output_path'],
+            folder=f'nusu/users/{request.user.id}/videos',
+            resource_type='video',
+            public_id=f"trimmed_{uuid.uuid4().hex[:8]}"
+        )
+        
+        # Clean up
+        os.unlink(input_path)
+        os.unlink(trim_result['output_path'])
+        
+        return JsonResponse({
+            'success': True,
+            'url': upload_result['secure_url'],
+            'duration': trim_result['duration'],
+            'format': 'webm'
+        })
+        
+    except Exception as e:
+        if os.path.exists(input_path):
+            os.unlink(input_path)
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+@require_POST
+@csrf_exempt
+def upload_video_chunk(request):
+    """
+    Handle large video uploads in chunks
+    """
+    chunk = request.FILES.get('chunk')
+    chunk_index = int(request.POST.get('chunk_index', 0))
+    total_chunks = int(request.POST.get('total_chunks', 1))
+    upload_id = request.POST.get('upload_id')
+    
+    if not upload_id:
+        upload_id = uuid.uuid4().hex
+    
+    # Create temp directory for chunks
+    chunk_dir = os.path.join(tempfile.gettempdir(), f'video_upload_{upload_id}')
+    os.makedirs(chunk_dir, exist_ok=True)
+    
+    # Save chunk
+    chunk_path = os.path.join(chunk_dir, f'chunk_{chunk_index}')
+    with open(chunk_path, 'wb') as f:
+        for chunk_data in chunk.chunks():
+            f.write(chunk_data)
+    
+    # Check if all chunks received
+    received_chunks = len([f for f in os.listdir(chunk_dir) if f.startswith('chunk_')])
+    
+    if received_chunks == total_chunks:
+        # Combine chunks
+        output_path = os.path.join(tempfile.gettempdir(), f'complete_{upload_id}.mp4')
+        with open(output_path, 'wb') as outfile:
+            for i in range(total_chunks):
+                chunk_path = os.path.join(chunk_dir, f'chunk_{i}')
+                with open(chunk_path, 'rb') as infile:
+                    outfile.write(infile.read())
+        
+        # Clean up chunks
+        import shutil
+        shutil.rmtree(chunk_dir)
+        
+        # Process the complete video
+        result = VideoOptimizer.optimize_video(output_path, output_format='webm')
+        
+        if result['success']:
+            upload_result = cloudinary.uploader.upload(
+                result['output_path'],
+                folder=f'nusu/users/{request.user.id}/videos',
+                resource_type='video'
+            )
+            os.unlink(output_path)
+            os.unlink(result['output_path'])
+            
+            return JsonResponse({
+                'success': True,
+                'url': upload_result['secure_url'],
+                'upload_id': upload_id
+            })
+    
+    return JsonResponse({
+        'success': True,
+        'upload_id': upload_id,
+        'received_chunks': received_chunks,
+        'total_chunks': total_chunks,
+        'completed': received_chunks == total_chunks
+    })    
