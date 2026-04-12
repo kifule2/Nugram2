@@ -15,10 +15,11 @@ urlpatterns = [
     # Dashboard
     path('dashboard/', views.dashboard, name='dashboard'),
     path('dashboard-stats/', views.dashboard_stats, name='dashboard_stats'),
+    path('profile/edit/', views.edit_profile, name='edit_profile'),
     
     # Profile
     path('profile/<str:username>/', views.user_profile, name='user_profile'),
-    path('profile/edit/', views.edit_profile, name='edit_profile'),
+    
     path('profile/<str:username>/followers/', views.follow_list, {'list_type': 'followers'}, name='followers_list'),
     path('profile/<str:username>/following/', views.follow_list, {'list_type': 'following'}, name='following_list'),
     

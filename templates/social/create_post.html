@@ -5,6 +5,7 @@
 
 {% block extra_css %}
 <style>
+    /* Your existing CSS - keeping it exactly the same */
     * {
         margin: 0;
         padding: 0;
@@ -74,13 +75,8 @@
         box-shadow: 0 10px 25px -5px rgba(102, 126, 234, 0.4);
     }
 
-    #textPostSection {
-        display: block;
-    }
-
-    #videoPostSection {
-        display: none;
-    }
+    #textPostSection { display: block; }
+    #videoPostSection { display: none; }
 
     .form-label {
         font-weight: 700;
@@ -92,9 +88,7 @@
         gap: 8px;
     }
 
-    .form-label i {
-        color: #667eea;
-    }
+    .form-label i { color: #667eea; }
 
     textarea.form-control {
         border-radius: 20px;
@@ -139,29 +133,16 @@
         border: 2px solid #e2e8f0;
     }
 
-    .template-grid::-webkit-scrollbar {
-        width: 6px;
-    }
-
-    .template-grid::-webkit-scrollbar-track {
-        background: #e2e8f0;
-        border-radius: 10px;
-    }
-
-    .template-grid::-webkit-scrollbar-thumb {
-        background: #667eea;
-        border-radius: 10px;
-    }
+    .template-grid::-webkit-scrollbar { width: 6px; }
+    .template-grid::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 10px; }
+    .template-grid::-webkit-scrollbar-thumb { background: #667eea; border-radius: 10px; }
 
     .template-item {
         cursor: pointer;
         transition: all 0.3s;
         text-align: center;
     }
-
-    .template-item:hover {
-        transform: translateY(-5px);
-    }
+    .template-item:hover { transform: translateY(-5px); }
 
     .template-preview {
         height: 100px;
@@ -182,7 +163,6 @@
         color: #475569;
         font-weight: 600;
     }
-
     .template-badge {
         font-size: 0.6rem;
         background: #f59e0b;
@@ -232,16 +212,12 @@
         gap: 20px;
         margin-bottom: 24px;
     }
-
-    .customization-col {
-        flex: 1;
-    }
+    .customization-col { flex: 1; }
 
     .alignment-buttons {
         display: flex;
         gap: 8px;
     }
-
     .alignment-btn {
         flex: 1;
         padding: 12px;
@@ -252,7 +228,6 @@
         cursor: pointer;
         transition: all 0.2s;
     }
-
     .alignment-btn.active {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
@@ -281,7 +256,6 @@
         margin-top: 10px;
         accent-color: #667eea;
     }
-
     .size-value {
         float: right;
         font-size: 0.8rem;
@@ -301,26 +275,22 @@
         background: #f8fafc;
         margin-bottom: 20px;
     }
-
     .upload-area:hover {
         background: #e2e8f0;
         border-color: #764ba2;
         transform: translateY(-5px);
     }
-
     .upload-area i {
         font-size: 4rem;
         color: #667eea;
         margin-bottom: 20px;
     }
-
     .upload-area p {
         color: #1e293b;
         margin-bottom: 8px;
         font-weight: 700;
         font-size: 1.2rem;
     }
-
     .upload-area small {
         color: #64748b;
         font-size: 0.85rem;
@@ -334,17 +304,12 @@
         margin-bottom: 25px;
         border: 1px solid rgba(255, 255, 255, 0.1);
     }
-
-    .video-thumb-section {
-        position: relative;
-    }
-
+    .video-thumb-section { position: relative; }
     .video-thumb-section video {
         width: 100%;
         max-height: 350px;
         background: #000;
     }
-
     .video-badge {
         position: absolute;
         bottom: 15px;
@@ -356,11 +321,7 @@
         color: white;
         font-weight: 600;
     }
-
-    .video-info-section {
-        padding: 20px;
-    }
-
+    .video-info-section { padding: 20px; }
     .info-grid {
         display: flex;
         gap: 25px;
@@ -368,12 +329,10 @@
         font-size: 0.9rem;
         color: #cbd5e1;
     }
-
     .action-row {
         display: flex;
         gap: 12px;
     }
-
     .trim-btn, .audio-btn {
         flex: 1;
         padding: 12px;
@@ -383,16 +342,8 @@
         font-weight: 700;
         transition: all 0.3s;
     }
-
-    .trim-btn {
-        background: #3b82f6;
-        color: white;
-    }
-
-    .audio-btn {
-        background: #6366f1;
-        color: white;
-    }
+    .trim-btn { background: #3b82f6; color: white; }
+    .audio-btn { background: #6366f1; color: white; }
 
     .quality-select {
         width: 100%;
@@ -404,6 +355,7 @@
         font-weight: 500;
     }
 
+    /* Simplified modal styles */
     .modal-overlay-full {
         position: fixed;
         top: 0;
@@ -417,11 +369,6 @@
         justify-content: center;
         padding: 20px;
     }
-
-    .modal-overlay-full.show {
-        display: flex;
-    }
-
     .modal-content-custom {
         max-width: 550px;
         width: 100%;
@@ -429,18 +376,12 @@
         border-radius: 32px;
         padding: 28px;
     }
-
     .modal-header-custom {
         display: flex;
         justify-content: space-between;
         margin-bottom: 25px;
     }
-
-    .modal-header-custom h3 {
-        color: white;
-        margin: 0;
-    }
-
+    .modal-header-custom h3 { color: white; margin: 0; }
     .modal-header-custom button {
         background: none;
         border: none;
@@ -464,11 +405,6 @@
         flex-direction: column;
         color: white;
     }
-
-    .loading-overlay.show {
-        display: flex;
-    }
-
     .loading-spinner {
         width: 80px;
         height: 80px;
@@ -479,18 +415,15 @@
         animation: spin 1s linear infinite;
         margin-bottom: 30px;
     }
-
     @keyframes spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
     }
-
     .progress-container {
         width: 80%;
         max-width: 350px;
         margin: 25px 0;
     }
-
     .progress-bar-bg {
         width: 100%;
         height: 8px;
@@ -498,7 +431,6 @@
         border-radius: 10px;
         overflow: hidden;
     }
-
     .progress-bar-fill {
         height: 100%;
         background: linear-gradient(90deg, #667eea, #764ba2);
@@ -506,7 +438,6 @@
         width: 0%;
         transition: width 0.3s ease;
     }
-
     .progress-percentage {
         font-size: 1.8rem;
         font-weight: 800;
@@ -531,12 +462,10 @@
         justify-content: center;
         gap: 12px;
     }
-
     .publish-btn:hover:not(:disabled) {
         transform: translateY(-3px);
         box-shadow: 0 20px 40px -12px rgba(102, 126, 234, 0.5);
     }
-
     .publish-btn:disabled {
         background: #94a3b8;
         cursor: not-allowed;
@@ -562,7 +491,6 @@
         transition: all 0.3s;
         font-size: 1.3rem;
     }
-
     .back-btn:hover {
         background: linear-gradient(135deg, #667eea, #764ba2);
         color: white;
@@ -587,16 +515,9 @@
         white-space: nowrap;
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
     }
-
     @keyframes slideUp {
-        from {
-            transform: translate(-50%, 100%);
-            opacity: 0;
-        }
-        to {
-            transform: translate(-50%, 0);
-            opacity: 1;
-        }
+        from { transform: translate(-50%, 100%); opacity: 0; }
+        to { transform: translate(-50%, 0); opacity: 1; }
     }
 
     @keyframes gradientShift {
@@ -613,49 +534,15 @@
     }
 
     @media (max-width: 768px) {
-        body {
-            padding: 10px;
-        }
-        
-        .create-post-container {
-            padding: 24px;
-            margin: 10px auto 90px;
-        }
-        
-        h2 {
-            font-size: 1.6rem;
-        }
-        
-        .template-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-        
-        .preview-container {
-            height: 350px;
-        }
-        
-        .back-btn {
-            top: 10px;
-            left: 10px;
-            width: 45px;
-            height: 45px;
-        }
-        
-        .customization-row {
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .toast-message {
-            white-space: normal;
-            text-align: center;
-            max-width: 90%;
-        }
-        
-        .info-grid {
-            gap: 12px;
-            font-size: 0.75rem;
-        }
+        body { padding: 10px; }
+        .create-post-container { padding: 24px; margin: 10px auto 90px; }
+        h2 { font-size: 1.6rem; }
+        .template-grid { grid-template-columns: repeat(2, 1fr); }
+        .preview-container { height: 350px; }
+        .back-btn { top: 10px; left: 10px; width: 45px; height: 45px; }
+        .customization-row { flex-direction: column; gap: 15px; }
+        .toast-message { white-space: normal; text-align: center; max-width: 90%; }
+        .info-grid { gap: 12px; font-size: 0.75rem; }
     }
 </style>
 {% endblock %}
@@ -683,10 +570,10 @@
     
     <!-- Post Type Selector -->
     <div class="post-type-selector">
-        <button class="post-type-btn active" onclick="showTextPost()" id="textPostBtn">
+        <button class="post-type-btn active" id="textPostBtn">
             <i class="fas fa-font"></i> Text
         </button>
-        <button class="post-type-btn" onclick="showVideoPost()" id="videoPostBtn">
+        <button class="post-type-btn" id="videoPostBtn">
             <i class="fas fa-video"></i> Video
         </button>
     </div>
@@ -694,19 +581,13 @@
     <!-- TEXT POST SECTION -->
     <div id="textPostSection">
         <div class="mb-3">
-            <label class="form-label">
-                <i class="fas fa-pen-fancy"></i>
-                Your Message
-            </label>
+            <label class="form-label"><i class="fas fa-pen-fancy"></i> Your Message</label>
             <textarea class="form-control" rows="3" id="postText" placeholder="What's on your mind?" maxlength="500"></textarea>
             <div class="char-count"><span id="charCount">0</span>/500 characters</div>
         </div>
 
         <div class="mb-3">
-            <label class="form-label">
-                <i class="fas fa-palette"></i>
-                Choose Background
-            </label>
+            <label class="form-label"><i class="fas fa-palette"></i> Choose Background</label>
             <div class="template-grid" id="templateGrid">
                 <div class="text-center p-3">Loading templates...</div>
             </div>
@@ -714,38 +595,22 @@
 
         <div class="customization-row">
             <div class="customization-col">
-                <label class="form-label">
-                    <i class="fas fa-align-left"></i>
-                    Alignment
-                </label>
+                <label class="form-label"><i class="fas fa-align-left"></i> Alignment</label>
                 <div class="alignment-buttons">
-                    <button class="alignment-btn" onclick="setAlignment('left')" id="alignLeft" type="button">
-                        <i class="fas fa-align-left"></i>
-                    </button>
-                    <button class="alignment-btn active" onclick="setAlignment('center')" id="alignCenter" type="button">
-                        <i class="fas fa-align-center"></i>
-                    </button>
-                    <button class="alignment-btn" onclick="setAlignment('right')" id="alignRight" type="button">
-                        <i class="fas fa-align-right"></i>
-                    </button>
+                    <button class="alignment-btn" id="alignLeft" type="button"><i class="fas fa-align-left"></i></button>
+                    <button class="alignment-btn active" id="alignCenter" type="button"><i class="fas fa-align-center"></i></button>
+                    <button class="alignment-btn" id="alignRight" type="button"><i class="fas fa-align-right"></i></button>
                 </div>
             </div>
-            
             <div class="customization-col">
-                <label class="form-label">
-                    <i class="fas fa-fill-drip"></i>
-                    Text Color
-                </label>
+                <label class="form-label"><i class="fas fa-fill-drip"></i> Text Color</label>
                 <input type="color" class="color-picker" id="textColor" value="#ffffff">
             </div>
         </div>
 
         <div class="customization-row">
             <div class="customization-col">
-                <label class="form-label">
-                    <i class="fas fa-font"></i>
-                    Font Style
-                </label>
+                <label class="form-label"><i class="fas fa-font"></i> Font Style</label>
                 <select class="font-selector" id="textFont">
                     <option value="default">Default</option>
                     <option value="bold">Bold</option>
@@ -753,52 +618,38 @@
                     <option value="typewriter">Typewriter</option>
                 </select>
             </div>
-            
             <div class="customization-col">
-                <label class="form-label">
-                    <i class="fas fa-text-height"></i>
-                    Text Size <span class="size-value" id="sizeValue">1.8rem</span>
-                </label>
+                <label class="form-label"><i class="fas fa-text-height"></i> Text Size <span class="size-value" id="sizeValue">1.8rem</span></label>
                 <input type="range" class="size-slider" min="1" max="3" step="0.1" value="1.8" id="fontSize">
             </div>
         </div>
 
         <div class="mb-3">
-            <label class="form-label">
-                <i class="fas fa-eye"></i>
-                Preview
-            </label>
+            <label class="form-label"><i class="fas fa-eye"></i> Preview</label>
             <div class="preview-container">
                 <div class="preview-background" id="previewBackground">
-                    <div class="preview-text" id="previewText">
-                        Your text will appear here
-                    </div>
+                    <div class="preview-text" id="previewText">Your text will appear here</div>
                 </div>
             </div>
         </div>
 
-        <button class="publish-btn" onclick="publishTextPost()">
-            <i class="fas fa-paper-plane"></i>
-            Publish Text Post
+        <button class="publish-btn" id="publishTextBtn">
+            <i class="fas fa-paper-plane"></i> Publish Text Post
         </button>
     </div>
 
     <!-- VIDEO POST SECTION -->
     <div id="videoPostSection">
         <div class="mb-3">
-            <label class="form-label">
-                <i class="fas fa-video"></i>
-                Upload Video
-            </label>
+            <label class="form-label"><i class="fas fa-video"></i> Upload Video</label>
             <div class="upload-area" id="uploadArea">
                 <i class="fas fa-cloud-upload-alt"></i>
                 <p>Click to upload or drag and drop</p>
                 <small>MP4, WebM, MOV - Up to 90MB</small>
-                <input type="file" id="videoInput" accept="video/*" style="display: none;">
             </div>
+            <input type="file" id="videoInput" accept="video/*" style="display: none;">
         </div>
 
-        <!-- Video Preview Card -->
         <div class="video-preview-card" id="videoPreviewCard" style="display: none;">
             <div class="video-thumb-section">
                 <video id="previewVideo" controls></video>
@@ -811,18 +662,14 @@
                     <span>⏱️ <span id="videoDuration">00:00</span></span>
                 </div>
                 <div class="action-row">
-                    <button type="button" class="trim-btn" onclick="openTrimModal()">✂️ Trim</button>
-                    <button type="button" class="audio-btn" onclick="openAudioModal()">🔊 Audio</button>
+                    <button type="button" class="trim-btn" id="trimBtn">✂️ Trim</button>
+                    <button type="button" class="audio-btn" id="audioBtn">🔊 Audio</button>
                 </div>
             </div>
         </div>
 
-        <!-- Quality Selection -->
         <div class="mb-3">
-            <label class="form-label">
-                <i class="fas fa-bolt"></i>
-                Upload Speed
-            </label>
+            <label class="form-label"><i class="fas fa-bolt"></i> Upload Speed</label>
             <select id="videoQuality" class="quality-select">
                 <option value="fast" selected>⚡ Fast (Instant upload)</option>
                 <option value="balanced">⚖️ Balanced (Some compression)</option>
@@ -831,75 +678,57 @@
             <small class="text-muted">Fast option uploads immediately - video processes in background</small>
         </div>
 
-        <!-- Caption -->
         <div class="mb-3">
-            <label class="form-label">
-                <i class="fas fa-caption"></i>
-                Caption (Optional)
-            </label>
+            <label class="form-label"><i class="fas fa-caption"></i> Caption (Optional)</label>
             <textarea class="form-control" rows="2" id="videoCaption" placeholder="Add a caption..." maxlength="500"></textarea>
         </div>
 
-        <!-- Audio Info -->
         <div class="mb-3">
-            <label class="form-label">
-                <i class="fas fa-music"></i>
-                Audio/Song Name
-            </label>
+            <label class="form-label"><i class="fas fa-music"></i> Audio/Song Name</label>
             <input type="text" class="form-control" id="songName" placeholder="e.g., Original Audio" value="Original Audio">
         </div>
 
-        <button class="publish-btn" onclick="publishVideoPost()" id="publishVideoBtn" disabled>
-            <i class="fas fa-upload"></i>
-            Upload Video
+        <button class="publish-btn" id="publishVideoBtn" disabled>
+            <i class="fas fa-upload"></i> Upload Video
         </button>
     </div>
 </div>
 
 <!-- Trim Modal -->
-<div id="trimModal" class="modal-overlay-full">
+<div id="trimModal" class="modal-overlay-full" style="display: none;">
     <div class="modal-content-custom">
         <div class="modal-header-custom">
             <h3>✂️ Trim Video</h3>
-            <button onclick="closeTrimModal()">&times;</button>
+            <button id="closeTrimModalBtn">&times;</button>
         </div>
-        
         <video id="trimPreviewVideo" controls style="width: 100%; border-radius: 16px; margin-bottom: 25px;"></video>
-        
         <div style="margin-bottom: 25px;">
             <label style="color: white; display: block; margin-bottom: 8px;">Start Time: <span id="startTimeLabel" style="color: #667eea;">0:00</span></label>
             <input type="range" id="trimStart" min="0" max="100" value="0" step="0.1" style="width: 100%; margin: 10px 0;">
-            
             <label style="color: white; display: block; margin-bottom: 8px; margin-top: 15px;">End Time: <span id="endTimeLabel" style="color: #667eea;">0:00</span></label>
             <input type="range" id="trimEnd" min="0" max="100" value="100" step="0.1" style="width: 100%; margin: 10px 0;">
         </div>
-        
         <div style="display: flex; gap: 12px;">
-            <button onclick="previewTrim()" style="flex: 1; padding: 14px; background: #3b82f6; border: none; border-radius: 30px; color: white; cursor: pointer; font-weight: 600;">Preview</button>
-            <button onclick="applyTrim()" style="flex: 1; padding: 14px; background: #10b981; border: none; border-radius: 30px; color: white; cursor: pointer; font-weight: 600;">Apply Trim</button>
+            <button id="previewTrimBtn" style="flex: 1; padding: 14px; background: #3b82f6; border: none; border-radius: 30px; color: white; cursor: pointer; font-weight: 600;">Preview</button>
+            <button id="applyTrimBtn" style="flex: 1; padding: 14px; background: #10b981; border: none; border-radius: 30px; color: white; cursor: pointer; font-weight: 600;">Apply Trim</button>
         </div>
     </div>
 </div>
 
 <!-- Audio Modal -->
-<div id="audioModal" class="modal-overlay-full">
+<div id="audioModal" class="modal-overlay-full" style="display: none;">
     <div class="modal-content-custom">
         <div class="modal-header-custom">
             <h3>🔊 Audio Control</h3>
-            <button onclick="closeAudioModal()">&times;</button>
+            <button id="closeAudioModalBtn">&times;</button>
         </div>
-        
         <div style="margin-bottom: 25px;">
             <label style="color: white; display: block; margin-bottom: 8px;">Volume: <span id="volumeValue" style="color: #667eea;">100</span>%</label>
             <input type="range" id="volumeSlider" min="0" max="100" value="100" style="width: 100%; margin: 10px 0;">
         </div>
-        
         <div style="margin-bottom: 25px;">
-            <button id="muteBtn" onclick="toggleMute()" style="width: 100%; padding: 14px; background: #ef4444; border: none; border-radius: 30px; color: white; cursor: pointer; font-weight: 600;">
-                🔇 Mute Original Audio
-            </button>
+            <button id="muteBtn" style="width: 100%; padding: 14px; background: #ef4444; border: none; border-radius: 30px; color: white; cursor: pointer; font-weight: 600;">🔇 Mute Original Audio</button>
         </div>
-        
         <div class="text-muted" style="font-size: 0.8rem; text-align: center; color: #94a3b8;">
             <i class="fas fa-info-circle"></i> Original audio is preserved by default
         </div>
@@ -907,270 +736,146 @@
 </div>
 
 <script>
-    // CSRF Token
-    function getCookie(name) {
-        let value = "; " + document.cookie;
-        let parts = value.split("; " + name + "=");
-        if (parts.length == 2) return parts.pop().split(";").shift();
+// CSRF Token
+function getCookie(name) {
+    let value = "; " + document.cookie;
+    let parts = value.split("; " + name + "=");
+    if (parts.length == 2) return parts.pop().split(";").shift();
+}
+const csrftoken = getCookie('csrftoken');
+
+// Global variables
+let templates = [];
+let selectedTemplateId = null;
+let currentAlignment = 'center';
+let currentFontSize = 1.8;
+let currentTextColor = '#ffffff';
+let currentFont = 'default';
+let selectedVideoFile = null;
+let videoDuration = 0;
+let trimStartPercent = 0;
+let trimEndPercent = 100;
+let isMuted = false;
+
+// DOM elements
+const textPostSection = document.getElementById('textPostSection');
+const videoPostSection = document.getElementById('videoPostSection');
+const textPostBtn = document.getElementById('textPostBtn');
+const videoPostBtn = document.getElementById('videoPostBtn');
+const uploadArea = document.getElementById('uploadArea');
+const videoInput = document.getElementById('videoInput');
+const videoPreviewCard = document.getElementById('videoPreviewCard');
+const previewVideo = document.getElementById('previewVideo');
+const trimPreviewVideo = document.getElementById('trimPreviewVideo');
+const publishVideoBtn = document.getElementById('publishVideoBtn');
+const publishTextBtn = document.getElementById('publishTextBtn');
+const trimModal = document.getElementById('trimModal');
+const audioModal = document.getElementById('audioModal');
+const trimBtn = document.getElementById('trimBtn');
+const audioBtn = document.getElementById('audioBtn');
+const closeTrimModalBtn = document.getElementById('closeTrimModalBtn');
+const closeAudioModalBtn = document.getElementById('closeAudioModalBtn');
+const previewTrimBtn = document.getElementById('previewTrimBtn');
+const applyTrimBtn = document.getElementById('applyTrimBtn');
+const volumeSlider = document.getElementById('volumeSlider');
+const muteBtn = document.getElementById('muteBtn');
+const trimStartSlider = document.getElementById('trimStart');
+const trimEndSlider = document.getElementById('trimEnd');
+
+// ========== TEXT POST FUNCTIONS ==========
+function showTextPost() {
+    textPostSection.style.display = 'block';
+    videoPostSection.style.display = 'none';
+    textPostBtn.classList.add('active');
+    videoPostBtn.classList.remove('active');
+}
+
+function showVideoPost() {
+    textPostSection.style.display = 'none';
+    videoPostSection.style.display = 'block';
+    videoPostBtn.classList.add('active');
+    textPostBtn.classList.remove('active');
+}
+
+textPostBtn.onclick = showTextPost;
+videoPostBtn.onclick = showVideoPost;
+
+// ========== TEMPLATES ==========
+function loadTemplates() {
+    fetch('{% url "social:get_templates" %}')
+        .then(response => response.json())
+        .then(data => {
+            templates = data.templates || [];
+            renderTemplates();
+        })
+        .catch(error => {
+            console.error('Error loading templates:', error);
+            const templateGrid = document.getElementById('templateGrid');
+            if (templateGrid) templateGrid.innerHTML = '<div class="text-center p-3">Using default template</div>';
+            updatePreview();
+        });
+}
+
+function renderTemplates() {
+    const grid = document.getElementById('templateGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    const defaultItem = createTemplateElement(null, 'Default', 'linear-gradient(135deg, #667eea, #764ba2)');
+    grid.appendChild(defaultItem);
+    if (templates && templates.length > 0) {
+        templates.forEach(template => {
+            const item = createTemplateElement(template.id, template.name, template.gradient_css, template.is_animated, template.animation_duration, template.is_premium);
+            grid.appendChild(item);
+        });
     }
-    const csrftoken = getCookie('csrftoken');
+    updatePreview();
+}
 
-    // Global variables
-    let templates = [];
-    let selectedTemplateId = null;
-    let currentAlignment = 'center';
-    let currentFontSize = 1.8;
-    let currentTextColor = '#ffffff';
-    let currentFont = 'default';
-    let selectedVideoFile = null;
-    let videoDuration = 0;
-    let trimStartPercent = 0;
-    let trimEndPercent = 100;
-    let isMuted = false;
+function createTemplateElement(id, name, gradient, isAnimated, animDuration, isPremium) {
+    const item = document.createElement('div');
+    item.className = 'template-item' + (id === null ? ' active' : '');
+    item.onclick = () => selectTemplate(id);
+    item.dataset.templateId = id || 'default';
+    let previewStyle = '';
+    if (gradient) {
+        previewStyle = `style="background: ${gradient}; background-size: ${isAnimated ? '300% 300%' : 'cover'}; animation: ${isAnimated ? 'gradientShift ' + (animDuration || 3) + 's ease infinite' : 'none'};"`;
+    } else {
+        previewStyle = 'style="background: linear-gradient(135deg, #667eea, #764ba2);"';
+    }
+    item.innerHTML = `
+        <div class="template-preview" ${previewStyle}></div>
+        <div class="template-name">${escapeHtml(name)} ${isPremium ? '<span class="template-badge">PREMIUM</span>' : ''}</div>
+    `;
+    return item;
+}
 
-    // Load templates on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        loadTemplates();
-        setupEventListeners();
-        
-        // Setup video input - FIXED FOR CHROME
-        const videoInput = document.getElementById('videoInput');
-        const uploadArea = document.getElementById('uploadArea');
-        
-        if (videoInput) {
-            // Clear input value on click to allow re-selecting same file
-            videoInput.addEventListener('click', function() {
-                this.value = null;
-            });
-            
-            // Standard change event
-            videoInput.addEventListener('change', function(e) {
-                console.log('Video input change event triggered');
-                if (e.target.files && e.target.files[0]) {
-                    processVideoFile(e.target.files[0]);
-                }
-            });
-        }
-        
-        if (uploadArea) {
-            // Click on upload area
-            uploadArea.addEventListener('click', function(e) {
-                console.log('Upload area clicked');
-                videoInput.click();
-            });
-            
-            // Drag and drop
-            uploadArea.addEventListener('dragover', function(e) {
-                e.preventDefault();
-                uploadArea.style.background = '#e2e8f0';
-            });
-            
-            uploadArea.addEventListener('dragleave', function(e) {
-                e.preventDefault();
-                uploadArea.style.background = '#f8fafc';
-            });
-            
-            uploadArea.addEventListener('drop', function(e) {
-                e.preventDefault();
-                uploadArea.style.background = '#f8fafc';
-                const files = e.dataTransfer.files;
-                if (files.length > 0 && files[0].type.startsWith('video/')) {
-                    processVideoFile(files[0]);
-                } else {
-                    showToast('Please drop a video file', 'error');
-                }
-            });
+function selectTemplate(templateId) {
+    selectedTemplateId = templateId;
+    document.querySelectorAll('.template-item').forEach(item => {
+        item.classList.remove('active');
+        if ((templateId === null && item.dataset.templateId === 'default') || item.dataset.templateId == templateId) {
+            item.classList.add('active');
         }
     });
+    updatePreview();
+}
+
+function updatePreview() {
+    const preview = document.getElementById('previewBackground');
+    const previewText = document.getElementById('previewText');
+    const postText = document.getElementById('postText');
+    if (!preview || !previewText) return;
+    const textValue = postText ? (postText.value || 'Your text will appear here') : 'Your text will appear here';
+    previewText.innerText = textValue;
     
-    // Main video processing function - FIXED FOR CHROME
-    function processVideoFile(file) {
-        console.log('Processing video file:', file.name, file.type, file.size);
-        
-        // Check file type
-        const allowedTypes = ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'];
-        if (!allowedTypes.includes(file.type) && !file.type.startsWith('video/')) {
-            showToast('Please select a valid video file (MP4, WebM, MOV)', 'error');
-            return;
-        }
-        
-        selectedVideoFile = file;
-        const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-        
-        if (file.size > 90 * 1024 * 1024) {
-            showToast('Video too large. Maximum size is 90MB', 'error');
-            return;
-        }
-        
-        // Clean up old URL if exists
-        if (window.currentVideoURL) {
-            URL.revokeObjectURL(window.currentVideoURL);
-        }
-        
-        // Create local preview URL
-        const videoURL = URL.createObjectURL(file);
-        window.currentVideoURL = videoURL;
-        
-        const previewVideo = document.getElementById('previewVideo');
-        const trimVideo = document.getElementById('trimPreviewVideo');
-        
-        if (!previewVideo) {
-            console.error('Preview video element not found');
-            return;
-        }
-        
-        // Reset video element properly for Chrome
-        previewVideo.pause();
-        previewVideo.removeAttribute('src');
-        previewVideo.load();
-        
-        // Set up metadata loading - USE addEventListener instead of onloadedmetadata
-        const metadataHandler = function() {
-            console.log('Video metadata loaded');
-            videoDuration = previewVideo.duration;
-            const minutes = Math.floor(videoDuration / 60);
-            const seconds = Math.floor(videoDuration % 60);
-            const durationStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-            const resolution = previewVideo.videoHeight;
-            
-            // Update UI elements
-            document.getElementById('videoSize').innerText = fileSizeMB;
-            document.getElementById('videoDuration').innerText = durationStr;
-            document.getElementById('videoDurationBadge').innerText = durationStr;
-            document.getElementById('videoResolution').innerText = resolution;
-            
-            // Show preview card
-            document.getElementById('videoPreviewCard').style.display = 'block';
-            document.getElementById('publishVideoBtn').disabled = false;
-            
-            // Set end time label
-            document.getElementById('endTimeLabel').innerText = durationStr;
-            
-            showToast('Video ready! You can preview, trim, or upload now.', 'success');
-            
-            // Clean up event listener
-            previewVideo.removeEventListener('loadedmetadata', metadataHandler);
-        };
-        
-        previewVideo.addEventListener('loadedmetadata', metadataHandler);
-        
-        const errorHandler = function(e) {
-            console.error('Error loading video:', e);
-            showToast('Error loading video preview. Try a different format.', 'error');
-            previewVideo.removeEventListener('error', errorHandler);
-        };
-        
-        previewVideo.addEventListener('error', errorHandler);
-        
-        // Set the source and load with a small delay for Chrome
-        setTimeout(() => {
-            previewVideo.src = videoURL;
-            previewVideo.load();
-        }, 50);
-        
-        // Also update trim modal video
-        if (trimVideo) {
-            trimVideo.pause();
-            trimVideo.removeAttribute('src');
-            trimVideo.load();
-            setTimeout(() => {
-                trimVideo.src = videoURL;
-                trimVideo.load();
-            }, 50);
-        }
-    }
-
-    function loadTemplates() {
-        fetch('{% url "social:get_templates" %}')
-            .then(response => response.json())
-            .then(data => {
-                templates = data.templates || [];
-                renderTemplates();
-            })
-            .catch(error => {
-                console.error('Error loading templates:', error);
-                const templateGrid = document.getElementById('templateGrid');
-                if (templateGrid) {
-                    templateGrid.innerHTML = '<div class="text-center p-3">Using default template</div>';
-                }
-                updatePreview();
-            });
-    }
-
-    function renderTemplates() {
-        const grid = document.getElementById('templateGrid');
-        if (!grid) return;
-        
-        grid.innerHTML = '';
-        
-        const defaultItem = createTemplateElement(null, 'Default', 'linear-gradient(135deg, #667eea, #764ba2)');
-        grid.appendChild(defaultItem);
-        
-        if (templates && templates.length > 0) {
-            templates.forEach(template => {
-                const item = createTemplateElement(template.id, template.name, template.gradient_css, template.is_animated, template.animation_duration, template.is_premium);
-                grid.appendChild(item);
-            });
-        }
-        
-        updatePreview();
-    }
-
-    function createTemplateElement(id, name, gradient, isAnimated, animDuration, isPremium) {
-        const item = document.createElement('div');
-        item.className = 'template-item' + (id === null ? ' active' : '');
-        item.onclick = () => selectTemplate(id);
-        item.dataset.templateId = id || 'default';
-        
-        let previewStyle = '';
-        if (gradient) {
-            previewStyle = `style="background: ${gradient}; background-size: ${isAnimated ? '300% 300%' : 'cover'}; animation: ${isAnimated ? 'gradientShift ' + (animDuration || 3) + 's ease infinite' : 'none'};"`;
-        } else {
-            previewStyle = 'style="background: linear-gradient(135deg, #667eea, #764ba2);"';
-        }
-        
-        item.innerHTML = `
-            <div class="template-preview" ${previewStyle}></div>
-            <div class="template-name">${escapeHtml(name)} ${isPremium ? '<span class="template-badge">PREMIUM</span>' : ''}</div>
-        `;
-        return item;
-    }
-
-    function selectTemplate(templateId) {
-        selectedTemplateId = templateId;
-        document.querySelectorAll('.template-item').forEach(item => {
-            item.classList.remove('active');
-            if ((templateId === null && item.dataset.templateId === 'default') || 
-                item.dataset.templateId == templateId) {
-                item.classList.add('active');
-            }
-        });
-        updatePreview();
-    }
-
-    function updatePreview() {
-        const preview = document.getElementById('previewBackground');
-        const previewText = document.getElementById('previewText');
-        const postText = document.getElementById('postText');
-        
-        if (!preview || !previewText) return;
-        
-        const textValue = postText ? (postText.value || 'Your text will appear here') : 'Your text will appear here';
-        previewText.innerText = textValue;
-        
-        if (selectedTemplateId) {
-            const template = templates.find(t => t.id == selectedTemplateId);
-            if (template && template.gradient_css) {
-                preview.style.background = template.gradient_css;
-                if (template.is_animated) {
-                    preview.style.backgroundSize = '300% 300%';
-                    preview.style.animation = `gradientShift ${template.animation_duration || 3}s ease infinite`;
-                } else {
-                    preview.style.backgroundSize = 'cover';
-                    preview.style.animation = 'none';
-                }
+    if (selectedTemplateId) {
+        const template = templates.find(t => t.id == selectedTemplateId);
+        if (template && template.gradient_css) {
+            preview.style.background = template.gradient_css;
+            if (template.is_animated) {
+                preview.style.backgroundSize = '300% 300%';
+                preview.style.animation = `gradientShift ${template.animation_duration || 3}s ease infinite`;
             } else {
-                preview.style.background = 'linear-gradient(135deg, #667eea, #764ba2)';
                 preview.style.backgroundSize = 'cover';
                 preview.style.animation = 'none';
             }
@@ -1179,357 +884,345 @@
             preview.style.backgroundSize = 'cover';
             preview.style.animation = 'none';
         }
-        
-        previewText.style.textAlign = currentAlignment;
-        previewText.style.fontSize = currentFontSize + 'rem';
-        previewText.style.color = currentTextColor;
-        
-        const fontStyles = {
-            'default': 'inherit',
-            'bold': 'Arial Black, sans-serif',
-            'handwriting': "'Caveat', cursive",
-            'typewriter': "'Courier New', monospace"
-        };
-        previewText.style.fontFamily = fontStyles[currentFont] || 'inherit';
+    } else {
+        preview.style.background = 'linear-gradient(135deg, #667eea, #764ba2)';
+        preview.style.backgroundSize = 'cover';
+        preview.style.animation = 'none';
     }
+    previewText.style.textAlign = currentAlignment;
+    previewText.style.fontSize = currentFontSize + 'rem';
+    previewText.style.color = currentTextColor;
+    const fontStyles = {
+        'default': 'inherit',
+        'bold': 'Arial Black, sans-serif',
+        'handwriting': "'Caveat', cursive",
+        'typewriter': "'Courier New', monospace"
+    };
+    previewText.style.fontFamily = fontStyles[currentFont] || 'inherit';
+}
 
-    function setupEventListeners() {
-        const postText = document.getElementById('postText');
-        if (postText) {
-            postText.addEventListener('input', function() {
-                updatePreview();
-                const charCount = document.getElementById('charCount');
-                if (charCount) charCount.innerText = this.value.length;
-            });
+// ========== VIDEO FUNCTIONS ==========
+function processVideoFile(file) {
+    if (file.size > 90 * 1024 * 1024) {
+        alert('Video too large. Maximum size is 90MB');
+        return;
+    }
+    selectedVideoFile = file;
+    const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+    const videoURL = URL.createObjectURL(file);
+    
+    previewVideo.onloadedmetadata = function() {
+        videoDuration = previewVideo.duration;
+        const minutes = Math.floor(videoDuration / 60);
+        const seconds = Math.floor(videoDuration % 60);
+        const durationStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        document.getElementById('videoSize').innerText = fileSizeMB;
+        document.getElementById('videoDuration').innerText = durationStr;
+        document.getElementById('videoDurationBadge').innerText = durationStr;
+        document.getElementById('videoResolution').innerText = previewVideo.videoHeight || '480';
+        document.getElementById('endTimeLabel').innerText = durationStr;
+        videoPreviewCard.style.display = 'block';
+        publishVideoBtn.disabled = false;
+        previewVideo.onloadedmetadata = null;
+    };
+    previewVideo.onerror = function() {
+        alert('Error loading video preview. The file might be corrupted or in an unsupported format.');
+        previewVideo.onerror = null;
+    };
+    previewVideo.src = videoURL;
+    previewVideo.load();
+    
+    if (trimPreviewVideo) {
+        trimPreviewVideo.src = videoURL;
+        trimPreviewVideo.load();
+    }
+}
+
+// File picker
+if (uploadArea && videoInput) {
+    videoInput.value = '';
+    uploadArea.onclick = function(e) {
+        e.preventDefault();
+        videoInput.click();
+    };
+    videoInput.onchange = function(e) {
+        if (e.target.files && e.target.files.length > 0) {
+            const file = e.target.files[0];
+            if (file.type.startsWith('video/')) {
+                processVideoFile(file);
+            } else {
+                alert('Please select a video file (MP4, WebM, MOV)');
+            }
         }
-
-        const textColor = document.getElementById('textColor');
-        if (textColor) {
-            textColor.addEventListener('input', function() {
-                currentTextColor = this.value;
-                updatePreview();
-            });
+    };
+    // Drag and drop
+    uploadArea.ondragover = function(e) { e.preventDefault(); this.style.background = '#e2e8f0'; };
+    uploadArea.ondragleave = function(e) { e.preventDefault(); this.style.background = '#f8fafc'; };
+    uploadArea.ondrop = function(e) {
+        e.preventDefault();
+        this.style.background = '#f8fafc';
+        const files = e.dataTransfer.files;
+        if (files.length > 0 && files[0].type.startsWith('video/')) {
+            processVideoFile(files[0]);
+        } else {
+            alert('Please drop a video file');
         }
+    };
+}
 
-        const textFont = document.getElementById('textFont');
-        if (textFont) {
-            textFont.addEventListener('change', function() {
-                currentFont = this.value;
-                updatePreview();
-            });
+// ========== MODAL FUNCTIONS (Fixed for Chrome) ==========
+function openTrimModal() {
+    if (!selectedVideoFile) { showToast('Please select a video first', 'error'); return; }
+    if (!videoDuration || videoDuration <= 0) { showToast('Video metadata not loaded yet, please wait', 'error'); return; }
+    trimStartPercent = 0;
+    trimEndPercent = 100;
+    if (trimStartSlider) trimStartSlider.value = 0;
+    if (trimEndSlider) trimEndSlider.value = 100;
+    document.getElementById('startTimeLabel').innerText = '0:00';
+    document.getElementById('endTimeLabel').innerText = formatDuration(videoDuration);
+    // Set trim modal video source if needed
+    if (trimPreviewVideo && previewVideo.src) {
+        if (trimPreviewVideo.src !== previewVideo.src) {
+            trimPreviewVideo.src = previewVideo.src;
+            trimPreviewVideo.load();
         }
+        trimPreviewVideo.currentTime = 0;
+        trimPreviewVideo.pause();
+    }
+    trimModal.style.display = 'flex';
+}
 
-        const fontSize = document.getElementById('fontSize');
-        if (fontSize) {
-            fontSize.addEventListener('input', function() {
-                currentFontSize = parseFloat(this.value);
-                const sizeValue = document.getElementById('sizeValue');
-                if (sizeValue) sizeValue.innerText = currentFontSize + 'rem';
-                updatePreview();
-            });
+function closeTrimModal() {
+    trimModal.style.display = 'none';
+    if (trimPreviewVideo) trimPreviewVideo.pause();
+}
+
+function openAudioModal() {
+    if (!selectedVideoFile) { showToast('Please select a video first', 'error'); return; }
+    if (previewVideo) {
+        const currentVolume = previewVideo.volume * 100;
+        if (volumeSlider) volumeSlider.value = currentVolume;
+        document.getElementById('volumeValue').innerText = Math.round(currentVolume);
+        isMuted = previewVideo.muted;
+        if (muteBtn) {
+            muteBtn.innerHTML = isMuted ? '🔊 Unmute Audio' : '🔇 Mute Original Audio';
+            muteBtn.style.background = isMuted ? '#10b981' : '#ef4444';
         }
     }
+    audioModal.style.display = 'flex';
+}
 
-    function showTextPost() {
-        document.getElementById('textPostSection').style.display = 'block';
-        document.getElementById('videoPostSection').style.display = 'none';
-        document.getElementById('textPostBtn').classList.add('active');
-        document.getElementById('videoPostBtn').classList.remove('active');
+function closeAudioModal() {
+    audioModal.style.display = 'none';
+}
+
+// Preview trim
+function previewTrim() {
+    if (!trimPreviewVideo || !videoDuration) return;
+    const startTime = (trimStartPercent / 100) * videoDuration;
+    const endTime = (trimEndPercent / 100) * videoDuration;
+    trimPreviewVideo.currentTime = startTime;
+    trimPreviewVideo.play();
+    const checkTime = setInterval(() => {
+        if (trimPreviewVideo.currentTime >= endTime) {
+            trimPreviewVideo.pause();
+            trimPreviewVideo.currentTime = startTime;
+            clearInterval(checkTime);
+        }
+    }, 100);
+}
+
+function applyTrim() {
+    if (trimStartPercent > 0 || trimEndPercent < 100) {
+        showToast('Trim feature coming soon!', 'info');
     }
+    closeTrimModal();
+}
 
-    function showVideoPost() {
-        document.getElementById('textPostSection').style.display = 'none';
-        document.getElementById('videoPostSection').style.display = 'block';
-        document.getElementById('videoPostBtn').classList.add('active');
-        document.getElementById('textPostBtn').classList.remove('active');
+function updateVolume() {
+    const volume = volumeSlider.value;
+    document.getElementById('volumeValue').innerText = volume;
+    if (previewVideo) previewVideo.volume = volume / 100;
+}
+
+function toggleMute() {
+    if (!previewVideo) return;
+    previewVideo.muted = !previewVideo.muted;
+    isMuted = previewVideo.muted;
+    muteBtn.innerHTML = isMuted ? '🔊 Unmute Audio' : '🔇 Mute Original Audio';
+    muteBtn.style.background = isMuted ? '#10b981' : '#ef4444';
+}
+
+// ========== UI Helpers ==========
+function setupEventListeners() {
+    const postText = document.getElementById('postText');
+    if (postText) {
+        postText.addEventListener('input', function() {
+            updatePreview();
+            document.getElementById('charCount').innerText = this.value.length;
+        });
     }
-
-    function setAlignment(align) {
-        currentAlignment = align;
-        const alignLeft = document.getElementById('alignLeft');
-        const alignCenter = document.getElementById('alignCenter');
-        const alignRight = document.getElementById('alignRight');
-        
-        if (alignLeft) alignLeft.classList.remove('active');
-        if (alignCenter) alignCenter.classList.remove('active');
-        if (alignRight) alignRight.classList.remove('active');
-        
-        if (align === 'left' && alignLeft) alignLeft.classList.add('active');
-        if (align === 'center' && alignCenter) alignCenter.classList.add('active');
-        if (align === 'right' && alignRight) alignRight.classList.add('active');
-        
+    document.getElementById('textColor').addEventListener('input', function() {
+        currentTextColor = this.value;
         updatePreview();
-    }
-
-    function formatDuration(seconds) {
-        if (isNaN(seconds) || !isFinite(seconds)) return '0:00';
-        const mins = Math.floor(seconds / 60);
-        const secs = Math.floor(seconds % 60);
-        return `${mins}:${secs.toString().padStart(2, '0')}`;
-    }
-
-    function showLoading(message) {
-        const overlay = document.getElementById('loadingOverlay');
-        const msg = document.getElementById('loadingMessage');
-        if (msg) msg.innerText = message || 'Processing...';
-        if (overlay) overlay.classList.add('show');
-        
-        let progress = 0;
-        const interval = setInterval(() => {
-            progress += 10;
-            const fill = document.getElementById('progressBarFill');
-            const percent = document.getElementById('progressPercentage');
-            if (fill) fill.style.width = progress + '%';
-            if (percent) percent.innerText = progress + '%';
-            if (progress >= 90) clearInterval(interval);
-        }, 200);
-    }
-
-    function hideLoading() {
-        const overlay = document.getElementById('loadingOverlay');
-        if (overlay) overlay.classList.remove('show');
-    }
-
-    function showToast(message, type = 'success') {
-        const existingToasts = document.querySelectorAll('.toast-message');
-        existingToasts.forEach(toast => toast.remove());
-        
-        const toast = document.createElement('div');
-        toast.className = 'toast-message';
-        const icon = type === 'success' ? '✅' : '❌';
-        toast.innerHTML = `${icon} ${message}`;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
-    }
-
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
-    }
-
-    function publishTextPost() {
-        const content = document.getElementById('postText');
-        if (!content || !content.value.trim()) {
-            showToast('Please enter some text', 'error');
-            return;
-        }
-        
-        showLoading('Creating your text post...');
-        
-        const postData = {
-            content: content.value.trim(),
-            template_id: selectedTemplateId,
-            alignment: currentAlignment,
-            fontSize: currentFontSize,
-            textColor: currentTextColor,
-            font: currentFont
-        };
-        
-        fetch('{% url "social:create_post" %}', {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': csrftoken,
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: JSON.stringify(postData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            hideLoading();
-            if (data.status === 'success') {
-                showToast('Post created successfully!');
-                setTimeout(() => {
-                    window.location.href = data.redirect_url || '{% url "social:feed" %}';
-                }, 1000);
-            } else {
-                showToast(data.message || 'Error creating post', 'error');
-            }
-        })
-        .catch(error => {
-            hideLoading();
-            showToast('Error creating post', 'error');
-            console.error('Error:', error);
-        });
-    }
-
-    async function publishVideoPost() {
-        if (!selectedVideoFile) {
-            showToast('Please select a video', 'error');
-            return;
-        }
-        
-        const quality = document.getElementById('videoQuality').value;
-        
-        showLoading('Uploading video...');
-        
-        const formData = new FormData();
-        formData.append('video', selectedVideoFile);
-        formData.append('content', document.getElementById('videoCaption')?.value || '');
-        formData.append('song_name', document.getElementById('songName')?.value || 'Original Audio');
-        formData.append('quality', quality);
-        
-        try {
-            const response = await fetch('{% url "social:create_post" %}', {
-                method: 'POST',
-                headers: { 'X-CSRFToken': csrftoken },
-                body: formData
-            });
-            
-            const data = await response.json();
-            hideLoading();
-            
-            if (data.status === 'success') {
-                showToast(data.message || 'Video posted successfully!');
-                setTimeout(() => {
-                    window.location.href = data.redirect_url || '{% url "social:feed" %}';
-                }, 1000);
-            } else {
-                showToast(data.message || 'Video upload failed', 'error');
-            }
-        } catch (error) {
-            hideLoading();
-            showToast('Network error. Please try again.', 'error');
-            console.error('Upload error:', error);
-        }
-    }
-
-    function openTrimModal() {
-        if (!selectedVideoFile) {
-            showToast('Please select a video first', 'error');
-            return;
-        }
-        document.getElementById('trimModal').classList.add('show');
-        trimStartPercent = 0;
-        trimEndPercent = 100;
-        document.getElementById('trimStart').value = 0;
-        document.getElementById('trimEnd').value = 100;
-        document.getElementById('startTimeLabel').innerText = '0:00';
-        document.getElementById('endTimeLabel').innerText = formatDuration(videoDuration);
-        
-        const video = document.getElementById('trimPreviewVideo');
-        if (video) {
-            video.currentTime = 0;
-            video.pause();
-        }
-    }
-
-    function closeTrimModal() {
-        document.getElementById('trimModal').classList.remove('show');
-    }
-
-    function previewTrim() {
-        const video = document.getElementById('trimPreviewVideo');
-        if (!video) return;
-        
-        const startTime = (trimStartPercent / 100) * videoDuration;
-        const endTime = (trimEndPercent / 100) * videoDuration;
-        
-        video.currentTime = startTime;
-        video.play();
-        
-        const checkTime = setInterval(() => {
-            if (video.currentTime >= endTime) {
-                video.pause();
-                video.currentTime = startTime;
-                clearInterval(checkTime);
-            }
-        }, 100);
-    }
-
-    function applyTrim() {
-        if (trimStartPercent > 0 || trimEndPercent < 100) {
-            showToast('Trim feature coming soon!', 'info');
-        }
-        closeTrimModal();
-    }
-
-    function openAudioModal() {
-        if (!selectedVideoFile) {
-            showToast('Please select a video first', 'error');
-            return;
-        }
-        document.getElementById('audioModal').classList.add('show');
-        
-        const previewVideo = document.getElementById('previewVideo');
-        if (previewVideo) {
-            const currentVolume = previewVideo.volume * 100;
-            document.getElementById('volumeSlider').value = currentVolume;
-            document.getElementById('volumeValue').innerText = Math.round(currentVolume);
-        }
-    }
-
-    function closeAudioModal() {
-        document.getElementById('audioModal').classList.remove('show');
-    }
-
-    function updateVolume() {
-        const volume = document.getElementById('volumeSlider').value;
-        document.getElementById('volumeValue').innerText = volume;
-        const previewVideo = document.getElementById('previewVideo');
-        if (previewVideo) previewVideo.volume = volume / 100;
-    }
-
-    function toggleMute() {
-        const previewVideo = document.getElementById('previewVideo');
-        const muteBtn = document.getElementById('muteBtn');
-        
-        if (!previewVideo || !muteBtn) return;
-        
-        isMuted = !isMuted;
-        previewVideo.muted = isMuted;
-        muteBtn.innerHTML = isMuted ? '🔊 Unmute Audio' : '🔇 Mute Original Audio';
-        muteBtn.style.background = isMuted ? '#10b981' : '#ef4444';
-    }
-
-    const volumeSlider = document.getElementById('volumeSlider');
-    if (volumeSlider) {
-        volumeSlider.addEventListener('input', updateVolume);
-    }
-    
-    const trimStart = document.getElementById('trimStart');
-    const trimEnd = document.getElementById('trimEnd');
-    
-    if (trimStart) {
-        trimStart.addEventListener('input', function() {
-            trimStartPercent = parseFloat(this.value);
-            const time = (trimStartPercent / 100) * videoDuration;
-            document.getElementById('startTimeLabel').innerText = formatDuration(time);
-            
-            if (trimStartPercent >= trimEndPercent) {
-                trimEnd.value = Math.min(trimStartPercent + 1, 100);
-                trimEndPercent = parseFloat(trimEnd.value);
-                const endTime = (trimEndPercent / 100) * videoDuration;
-                document.getElementById('endTimeLabel').innerText = formatDuration(endTime);
-            }
-        });
-    }
-    
-    if (trimEnd) {
-        trimEnd.addEventListener('input', function() {
-            trimEndPercent = parseFloat(this.value);
-            const time = (trimEndPercent / 100) * videoDuration;
-            document.getElementById('endTimeLabel').innerText = formatDuration(time);
-            
-            if (trimEndPercent <= trimStartPercent) {
-                trimStart.value = Math.max(trimEndPercent - 1, 0);
-                trimStartPercent = parseFloat(trimStart.value);
-                const startTime = (trimStartPercent / 100) * videoDuration;
-                document.getElementById('startTimeLabel').innerText = formatDuration(startTime);
-            }
-        });
-    }
-
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            closeTrimModal();
-            closeAudioModal();
-        }
     });
+    document.getElementById('textFont').addEventListener('change', function() {
+        currentFont = this.value;
+        updatePreview();
+    });
+    document.getElementById('fontSize').addEventListener('input', function() {
+        currentFontSize = parseFloat(this.value);
+        document.getElementById('sizeValue').innerText = currentFontSize + 'rem';
+        updatePreview();
+    });
+    document.getElementById('alignLeft').onclick = () => setAlignment('left');
+    document.getElementById('alignCenter').onclick = () => setAlignment('center');
+    document.getElementById('alignRight').onclick = () => setAlignment('right');
+}
+
+function setAlignment(align) {
+    currentAlignment = align;
+    document.getElementById('alignLeft').classList.remove('active');
+    document.getElementById('alignCenter').classList.remove('active');
+    document.getElementById('alignRight').classList.remove('active');
+    if (align === 'left') document.getElementById('alignLeft').classList.add('active');
+    if (align === 'center') document.getElementById('alignCenter').classList.add('active');
+    if (align === 'right') document.getElementById('alignRight').classList.add('active');
+    updatePreview();
+}
+
+function formatDuration(seconds) {
+    if (isNaN(seconds) || !isFinite(seconds)) return '0:00';
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
+function showLoading(message) {
+    const overlay = document.getElementById('loadingOverlay');
+    document.getElementById('loadingMessage').innerText = message || 'Processing...';
+    overlay.style.display = 'flex';
+    let progress = 0;
+    const interval = setInterval(() => {
+        progress += 10;
+        document.getElementById('progressBarFill').style.width = progress + '%';
+        document.getElementById('progressPercentage').innerText = progress + '%';
+        if (progress >= 90) clearInterval(interval);
+    }, 200);
+    window.progressInterval = interval;
+}
+
+function hideLoading() {
+    document.getElementById('loadingOverlay').style.display = 'none';
+    if (window.progressInterval) clearInterval(window.progressInterval);
+}
+
+function showToast(message, type = 'success') {
+    document.querySelectorAll('.toast-message').forEach(t => t.remove());
+    const toast = document.createElement('div');
+    toast.className = 'toast-message';
+    toast.innerHTML = `${type === 'success' ? '✅' : '❌'} ${message}`;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+}
+
+// ========== PUBLISH ==========
+function publishTextPost() {
+    const content = document.getElementById('postText').value.trim();
+    if (!content) { showToast('Please enter some text', 'error'); return; }
+    showLoading('Creating your text post...');
+    fetch('{% url "social:create_post" %}', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrftoken, 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        body: JSON.stringify({ content, template_id: selectedTemplateId, alignment: currentAlignment, fontSize: currentFontSize, textColor: currentTextColor, font: currentFont })
+    })
+    .then(res => res.json())
+    .then(data => {
+        hideLoading();
+        if (data.status === 'success') {
+            showToast('Post created successfully!');
+            setTimeout(() => window.location.href = data.redirect_url || '{% url "social:feed" %}', 1000);
+        } else showToast(data.message || 'Error creating post', 'error');
+    })
+    .catch(() => { hideLoading(); showToast('Error creating post', 'error'); });
+}
+
+async function publishVideoPost() {
+    if (!selectedVideoFile) { showToast('Please select a video', 'error'); return; }
+    showLoading('Uploading video...');
+    const formData = new FormData();
+    formData.append('video', selectedVideoFile);
+    formData.append('content', document.getElementById('videoCaption').value || '');
+    formData.append('song_name', document.getElementById('songName').value || 'Original Audio');
+    formData.append('quality', document.getElementById('videoQuality').value);
+    try {
+        const response = await fetch('{% url "social:create_post" %}', { method: 'POST', headers: { 'X-CSRFToken': csrftoken }, body: formData });
+        const data = await response.json();
+        hideLoading();
+        if (data.status === 'success') {
+            showToast(data.message || 'Video posted successfully!');
+            setTimeout(() => window.location.href = data.redirect_url || '{% url "social:feed" %}', 1000);
+        } else showToast(data.message || 'Video upload failed', 'error');
+    } catch (error) {
+        hideLoading();
+        showToast('Network error. Please try again.', 'error');
+    }
+}
+
+// ========== ATTACH ALL EVENT LISTENERS ==========
+publishTextBtn.onclick = publishTextPost;
+publishVideoBtn.onclick = publishVideoPost;
+trimBtn.onclick = openTrimModal;
+audioBtn.onclick = openAudioModal;
+closeTrimModalBtn.onclick = closeTrimModal;
+closeAudioModalBtn.onclick = closeAudioModal;
+previewTrimBtn.onclick = previewTrim;
+applyTrimBtn.onclick = applyTrim;
+if (volumeSlider) volumeSlider.oninput = updateVolume;
+if (muteBtn) muteBtn.onclick = toggleMute;
+if (trimStartSlider) {
+    trimStartSlider.oninput = function() {
+        trimStartPercent = parseFloat(this.value);
+        document.getElementById('startTimeLabel').innerText = formatDuration((trimStartPercent / 100) * videoDuration);
+        if (trimStartPercent >= trimEndPercent) {
+            trimEndPercent = Math.min(trimStartPercent + 1, 100);
+            trimEndSlider.value = trimEndPercent;
+            document.getElementById('endTimeLabel').innerText = formatDuration((trimEndPercent / 100) * videoDuration);
+        }
+    };
+}
+if (trimEndSlider) {
+    trimEndSlider.oninput = function() {
+        trimEndPercent = parseFloat(this.value);
+        document.getElementById('endTimeLabel').innerText = formatDuration((trimEndPercent / 100) * videoDuration);
+        if (trimEndPercent <= trimStartPercent) {
+            trimStartPercent = Math.max(trimEndPercent - 1, 0);
+            trimStartSlider.value = trimStartPercent;
+            document.getElementById('startTimeLabel').innerText = formatDuration((trimStartPercent / 100) * videoDuration);
+        }
+    };
+}
+
+// Close modals on Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeTrimModal();
+        closeAudioModal();
+    }
+});
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    loadTemplates();
+    setupEventListeners();
+    // Ensure modals start hidden
+    trimModal.style.display = 'none';
+    audioModal.style.display = 'none';
+});
 </script>
 {% endblock %}

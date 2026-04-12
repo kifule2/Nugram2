@@ -158,6 +158,23 @@ from django.contrib.auth.decorators import login_required
 
 @login_required
 def create_post(request):
+        # ----- TEXT POST (JSON) -----
+    if request.content_type == 'application/json':
+        try:
+            data = json.loads(request.body)
+            content = data.get('content', '').strip()
+            if not content:
+                return JsonResponse({'status': 'error', 'message': 'Content required'}, status=400)
+            
+            post = Post.objects.create(
+                user=request.user,
+                content=content,
+                post_type='text'
+            )
+            return JsonResponse({'status': 'success', 'redirect_url': reverse('social:feed')})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    
     if request.method == 'POST' and request.FILES.get('video'):
         video_file = request.FILES['video']
         content = request.POST.get('content', '').strip()

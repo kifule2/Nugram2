@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 {% load static %}
 {% load task_filters %}
@@ -8,8 +7,6 @@
 {% block extra_css %}
 <style>
     /* ── PAGE SHELL ── */
-    body { background: var(--dark-900); }
-
     .home-wrap {
         display: flex;
         flex-direction: column;
@@ -17,10 +14,10 @@
     }
 
     /* ═══════════════════════════════════
-       DARK HERO ZONE
+       LIGHT HERO ZONE (updated)
        ═══════════════════════════════════ */
     .hero-zone {
-        background: linear-gradient(180deg, #0a0f1e 0%, #0f172a 80%, #111827 100%);
+        background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 80%, #f3f4f6 100%);
         padding: 20px 20px 40px;
         position: relative;
     }
@@ -31,8 +28,8 @@
         position: absolute;
         inset: 0;
         background-image:
-            linear-gradient(rgba(59,130,246,0.04) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(59,130,246,0.04) 1px, transparent 1px);
+            linear-gradient(rgba(59,130,246,0.08) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(59,130,246,0.08) 1px, transparent 1px);
         background-size: 32px 32px;
         pointer-events: none;
     }
@@ -49,7 +46,7 @@
     .greeting-text small {
         display: block;
         font-size: 0.8rem;
-        color: rgba(255,255,255,0.4);
+        color: #4b5563;
         font-weight: 500;
         letter-spacing: 0.3px;
         margin-bottom: 2px;
@@ -58,7 +55,7 @@
     .greeting-text h2 {
         font-size: 1.35rem;
         font-weight: 800;
-        color: #fff;
+        color: #111827;
         margin: 0;
         letter-spacing: -0.5px;
     }
@@ -67,8 +64,8 @@
         display: inline-flex;
         align-items: center;
         gap: 5px;
-        background: rgba(59,130,246,0.15);
-        border: 1px solid rgba(59,130,246,0.3);
+        background: rgba(59,130,246,0.12);
+        border: 1px solid rgba(59,130,246,0.25);
         border-radius: 50px;
         padding: 4px 10px;
         font-size: 0.72rem;
@@ -76,25 +73,25 @@
         color: var(--blue);
     }
 
-    /* ── BALANCE CARD ── */
+    /* ── BALANCE CARD (light version) ── */
     .balance-card {
-        background: linear-gradient(135deg, #1a2744 0%, #0f1d36 50%, #141e35 100%);
-        border: 1px solid rgba(59,130,246,0.18);
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
         border-radius: 28px;
         padding: 24px;
         margin-bottom: 16px;
         position: relative;
         overflow: hidden;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.03), 0 2px 4px rgba(0,0,0,0.05);
     }
 
-    /* decorative glow orb */
+    /* decorative glow orb (softer) */
     .balance-card::after {
         content: '';
         position: absolute;
         top: -40px; right: -40px;
         width: 160px; height: 160px;
-        background: radial-gradient(circle, rgba(59,130,246,0.18) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 70%);
         border-radius: 50%;
         pointer-events: none;
     }
@@ -103,7 +100,7 @@
         font-size: 0.78rem;
         font-weight: 600;
         letter-spacing: 0.5px;
-        color: rgba(255,255,255,0.45);
+        color: #6b7280;
         text-transform: uppercase;
         margin-bottom: 6px;
     }
@@ -113,14 +110,14 @@
         font-weight: 900;
         letter-spacing: -2px;
         line-height: 1;
-        color: #fff;
+        color: #111827;
         margin-bottom: 6px;
     }
 
     .balance-amount .balance-currency {
         font-size: 1.1rem;
         font-weight: 600;
-        color: rgba(255,255,255,0.45);
+        color: #6b7280;
         letter-spacing: 0;
         margin-left: 4px;
         vertical-align: middle;
@@ -128,11 +125,11 @@
 
     .balance-ugx {
         font-size: 0.88rem;
-        color: rgba(255,255,255,0.45);
+        color: #6b7280;
         margin-bottom: 18px;
     }
 
-    .balance-ugx strong { color: rgba(255,255,255,0.7); }
+    .balance-ugx strong { color: #374151; }
 
     .balance-actions {
         display: flex;
@@ -145,11 +142,11 @@
         flex-direction: column;
         align-items: center;
         gap: 5px;
-        background: rgba(255,255,255,0.06);
-        border: 1px solid rgba(255,255,255,0.08);
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
         border-radius: 16px;
         padding: 12px 8px;
-        color: rgba(255,255,255,0.65);
+        color: #4b5563;
         text-decoration: none;
         font-size: 0.72rem;
         font-weight: 600;
@@ -161,33 +158,31 @@
     .bal-action-btn i { font-size: 1.1rem; }
 
     .bal-action-btn:hover:not(.muted) {
-        background: rgba(59,130,246,0.15);
+        background: rgba(59,130,246,0.08);
         border-color: rgba(59,130,246,0.3);
         color: var(--blue);
         transform: translateY(-2px);
     }
 
-    .bal-action-btn.muted { opacity: 0.4; cursor: not-allowed; }
+    .bal-action-btn.muted { opacity: 0.5; cursor: not-allowed; }
 
     .bal-action-btn.primary-action {
         background: linear-gradient(135deg, var(--blue), var(--indigo));
         border-color: transparent;
         color: #fff;
-        box-shadow: 0 8px 20px rgba(59,130,246,0.3);
+        box-shadow: 0 6px 14px rgba(59,130,246,0.25);
     }
 
     .bal-action-btn.primary-action:hover {
         transform: translateY(-2px);
-        box-shadow: 0 12px 28px rgba(59,130,246,0.4);
+        box-shadow: 0 10px 20px rgba(59,130,246,0.3);
         color: #fff;
-        border-color: transparent;
-        background: linear-gradient(135deg, var(--blue), var(--indigo));
     }
 
     .soon-tag {
         position: absolute;
         top: -6px; right: 6px;
-        background: var(--amber);
+        background: #f59e0b;
         color: #000;
         font-size: 0.55rem;
         font-weight: 800;
@@ -205,8 +200,8 @@
 
     .q-stat {
         flex: 1;
-        background: rgba(255,255,255,0.04);
-        border: 1px solid rgba(255,255,255,0.07);
+        background: rgba(255,255,255,0.7);
+        border: 1px solid #e2e8f0;
         border-radius: 18px;
         padding: 14px 10px;
         text-align: center;
@@ -216,22 +211,22 @@
     }
 
     .q-stat:hover {
-        background: rgba(59,130,246,0.08);
-        border-color: rgba(59,130,246,0.2);
+        background: #ffffff;
+        border-color: #cbd5e1;
         transform: translateY(-2px);
     }
 
     .q-stat-num {
         font-size: 1.4rem;
         font-weight: 800;
-        color: #fff;
+        color: #111827;
         line-height: 1;
         margin-bottom: 4px;
     }
 
     .q-stat-label {
         font-size: 0.7rem;
-        color: rgba(255,255,255,0.4);
+        color: #6b7280;
         font-weight: 500;
         text-transform: uppercase;
         letter-spacing: 0.5px;
@@ -245,7 +240,7 @@
         font-weight: 700;
         letter-spacing: 0.5px;
         text-transform: uppercase;
-        color: rgba(255,255,255,0.35);
+        color: #6b7280;
         margin-bottom: 12px;
         padding: 0 2px;
     }
@@ -275,7 +270,6 @@
         width: 64px; height: 64px;
     }
 
-    /* SVG ring sits behind avatar */
     .story-ring svg {
         position: absolute;
         inset: -3px;
@@ -287,8 +281,8 @@
         inset: 4px;
         border-radius: 50%;
         object-fit: cover;
-        background: var(--dark-700);
-        border: 2px solid var(--dark-900);
+        background: #f3f4f6;
+        border: 2px solid #ffffff;
         width: calc(100% - 8px);
         height: calc(100% - 8px);
     }
@@ -301,12 +295,13 @@
         background: linear-gradient(135deg, var(--blue), var(--indigo));
         display: flex; align-items: center; justify-content: center;
         font-size: 1.4rem;
-        border: 2px solid var(--dark-900);
+        border: 2px solid #ffffff;
+        color: white;
     }
 
     .story-name {
         font-size: 0.72rem;
-        color: rgba(255,255,255,0.55);
+        color: #4b5563;
         font-weight: 500;
         max-width: 64px;
         text-align: center;
@@ -324,10 +319,10 @@
 
     .mining-ring-active { animation: dashSpin 2s linear infinite; }
 
-    /* ── MINING STRIP ── */
+    /* ── MINING STRIP (light) ── */
     .mining-strip {
-        background: rgba(255,255,255,0.04);
-        border: 1px solid rgba(255,255,255,0.07);
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
         border-radius: 22px;
         padding: 16px 18px;
         display: flex;
@@ -337,11 +332,12 @@
         cursor: pointer;
         text-decoration: none;
         transition: all 0.2s;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.03);
     }
 
     .mining-strip:hover {
-        background: rgba(59,130,246,0.07);
-        border-color: rgba(59,130,246,0.2);
+        background: #f9fafb;
+        border-color: #cbd5e1;
         transform: translateY(-1px);
     }
 
@@ -356,18 +352,18 @@
 
     .mining-strip-icon.active {
         background: linear-gradient(135deg, var(--blue), var(--indigo));
-        box-shadow: 0 6px 18px rgba(59,130,246,0.35);
+        box-shadow: 0 6px 18px rgba(59,130,246,0.25);
         animation: iconPulse 2s ease infinite;
     }
 
     .mining-strip-icon.idle {
-        background: rgba(255,255,255,0.06);
-        color: rgba(255,255,255,0.3);
+        background: #f3f4f6;
+        color: #9ca3af;
     }
 
     @keyframes iconPulse {
-        0%, 100% { box-shadow: 0 6px 18px rgba(59,130,246,0.35); }
-        50%       { box-shadow: 0 6px 28px rgba(59,130,246,0.6); }
+        0%, 100% { box-shadow: 0 6px 18px rgba(59,130,246,0.25); }
+        50%       { box-shadow: 0 6px 28px rgba(59,130,246,0.4); }
     }
 
     .mining-strip-info { flex: 1; min-width: 0; }
@@ -375,7 +371,7 @@
     .mining-strip-title {
         font-size: 0.9rem;
         font-weight: 700;
-        color: #fff;
+        color: #111827;
         display: flex;
         align-items: center;
         gap: 8px;
@@ -384,7 +380,7 @@
     .mining-live-dot {
         width: 7px; height: 7px;
         border-radius: 50%;
-        background: var(--emerald);
+        background: #10b981;
         animation: liveDot 1.5s ease infinite;
         flex-shrink: 0;
     }
@@ -396,14 +392,14 @@
 
     .mining-strip-sub {
         font-size: 0.78rem;
-        color: rgba(255,255,255,0.4);
+        color: #6b7280;
         margin-top: 2px;
     }
 
     .mining-progress-bar {
         width: 100%;
         height: 4px;
-        background: rgba(255,255,255,0.07);
+        background: #e5e7eb;
         border-radius: 4px;
         margin-top: 8px;
         overflow: hidden;
@@ -411,15 +407,15 @@
 
     .mining-progress-fill {
         height: 100%;
-        background: linear-gradient(90deg, var(--blue), var(--cyan));
+        background: linear-gradient(90deg, var(--blue), #22d3ee);
         border-radius: 4px;
         transition: width 0.5s ease;
     }
 
     .mining-strip-toggle {
-        background: rgba(255,255,255,0.08);
-        border: 1px solid rgba(255,255,255,0.1);
-        color: rgba(255,255,255,0.7);
+        background: #f3f4f6;
+        border: 1px solid #e5e7eb;
+        color: #4b5563;
         font-family: 'Outfit', sans-serif;
         font-size: 0.8rem;
         font-weight: 700;
@@ -432,9 +428,9 @@
     }
 
     .mining-strip-toggle.active {
-        background: rgba(239,68,68,0.15);
+        background: rgba(239,68,68,0.1);
         border-color: rgba(239,68,68,0.3);
-        color: var(--rose);
+        color: #ef4444;
     }
 
     .mining-strip-toggle.idle {
@@ -443,18 +439,17 @@
         color: #fff;
     }
 
-    .mining-strip-toggle:hover { filter: brightness(1.15); }
+    .mining-strip-toggle:hover { filter: brightness(0.97); }
 
     /* ═══════════════════════════════════
-       LIGHT CONTENT ZONE
+       LIGHT CONTENT ZONE (no posts)
        ═══════════════════════════════════ */
     .content-zone {
-        background: var(--light-bg);
+        background: var(--bg);
         border-radius: 32px 32px 0 0;
         padding: 28px 20px 32px;
         flex: 1;
-        /* slight lift shadow at the seam */
-        box-shadow: 0 -8px 32px rgba(0,0,0,0.25);
+        box-shadow: 0 -4px 12px rgba(0,0,0,0.02);
         position: relative;
         margin-top: -4px;
     }
@@ -466,7 +461,7 @@
         top: 10px; left: 50%;
         transform: translateX(-50%);
         width: 36px; height: 4px;
-        background: rgba(0,0,0,0.12);
+        background: #d1d5db;
         border-radius: 4px;
     }
 
@@ -481,7 +476,7 @@
     .section-title {
         font-size: 1rem;
         font-weight: 800;
-        color: var(--light-text);
+        color: var(--text-main);
         letter-spacing: -0.3px;
     }
 
@@ -492,157 +487,53 @@
         text-decoration: none;
     }
 
-    /* ── FEED TABS ── */
+    /* ── FEED TABS (now only Activity & Updates) ── */
     .feed-tabs-row {
         display: flex;
-        gap: 0;
+        gap: 8px;
         margin-bottom: 20px;
-        background: #e8eef6;
+        background: #f1f5f9;
         border-radius: 14px;
         padding: 4px;
+        width: fit-content;
     }
 
     .feed-tab-btn {
-        flex: 1;
         background: none;
         border: none;
-        padding: 9px 12px;
+        padding: 9px 24px;
         border-radius: 11px;
         font-family: 'Outfit', sans-serif;
-        font-size: 0.82rem;
+        font-size: 0.85rem;
         font-weight: 600;
-        color: var(--light-dim);
+        color: #64748b;
         cursor: pointer;
         transition: all 0.22s;
-        white-space: nowrap;
     }
 
     .feed-tab-btn.active {
-        background: #fff;
-        color: var(--light-text);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        background: #ffffff;
+        color: #0f172a;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
-
-    /* ── POST CARD ── */
-    .post-card {
-        background: var(--light-card);
-        border-radius: 20px;
-        padding: 16px;
-        margin-bottom: 12px;
-        border: 1px solid var(--light-border);
-        box-shadow: var(--shadow-sm);
-        cursor: pointer;
-        transition: all 0.2s;
-        text-decoration: none;
-        display: block;
-        color: var(--light-text);
-    }
-
-    .post-card:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
-        color: var(--light-text);
-    }
-
-    .post-card-header {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 10px;
-    }
-
-    .post-card-avatar {
-        width: 38px; height: 38px;
-        border-radius: 14px;
-        object-fit: cover;
-        flex-shrink: 0;
-        border: 1.5px solid var(--light-border);
-    }
-
-    .post-card-meta { flex: 1; min-width: 0; }
-
-    .post-card-name {
-        font-size: 0.88rem;
-        font-weight: 700;
-        color: var(--light-text);
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-
-    .post-card-name .v-icon {
-        color: var(--blue);
-        font-size: 0.75rem;
-    }
-
-    .post-card-time {
-        font-size: 0.75rem;
-        color: var(--light-dim);
-        margin-top: 1px;
-    }
-
-    .hot-chip {
-        background: linear-gradient(135deg, #f97316, #dc2626);
-        color: #fff;
-        font-size: 0.65rem;
-        font-weight: 800;
-        padding: 3px 9px;
-        border-radius: 50px;
-        white-space: nowrap;
-    }
-
-    .post-card-body {
-        font-size: 0.9rem;
-        color: #374151;
-        line-height: 1.55;
-        margin-bottom: 10px;
-    }
-
-    .post-card-img {
-        width: 100%;
-        max-height: 220px;
-        object-fit: cover;
-        border-radius: 14px;
-        margin-bottom: 10px;
-        display: block;
-    }
-
-    .post-card-stats {
-        display: flex;
-        gap: 16px;
-        padding-top: 10px;
-        border-top: 1px solid var(--light-border);
-    }
-
-    .post-card-stats span {
-        font-size: 0.8rem;
-        color: var(--light-dim);
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        font-weight: 500;
-    }
-
-    .post-card-stats i { font-size: 0.85rem; }
 
     /* ── ACTIVITY CARD ── */
     .activity-card {
-        background: var(--light-card);
+        background: var(--card);
         border-radius: 18px;
         padding: 14px 16px;
         margin-bottom: 10px;
-        border: 1px solid var(--light-border);
+        border: 1px solid var(--card-border);
         cursor: pointer;
         transition: all 0.2s;
         display: block;
         text-decoration: none;
-        color: var(--light-text);
+        color: var(--text-main);
     }
 
     .activity-card:hover {
         transform: translateY(-1px);
-        box-shadow: var(--shadow-sm);
-        color: var(--light-text);
+        box-shadow: var(--shadow);
     }
 
     .activity-card-inner {
@@ -659,27 +550,27 @@
         font-size: 1rem;
     }
 
-    .icon-deposit  { background: rgba(16,185,129,0.1);  color: var(--emerald); }
-    .icon-transfer { background: rgba(59,130,246,0.1);  color: var(--blue);    }
-    .icon-withdraw { background: rgba(245,158,11,0.1);  color: var(--amber);   }
+    .icon-deposit  { background: rgba(16,185,129,0.1);  color: #10b981; }
+    .icon-transfer { background: rgba(59,130,246,0.1);  color: var(--blue); }
+    .icon-withdraw { background: rgba(245,158,11,0.1);  color: #f59e0b; }
 
     .activity-info { flex: 1; }
-    .activity-type  { font-size: 0.88rem; font-weight: 700; color: var(--light-text); }
-    .activity-time  { font-size: 0.75rem; color: var(--light-dim); margin-top: 2px; }
+    .activity-type  { font-size: 0.88rem; font-weight: 700; color: var(--text-main); }
+    .activity-time  { font-size: 0.75rem; color: var(--text-dim); margin-top: 2px; }
     .activity-amount {
         font-size: 0.95rem; font-weight: 800;
     }
 
-    .amount-positive { color: var(--emerald); }
-    .amount-neutral  { color: var(--amber); }
+    .amount-positive { color: #10b981; }
+    .amount-neutral  { color: #f59e0b; }
 
     /* ── UPDATE CARD ── */
     .update-card {
-        background: var(--light-card);
+        background: var(--card);
         border-radius: 18px;
         padding: 14px 16px;
         margin-bottom: 10px;
-        border: 1px solid var(--light-border);
+        border: 1px solid var(--card-border);
     }
 
     .update-card-inner {
@@ -696,18 +587,18 @@
         font-size: 0.95rem;
     }
 
-    .icon-announce { background: rgba(245,158,11,0.1);  color: var(--amber); }
-    .icon-feature  { background: rgba(139,92,246,0.1);  color: var(--violet); }
+    .icon-announce { background: rgba(245,158,11,0.1);  color: #f59e0b; }
+    .icon-feature  { background: rgba(139,92,246,0.1);  color: #8b5cf6; }
     .icon-info     { background: rgba(59,130,246,0.1);  color: var(--blue); }
 
-    .update-title  { font-size: 0.88rem; font-weight: 700; color: var(--light-text); }
-    .update-body   { font-size: 0.8rem; color: var(--light-dim); margin-top: 3px; line-height: 1.4; }
-    .update-time   { font-size: 0.72rem; color: #a0aec0; margin-top: 5px; }
+    .update-title  { font-size: 0.88rem; font-weight: 700; color: var(--text-main); }
+    .update-body   { font-size: 0.8rem; color: var(--text-dim); margin-top: 3px; line-height: 1.4; }
+    .update-time   { font-size: 0.72rem; color: #94a3b8; margin-top: 5px; }
 
-    /* ── FEATURED TASK ── */
+    /* ── FEATURED TASK (light themed) ── */
     .featured-task {
-        background: linear-gradient(135deg, #1e3a5f, #0f2744);
-        border: 1px solid rgba(59,130,246,0.25);
+        background: linear-gradient(135deg, #eef2ff, #ffffff);
+        border: 1px solid #cbd5e1;
         border-radius: 20px;
         padding: 18px;
         margin-top: 16px;
@@ -715,19 +606,18 @@
         transition: all 0.2s;
         text-decoration: none;
         display: block;
-        color: #fff;
+        color: #0f172a;
     }
 
     .featured-task:hover {
         transform: translateY(-2px);
-        box-shadow: 0 12px 32px rgba(59,130,246,0.2);
-        color: #fff;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.05);
     }
 
     .featured-task-badge {
         display: inline-block;
-        background: rgba(59,130,246,0.2);
-        border: 1px solid rgba(59,130,246,0.35);
+        background: rgba(59,130,246,0.1);
+        border: 1px solid rgba(59,130,246,0.2);
         color: var(--blue);
         font-size: 0.7rem;
         font-weight: 700;
@@ -736,11 +626,11 @@
         margin-bottom: 10px;
     }
 
-    /* ── GLOBAL STATS BAR ── */
+    /* ── GLOBAL STATS BAR (light) ── */
     .global-stats-bar {
         display: flex;
-        background: var(--light-card);
-        border: 1px solid var(--light-border);
+        background: var(--card);
+        border: 1px solid var(--card-border);
         border-radius: 20px;
         overflow: hidden;
         margin-top: 24px;
@@ -750,24 +640,24 @@
         flex: 1;
         padding: 14px 10px;
         text-align: center;
-        border-right: 1px solid var(--light-border);
+        border-right: 1px solid var(--card-border);
     }
 
     .g-stat:last-child { border-right: none; }
-    .g-stat-val { font-size: 0.95rem; font-weight: 800; color: var(--light-text); }
-    .g-stat-lbl { font-size: 0.68rem; color: var(--light-dim); font-weight: 500; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.3px; }
+    .g-stat-val { font-size: 0.95rem; font-weight: 800; color: var(--text-main); }
+    .g-stat-lbl { font-size: 0.68rem; color: var(--text-dim); font-weight: 500; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.3px; }
 
     /* ── EMPTY STATES ── */
     .empty-state {
         text-align: center;
         padding: 40px 20px;
-        color: var(--light-dim);
+        color: var(--text-dim);
     }
 
-    .empty-state i { font-size: 2rem; margin-bottom: 12px; display: block; opacity: 0.4; }
+    .empty-state i { font-size: 2rem; margin-bottom: 12px; display: block; opacity: 0.5; }
     .empty-state p { font-size: 0.88rem; margin-bottom: 16px; }
 
-    /* ── UNAUTHENTICATED HERO ── */
+    /* ── UNAUTHENTICATED HERO (light version) ── */
     .guest-hero {
         min-height: calc(100vh - 72px);
         display: flex;
@@ -776,13 +666,14 @@
         justify-content: center;
         padding: 40px 28px;
         text-align: center;
+        background: linear-gradient(135deg, #f8fafc, #eef2ff);
     }
 
     .guest-logo {
         font-size: 4rem;
         font-weight: 900;
         letter-spacing: -4px;
-        background: linear-gradient(135deg, #fff 30%, var(--blue));
+        background: linear-gradient(135deg, #1e293b, var(--blue));
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -791,7 +682,7 @@
 
     .guest-tagline {
         font-size: 1rem;
-        color: rgba(255,255,255,0.45);
+        color: #475569;
         margin-bottom: 36px;
         max-width: 260px;
         line-height: 1.5;
@@ -809,20 +700,20 @@
         font-size: 0.95rem;
         font-weight: 700;
         text-decoration: none;
-        box-shadow: var(--shadow-blue);
+        box-shadow: 0 8px 18px rgba(59,130,246,0.2);
         transition: all 0.2s;
     }
 
     .btn-primary-hero:hover {
         color: #fff;
         transform: translateY(-2px);
-        box-shadow: 0 16px 32px rgba(59,130,246,0.4);
+        box-shadow: 0 12px 24px rgba(59,130,246,0.3);
     }
 
     .btn-outline-hero {
-        background: rgba(255,255,255,0.07);
-        color: rgba(255,255,255,0.8);
-        border: 1.5px solid rgba(255,255,255,0.15);
+        background: rgba(0,0,0,0.02);
+        color: #1e293b;
+        border: 1.5px solid #cbd5e1;
         padding: 14px 32px;
         border-radius: 50px;
         font-family: 'Outfit', sans-serif;
@@ -833,8 +724,8 @@
     }
 
     .btn-outline-hero:hover {
-        background: rgba(255,255,255,0.12);
-        color: #fff;
+        background: #ffffff;
+        border-color: #94a3b8;
     }
 
     .features-grid {
@@ -846,23 +737,23 @@
     }
 
     .feature-tile {
-        background: rgba(255,255,255,0.04);
-        border: 1px solid rgba(255,255,255,0.07);
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
         border-radius: 20px;
         padding: 18px 10px;
         text-align: center;
     }
 
     .feature-tile i { font-size: 1.5rem; color: var(--blue); margin-bottom: 8px; display: block; }
-    .feature-tile h6 { font-size: 0.8rem; color: #fff; font-weight: 700; margin-bottom: 4px; }
-    .feature-tile small { font-size: 0.7rem; color: rgba(255,255,255,0.35); }
+    .feature-tile h6 { font-size: 0.8rem; color: #0f172a; font-weight: 700; margin-bottom: 4px; }
+    .feature-tile small { font-size: 0.7rem; color: #64748b; }
 </style>
 {% endblock %}
 
 {% block content %}
 {% if not user.is_authenticated %}
 
-<!-- ═══ GUEST HERO ═══ -->
+<!-- ═══ GUEST HERO (light) ═══ -->
 <div class="guest-hero">
     <div class="guest-logo">NUSU.</div>
     <p class="guest-tagline">The social finance platform where you earn while connecting.</p>
@@ -893,10 +784,10 @@
 
 {% else %}
 
-<!-- ═══ AUTHENTICATED HOME ═══ -->
+<!-- ═══ AUTHENTICATED HOME (no posts) ═══ -->
 <div class="home-wrap">
 
-    <!-- ───── DARK HERO ZONE ───── -->
+    <!-- ───── LIGHT HERO ZONE ───── -->
     <div class="hero-zone">
 
         <!-- Greeting -->
@@ -986,7 +877,7 @@
                             </defs>
                             {% else %}
                             <circle cx="35" cy="35" r="31"
-                                    fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="3"
+                                    fill="none" stroke="rgba(0,0,0,0.08)" stroke-width="3"
                                     stroke-dasharray="4 4"/>
                             {% endif %}
                         </svg>
@@ -1068,66 +959,17 @@
     </div><!-- /hero-zone -->
 
 
-    <!-- ───── LIGHT CONTENT ZONE ───── -->
+    <!-- ───── LIGHT CONTENT ZONE (no posts) ───── -->
     <div class="content-zone">
 
-        <!-- Feed Tabs -->
+        <!-- Tabs (only Activity & Updates) -->
         <div class="feed-tabs-row" role="tablist">
-            <button class="feed-tab-btn active" onclick="switchTab('trending', this)" role="tab">🔥 Trending</button>
-            <button class="feed-tab-btn"         onclick="switchTab('activity',  this)" role="tab">📊 Activity</button>
-            <button class="feed-tab-btn"         onclick="switchTab('updates',   this)" role="tab">📢 Updates</button>
-        </div>
-
-        <!-- ── TRENDING ── -->
-        <div id="tab-trending" class="tab-pane">
-            {% if trending_posts %}
-                {% for post in trending_posts %}
-                <a class="post-card" href="{% url 'social:post_detail' post.id %}">
-                    <div class="post-card-header">
-                        <img src="{% if post.user.userprofile.profile_picture %}{{ post.user.userprofile.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ post.user.username|first }}&background=3b82f6&color=fff&size=38{% endif %}"
-                             class="post-card-avatar"
-                             onerror="this.src='https://ui-avatars.com/api/?name={{ post.user.username|first }}&background=3b82f6&color=fff&size=38'">
-                        <div class="post-card-meta">
-                            <div class="post-card-name">
-                                {{ post.user.userprofile.display_name|default:post.user.username }}
-                                {% if post.user.userprofile.verified %}<i class="fas fa-circle-check v-icon"></i>{% endif %}
-                            </div>
-                            <div class="post-card-time">@{{ post.user.username }} · {{ post.created_at|timesince }} ago</div>
-                        </div>
-                        {% if post.likes_count > 50 %}
-                        <span class="hot-chip">🔥 Hot</span>
-                        {% endif %}
-                    </div>
-
-                    {% if post.content %}
-                    <div class="post-card-body">{{ post.content|truncatechars:120 }}</div>
-                    {% endif %}
-
-                    {% if post.media_items.first %}
-                    <img src="{{ post.media_items.first.url }}"
-                         class="post-card-img"
-                         loading="lazy"
-                         alt="Post media">
-                    {% endif %}
-
-                    <div class="post-card-stats">
-                        <span><i class="fas fa-heart" style="color:var(--rose);"></i> {{ post.likes_count }}</span>
-                        <span><i class="fas fa-comment" style="color:var(--blue);"></i> {{ post.replies_count }}</span>
-                        <span><i class="fas fa-eye" style="color:var(--light-dim);"></i> {{ post.views_count }}</span>
-                    </div>
-                </a>
-                {% endfor %}
-            {% else %}
-            <div class="empty-state">
-                <i class="fas fa-fire"></i>
-                <p>No trending posts yet.</p>
-                <a href="{% url 'social:feed' %}" class="btn btn-primary btn-sm rounded-pill px-4">Explore Feed</a>
-            </div>
-            {% endif %}
+            <button class="feed-tab-btn active" onclick="switchTab('activity', this)" role="tab">📊 Activity</button>
+            <button class="feed-tab-btn"         onclick="switchTab('updates',  this)" role="tab">📢 Updates</button>
         </div>
 
         <!-- ── ACTIVITY ── -->
-        <div id="tab-activity" class="tab-pane" style="display:none;">
+        <div id="tab-activity" class="tab-pane">
             {% if recent_transactions %}
                 {% for tx in recent_transactions %}
                 <a href="{% url 'transactions:transaction_detail' tx.id %}" class="activity-card">
@@ -1200,10 +1042,10 @@
                 <span class="featured-task-badge">⚡ Featured Task</span>
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <h6 class="mb-0 fw-bold">{{ featured_task.name }}</h6>
-                    <span style="color:var(--emerald);font-weight:800;font-size:0.95rem;">+{{ featured_task.points_reward }} NSU</span>
+                    <span style="color:#10b981;font-weight:800;font-size:0.95rem;">+{{ featured_task.points_reward }} NSU</span>
                 </div>
-                <p style="font-size:0.85rem;color:rgba(255,255,255,0.55);margin:0 0 10px;">{{ featured_task.description|truncatechars:80 }}</p>
-                <div style="font-size:0.78rem;color:rgba(255,255,255,0.35);">
+                <p style="font-size:0.85rem;color:#475569;margin:0 0 10px;">{{ featured_task.description|truncatechars:80 }}</p>
+                <div style="font-size:0.78rem;color:#64748b;">
                     <i class="fas fa-users me-1"></i>{{ featured_task.participants_count }} completed
                     <span class="ms-3" style="color:var(--blue);">Join now <i class="fas fa-arrow-right ms-1"></i></span>
                 </div>
@@ -1252,7 +1094,7 @@
 
 {% block extra_scripts %}
 <script>
-/* ── Tab switching ── */
+/* ── Tab switching (only Activity & Updates) ── */
 function switchTab(name, btn) {
     document.querySelectorAll('.tab-pane').forEach(p => p.style.display = 'none');
     document.querySelectorAll('.feed-tab-btn').forEach(b => b.classList.remove('active'));
@@ -1302,7 +1144,6 @@ function refreshStats() {
         set('tokenBalance',   d.token_balance != null ? parseFloat(d.token_balance).toFixed(2) : '');
         set('ugxBalance',     d.ugx_balance   != null ? 'UGX ' + parseFloat(d.ugx_balance).toFixed(2) : '');
         if (d.mining) {
-            set('miningProgress', ''); // handled via style below
             const bar = document.getElementById('miningProgress');
             if (bar) bar.style.width = (d.mining.progress_percentage || 0) + '%';
         }
