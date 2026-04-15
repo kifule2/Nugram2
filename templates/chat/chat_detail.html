@@ -1,4 +1,4 @@
-<!-- templates/chat/chat_detail.html - Final with ticks -->
+<!-- templates/chat/chat_detail.html - Final with ticks and fixed input obstruction -->
 {% extends 'base.html' %}
 {% load static %}
 
@@ -20,6 +20,7 @@ body.chat-page .main-content {
     height: 100vh;
     background: var(--gray);
     overflow: hidden;
+    position: relative;
 }
 
 .chat-detail-header {
@@ -317,7 +318,7 @@ body.chat-page .main-content {
     transform: scale(1.05);
 }
 
-/* Chat Input Area */
+/* Chat Input Area - Fixed for empty chat */
 .chat-input-area {
     padding: 16px 20px;
     border-top: 1px solid rgba(255,255,255,0.1);
@@ -326,6 +327,9 @@ body.chat-page .main-content {
     align-items: flex-end;
     background: var(--gray);
     flex-shrink: 0;
+    position: relative;
+    z-index: 10;
+    margin-bottom: 70px;
 }
 
 .chat-input-area textarea {
@@ -378,6 +382,13 @@ body.chat-page .main-content {
     text-align: center;
     padding: 40px;
     color: var(--text-dim);
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .chat-input-area {
+        margin-bottom: 80px;
+    }
 }
 </style>
 {% endblock %}
@@ -491,6 +502,19 @@ document.body.classList.remove('feed-page');
     }
 })();
 
+function adjustForEmptyChat() {
+    const container = document.getElementById('messagesContainer');
+    const inputArea = document.querySelector('.chat-input-area');
+    if (container && inputArea) {
+        const hasMessages = container.querySelectorAll('.message').length > 0;
+        if (!hasMessages && container.innerText.includes('No messages yet')) {
+            inputArea.style.marginBottom = '80px';
+        } else {
+            inputArea.style.marginBottom = '70px';
+        }
+    }
+}
+
 // Load messages
 async function loadMessages() {
     try {
@@ -511,6 +535,7 @@ async function loadMessages() {
         } else {
             container.innerHTML = '<div class="loading-indicator"><i class="fas fa-comment-dots" style="font-size: 2rem; margin-bottom: 12px; display: block;"></i><p>No messages yet</p><small>Send a message to start the conversation</small></div>';
         }
+        adjustForEmptyChat();
     } catch (error) {
         console.error('Failed to load messages:', error);
         document.getElementById('messagesContainer').innerHTML = `
@@ -520,6 +545,7 @@ async function loadMessages() {
                 <button class="btn btn-primary btn-sm mt-2" onclick="location.reload()">Retry</button>
             </div>
         `;
+        adjustForEmptyChat();
     }
 }
 
@@ -602,7 +628,6 @@ function getStatusIcon(status, isPending) {
     if (isPending) {
         return `<span class="sending-indicator"><i class="fas fa-circle"></i> Sending...</span>`;
     }
-    // Ensure status is one of the expected values
     switch(status) {
         case 'sent':
             return `<span class="message-status status-sent"><i class="fas fa-check"></i></span>`;
@@ -611,7 +636,6 @@ function getStatusIcon(status, isPending) {
         case 'read':
             return `<span class="message-status status-read"><i class="fas fa-check-double"></i></span>`;
         default:
-            // Fallback: show grey single tick
             return `<span class="message-status status-sent"><i class="fas fa-check"></i></span>`;
     }
 }

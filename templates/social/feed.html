@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{% load social_filters %}
 
 {% block title %}{{ feed_title }} - NUSU Social{% endblock %}
 
@@ -40,6 +41,16 @@
         left: 0;
     }
     
+    .post-image {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        position: absolute;
+        top: 0;
+        left: 0;
+        background: #000;
+    }
+    
     .text-post-container {
         width: 100%;
         height: 100%;
@@ -55,11 +66,78 @@
         padding: 40px;
         text-align: center;
         font-weight: bold;
-        line-height: 1.4;
+        line-height: 1.5;
         color: white;
         text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        font-size: 1.8rem;
+        font-size: 1.6rem;
         z-index: 2;
+        max-height: 80vh;
+        overflow-y: auto;
+        scrollbar-width: thin;
+    }
+    
+    .text-post-content::-webkit-scrollbar {
+        width: 3px;
+    }
+    
+    .text-post-content::-webkit-scrollbar-track {
+        background: rgba(255,255,255,0.1);
+        border-radius: 10px;
+    }
+    
+    .text-post-content::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.3);
+        border-radius: 10px;
+    }
+    
+    /* Link styles */
+    .text-post-content a,
+    .caption a {
+        color: #3b82f6 !important;
+        text-decoration: none;
+        border-bottom: 1px solid rgba(59,130,246,0.3);
+        font-weight: 600;
+        word-break: break-all;
+    }
+    
+    .text-post-content a:hover,
+    .caption a:hover {
+        border-bottom-color: #3b82f6;
+    }
+    
+    /* Make sure links are visible on dark backgrounds */
+    .text-post-content a {
+        text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+    }
+    
+    .see-more-btn {
+        background: rgba(255,255,255,0.2);
+        border: none;
+        color: white;
+        font-size: 0.8rem;
+        padding: 5px 12px;
+        border-radius: 20px;
+        cursor: pointer;
+        margin-top: 15px;
+        display: inline-block;
+        backdrop-filter: blur(5px);
+        transition: all 0.2s;
+    }
+    
+    .see-more-btn:hover {
+        background: rgba(59,130,246,0.6);
+        transform: scale(1.05);
+    }
+    
+    .full-text {
+        display: none;
+    }
+    
+    .text-post-content .short-text,
+    .text-post-content .full-text {
+        display: block;
+        word-wrap: break-word;
+        white-space: pre-wrap;
     }
     
     @keyframes gradientShift {
@@ -481,19 +559,29 @@
             {% if post.post_type == 'text' %}
                 <div class="text-post-container 
                     {% if post.background_template and post.background_template.css_class %}{{ post.background_template.css_class }}{% else %}gradient-sunset{% endif %}">
-                    <div class="text-post-content">{{ post.content|linebreaksbr }}</div>
+                    <div class="text-post-content" id="text-content-{{ post.id }}">
+                        {% with content=post.content|linebreaksbr|linkify %}
+                            {% if post.content|length > 300 %}
+                                <span class="short-text">{{ content|truncatechars_html:300 }}</span>
+                                <span class="full-text" style="display: none;">{{ content }}</span>
+                                <button class="see-more-btn" onclick="toggleTextContent({{ post.id }}, event)">See more</button>
+                            {% else %}
+                                {{ content }}
+                            {% endif %}
+                        {% endwith %}
+                    </div>
                 </div>
             {% elif post.media_items.all %}
                 {% with media=post.media_items.first %}
-                    {% if media.is_video %}
+                    {% if media.media_type == 'video' %}
                         <video class="post-video" autoplay loop muted playsinline preload="auto" data-post-id="{{ post.id }}">
                             <source src="{{ media.url }}" type="video/mp4">
                         </video>
                         <div class="video-progress">
                             <div class="video-progress-bar" id="progress-{{ post.id }}"></div>
                         </div>
-                    {% elif media.is_image %}
-                        <img src="{{ media.url }}" class="post-video" alt="Post image">
+                    {% elif media.media_type == 'image' %}
+                        <img src="{{ media.url }}" class="post-image" alt="Post image">
                     {% endif %}
                 {% endwith %}
             {% endif %}
@@ -521,12 +609,12 @@
                     @{{ post.user.username }}
                     {% if post.user.userprofile.verified %}<i class="fas fa-check-circle verified"></i>{% endif %}
                 </a>
-                {% if post.content %}
-                <div class="caption">{{ post.content|truncatechars:120 }}</div>
+                {% if post.content and post.post_type != 'text' %}
+                <div class="caption">{{ post.content|linkify|truncatechars_html:120 }}</div>
                 {% endif %}
                 <div class="audio">
                     <i class="fas fa-music"></i>
-                    {{ post.song_name }}
+                    {{ post.song_name|default:"Original Audio" }}
                 </div>
             </div>
         </div>
@@ -564,6 +652,28 @@
     const feedTabs = document.getElementById('feedTabs');
     const createBtn = document.getElementById('createBtn');
 
+    // Toggle text content (See more / See less)
+    function toggleTextContent(postId, event) {
+        event.stopPropagation();
+        const container = document.getElementById(`text-content-${postId}`);
+        if (!container) return;
+        const shortText = container.querySelector('.short-text');
+        const fullText = container.querySelector('.full-text');
+        const btn = container.querySelector('.see-more-btn');
+        
+        if (fullText && shortText && btn) {
+            if (fullText.style.display === 'none' || fullText.style.display === '') {
+                shortText.style.display = 'none';
+                fullText.style.display = 'block';
+                btn.textContent = 'See less';
+            } else {
+                shortText.style.display = 'block';
+                fullText.style.display = 'none';
+                btn.textContent = 'See more';
+            }
+        }
+    }
+
     // Scroll functions
     function scrollUp() { feed.scrollBy({ top: -window.innerHeight, behavior: 'smooth' }); }
     function scrollDown() { feed.scrollBy({ top: window.innerHeight, behavior: 'smooth' }); }
@@ -572,7 +682,6 @@
     function hideFeedChrome() {
         if (feedTabs) feedTabs.classList.add('chrome-hidden');
         if (createBtn) createBtn.classList.add('chrome-hidden');
-        // Also hide the main chrome if NusuChrome is available
         if (window.NusuChrome) {
             window.NusuChrome.hide();
         }
@@ -582,7 +691,6 @@
     function showFeedChrome() {
         if (feedTabs) feedTabs.classList.remove('chrome-hidden');
         if (createBtn) createBtn.classList.remove('chrome-hidden');
-        // Also show the main chrome if NusuChrome is available
         if (window.NusuChrome) {
             window.NusuChrome.show();
         }
@@ -593,41 +701,32 @@
         const currentScroll = feed.scrollTop;
         const delta = currentScroll - lastScrollTop;
         
-        // Show chrome when at top or scrolling up significantly
         if (currentScroll <= 30) {
             showFeedChrome();
         } 
-        // Hide when scrolling down and not at top
         else if (delta > 8 && currentScroll > 80) {
             hideFeedChrome();
         }
-        // Show when scrolling up significantly
         else if (delta < -10) {
             showFeedChrome();
         }
         
         lastScrollTop = currentScroll;
         
-        // Clear previous timeout
         if (scrollTimeout) clearTimeout(scrollTimeout);
-        
-        // Auto-show after user stops scrolling for 1 second
         scrollTimeout = setTimeout(() => {
             if (feed.scrollTop <= 100) {
                 showFeedChrome();
             }
         }, 1000);
         
-        // Load more posts
         if (feed.scrollTop + feed.clientHeight >= feed.scrollHeight - 500) {
             loadMore();
         }
     }
 
-    // Attach scroll event
     feed.addEventListener('scroll', handleFeedScroll);
 
-    // Also listen for touch events on mobile for smoother experience
     let touchStartY = 0;
     feed.addEventListener('touchstart', (e) => {
         touchStartY = e.touches[0].clientY;
@@ -637,17 +736,14 @@
         const touchEndY = e.touches[0].clientY;
         const deltaY = touchEndY - touchStartY;
         
-        // Scrolling up (showing chrome)
         if (deltaY > 10 && feed.scrollTop > 30) {
             showFeedChrome();
         }
-        // Scrolling down (hiding chrome)
         else if (deltaY < -10 && feed.scrollTop > 80) {
             hideFeedChrome();
         }
     });
 
-    // Keyboard
     window.addEventListener('keydown', (e) => {
         if (e.key === 'ArrowDown') { e.preventDefault(); scrollDown(); }
         if (e.key === 'ArrowUp') { e.preventDefault(); scrollUp(); }
@@ -692,7 +788,6 @@
 
     document.querySelectorAll('.post').forEach(p => videoObserver.observe(p));
 
-    // Like
     function likePost(postId, el) {
         fetch(`/social/post/${postId}/like/`, {
             method: 'POST',
@@ -706,7 +801,6 @@
         });
     }
 
-    // Save
     function savePost(postId, el) {
         fetch(`/social/api/save/${postId}/`, {
             method: 'POST',
@@ -719,7 +813,6 @@
         });
     }
 
-    // Menu
     function toggleMenu(event, postId) {
         event.stopPropagation();
         const menu = document.getElementById(`menu-${postId}`);
@@ -734,7 +827,6 @@
         setTimeout(() => document.addEventListener('click', close), 10);
     }
 
-    // Delete
     function deletePost(postId) {
         postToDelete = postId;
         document.getElementById('deleteModal').classList.add('show');
@@ -760,13 +852,19 @@
         });
     }
 
-    // Download
     function downloadPost(postId) {
         const video = document.querySelector(`[data-post-id="${postId}"] video`);
+        const img = document.querySelector(`[data-post-id="${postId}"] .post-image`);
         if (video && video.src) {
             const a = document.createElement('a');
             a.href = video.src;
-            a.download = `nusu_${postId}.mp4`;
+            a.download = `nusu_video_${postId}.mp4`;
+            a.click();
+            showToast('Download started');
+        } else if (img && img.src) {
+            const a = document.createElement('a');
+            a.href = img.src;
+            a.download = `nusu_image_${postId}.jpg`;
             a.click();
             showToast('Download started');
         } else {
@@ -780,7 +878,6 @@
         else { navigator.clipboard.writeText(url); showToast('Link copied'); }
     }
 
-    // Comments
     function openComments(postId) {
         currentPostId = postId;
         document.getElementById('modalOverlay').style.display = 'block';
@@ -890,6 +987,7 @@
         div.className = 'post';
         div.dataset.postId = post.id;
         const isVideo = post.media?.type === 'video';
+        const isImage = post.media?.type === 'image';
         div.innerHTML = `
             <div class="post-header">
                 <div class="post-user-info">
@@ -911,9 +1009,14 @@
                     <source src="${post.media.url}" type="video/mp4">
                 </video>
                 <div class="video-progress"><div class="video-progress-bar" id="progress-${post.id}"></div></div>
+            ` : isImage ? `
+                <img src="${post.media.url}" class="post-image" alt="Post image">
             ` : `
                 <div class="text-post-container gradient-sunset">
-                    <div class="text-post-content">${post.content || ''}</div>
+                    <div class="text-post-content" id="text-content-${post.id}">
+                        <span class="short-text">${(post.content || '').substring(0, 300)}${(post.content || '').length > 300 ? '...' : ''}</span>
+                        ${(post.content || '').length > 300 ? `<span class="full-text" style="display: none;">${post.content}</span><button class="see-more-btn" onclick="toggleTextContent(${post.id}, event)">See more</button>` : ''}
+                    </div>
                 </div>
             `}
             <div class="action-buttons">
@@ -924,12 +1027,12 @@
             </div>
             <div class="post-info">
                 <a href="/users/profile/${post.author.username}/" class="username">@${post.author.username}</a>
-                ${post.content ? `<div class="caption">${post.content.substring(0, 120)}</div>` : ''}
+                ${post.content && !isVideo && !isImage ? `<div class="caption">${post.content.substring(0, 120)}${post.content.length > 120 ? '...' : ''}</div>` : ''}
                 <div class="audio"><i class="fas fa-music"></i>${post.song_name || 'Original Audio'}</div>
             </div>
         `;
         container.insertBefore(div, loader);
-        videoObserver.observe(div);
+        if (isVideo) videoObserver.observe(div);
     }
     
     function showToast(msg, type = 'success') {
@@ -941,7 +1044,6 @@
         setTimeout(() => toast.remove(), 2500);
     }
     
-    // Close dropdown on scroll
     feed.addEventListener('scroll', () => {
         document.querySelectorAll('.dropdown-menu-custom.show').forEach(m => m.classList.remove('show'));
     });
