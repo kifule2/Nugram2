@@ -1,0 +1,26 @@
+# leapcell.yml
+name: nusu-app
+mode: serverless
+runtime: python311
+
+build:
+  command: pip install -r requirements.txt
+
+start:
+  command: gunicorn nusu.wsgi:application --bind 0.0.0.0:8080
+  port: 8080
+
+env:
+  - name: DJANGO_DEBUG
+    value: "False"
+  - name: DJANGO_SECRET_KEY
+    generate: true  # Leapcell will generate one automatically
+
+addons:
+  - postgresql
+  - redis
+
+hooks:
+  post_deploy:
+    - python manage.py migrate --noinput
+    - python manage.py collectstatic --noinput
