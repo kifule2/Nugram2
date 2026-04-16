@@ -5,740 +5,672 @@
 
 {% block extra_css %}
 <style>
-
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-
-    body {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-        padding: 20px;
-        padding-bottom: 100px;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    }
-
-    .create-post-container {
+    .create-container {
         max-width: 600px;
-        margin: 20px auto 100px;
-        background: white;
-        border-radius: 32px;
-        padding: 32px;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        margin: 0 auto;
+        padding: 20px;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea, #764ba2);
     }
-
-    h2 {
-        color: #1e293b;
-        font-weight: 800;
-        margin-bottom: 28px;
-        text-align: center;
-        font-size: 2rem;
+    
+    .create-card {
+        background: rgba(255,255,255,0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 20px;
     }
-
-    h2 span {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-
+    
     .post-type-selector {
         display: flex;
-        gap: 12px;
-        margin-bottom: 30px;
-        background: #f1f5f9;
-        padding: 6px;
-        border-radius: 60px;
+        gap: 10px;
+        margin-bottom: 20px;
     }
-
+    
     .post-type-btn {
         flex: 1;
-        padding: 14px;
+        padding: 12px;
+        background: rgba(255,255,255,0.1);
         border: none;
-        border-radius: 60px;
-        font-weight: 700;
+        border-radius: 10px;
+        color: white;
         cursor: pointer;
-        transition: all 0.3s;
-        background: transparent;
-        color: #64748b;
-        font-size: 1rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
+        font-weight: bold;
+        transition: all 0.2s;
     }
-
+    
     .post-type-btn.active {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        box-shadow: 0 10px 25px -5px rgba(102, 126, 234, 0.4);
+        background: #fe2c55;
     }
-
-    #textPostSection { display: block; }
-    #mediaPostSection { display: none; }
-
-    .form-label {
-        font-weight: 700;
-        color: #1e293b;
-        margin-bottom: 10px;
-        font-size: 0.95rem;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .form-label i { color: #667eea; }
-
-    textarea.form-control {
-        border-radius: 20px;
-        border: 2px solid #e2e8f0;
-        padding: 16px;
-        resize: none;
-        font-size: 1rem;
-        transition: all 0.3s;
-        background: #f8fafc;
+    
+    #content {
         width: 100%;
-        font-family: inherit;
-    }
-
-    textarea.form-control:focus {
-        outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
-        background: white;
-    }
-
-    .char-count {
-        float: right;
-        font-size: 0.8rem;
-        color: #64748b;
-        margin-top: 8px;
-        font-weight: 600;
-        background: #f1f5f9;
-        padding: 4px 12px;
-        border-radius: 20px;
-    }
-
-    .upload-area {
-        border: 3px dashed #667eea;
-        border-radius: 28px;
-        padding: 50px 20px;
-        text-align: center;
-        cursor: pointer;
-        transition: all 0.3s;
-        background: #f8fafc;
-        margin-bottom: 20px;
-    }
-    .upload-area:hover {
-        background: #e2e8f0;
-        border-color: #764ba2;
-        transform: translateY(-5px);
-    }
-    .upload-area i {
-        font-size: 4rem;
-        color: #667eea;
-        margin-bottom: 20px;
-    }
-    .upload-area p {
-        color: #1e293b;
-        margin-bottom: 8px;
-        font-weight: 700;
-        font-size: 1.2rem;
-    }
-    .upload-area small {
-        color: #64748b;
-        font-size: 0.85rem;
-    }
-
-    .media-preview {
-        margin-top: 20px;
-        display: none;
-        border-radius: 20px;
-        overflow: hidden;
-        background: #000;
-    }
-    .media-preview img, .media-preview video {
-        width: 100%;
-        max-height: 400px;
-        object-fit: contain;
-        background: #000;
-    }
-
-    .publish-btn {
-        width: 100%;
-        padding: 18px;
+        min-height: 120px;
+        background: rgba(255,255,255,0.1);
         border: none;
-        border-radius: 60px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 10px;
+        padding: 15px;
         color: white;
-        font-weight: 800;
-        font-size: 1.1rem;
+        font-size: 16px;
+        resize: vertical;
+    }
+    
+    #content::placeholder {
+        color: rgba(255,255,255,0.5);
+    }
+    
+    .file-picker-btn {
+        width: 100%;
+        padding: 15px;
+        background: #3b82f6;
+        color: white;
+        border: none;
+        border-radius: 50px;
         cursor: pointer;
-        transition: all 0.3s;
-        margin: 30px 0 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 12px;
+        font-weight: bold;
+        margin-top: 15px;
+        font-size: 16px;
     }
-    .publish-btn:hover:not(:disabled) {
-        transform: translateY(-3px);
-        box-shadow: 0 20px 40px -12px rgba(102, 126, 234, 0.5);
+    
+    .file-preview-modal {
+        margin-top: 15px;
+        display: none;
     }
-    .publish-btn:disabled {
-        background: #94a3b8;
-        cursor: not-allowed;
-        opacity: 0.6;
+    
+    .file-preview-modal.active {
+        display: block;
     }
-
-    .back-btn {
-        position: fixed;
-        top: 20px;
-        left: 20px;
-        width: 52px;
-        height: 52px;
+    
+    .thumbnail-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 10px;
+        max-height: 300px;
+        overflow-y: auto;
+        margin-top: 10px;
+    }
+    
+    .thumbnail-item {
+        position: relative;
+        border-radius: 10px;
+        overflow: hidden;
+        aspect-ratio: 1;
+        cursor: pointer;
+        background: #1a1a1a;
+    }
+    
+    .thumbnail-item img, .thumbnail-item video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .thumbnail-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0,0,0,0.7);
+        color: white;
+        font-size: 10px;
+        padding: 4px;
+        text-align: center;
+    }
+    
+    .remove-file {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background: rgba(0,0,0,0.7);
+        color: white;
+        border: none;
         border-radius: 50%;
-        background: white;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-        color: #1e293b;
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
+        z-index: 10;
+    }
+    
+    .remove-file:hover {
+        background: #fe2c55;
+    }
+    
+    .trim-controls {
+        background: rgba(0,0,0,0.5);
+        border-radius: 10px;
+        padding: 15px;
+        margin-top: 15px;
+        display: none;
+    }
+    
+    .trim-controls.active {
+        display: block;
+    }
+    
+    .trim-slider {
+        width: 100%;
+        margin: 10px 0;
+    }
+    
+    .template-selector {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: 10px;
+        margin-top: 10px;
+    }
+    
+    .template-option {
+        background: rgba(255,255,255,0.1);
+        border-radius: 10px;
+        padding: 8px;
         cursor: pointer;
-        z-index: 1000;
-        text-decoration: none;
-        transition: all 0.3s;
-        font-size: 1.3rem;
+        text-align: center;
+        transition: all 0.2s;
     }
-    .back-btn:hover {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-        transform: scale(1.1);
+    
+    .template-option.selected {
+        background: #fe2c55;
+        transform: scale(1.05);
     }
-
-    .toast-message {
-        position: fixed;
-        bottom: 100px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: #1e293b;
-        color: white;
-        padding: 14px 28px;
-        border-radius: 60px;
-        z-index: 4000;
-        animation: slideUp 0.3s ease;
-        font-weight: 600;
+    
+    .template-preview {
+        width: 100%;
+        height: 60px;
+        border-radius: 8px;
+        margin-bottom: 5px;
+    }
+    
+    .style-options {
+        margin-top: 15px;
+        padding: 15px;
+        background: rgba(0,0,0,0.3);
+        border-radius: 10px;
+    }
+    
+    .style-row {
         display: flex;
-        align-items: center;
-        gap: 12px;
-        white-space: nowrap;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        gap: 10px;
+        margin-bottom: 10px;
     }
-    @keyframes slideUp {
-        from { transform: translate(-50%, 100%); opacity: 0; }
-        to { transform: translate(-50%, 0); opacity: 1; }
+    
+    .style-row select, .style-row input {
+        flex: 1;
+        padding: 8px;
+        border-radius: 8px;
+        background: rgba(0,0,0,0.5);
+        border: none;
+        color: white;
     }
-
-    .loading-overlay {
+    
+    .submit-btn {
+        width: 100%;
+        padding: 15px;
+        background: #fe2c55;
+        color: white;
+        border: none;
+        border-radius: 50px;
+        cursor: pointer;
+        font-weight: bold;
+        margin-top: 20px;
+        font-size: 18px;
+    }
+    
+    .submit-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .progress-overlay {
         position: fixed;
         top: 0;
         left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.95);
-        backdrop-filter: blur(20px);
-        z-index: 3000;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.95);
+        z-index: 1000;
         display: none;
-        justify-content: center;
-        align-items: center;
         flex-direction: column;
-        color: white;
+        align-items: center;
+        justify-content: center;
     }
-    .loading-spinner {
-        width: 80px;
-        height: 80px;
-        border: 4px solid rgba(255, 255, 255, 0.1);
-        border-top-color: #667eea;
-        border-right-color: #764ba2;
+    
+    .progress-bar {
+        width: 300px;
+        height: 30px;
+        background: #333;
+        border-radius: 15px;
+        overflow: hidden;
+        margin-top: 20px;
+    }
+    
+    .progress-fill {
+        width: 0%;
+        height: 100%;
+        background: linear-gradient(90deg, #fe2c55, #ff6b6b);
+        transition: width 0.3s;
+    }
+    
+    .spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid #333;
+        border-top: 4px solid #fe2c55;
         border-radius: 50%;
         animation: spin 1s linear infinite;
-        margin-bottom: 30px;
     }
+    
     @keyframes spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
     }
-    .progress-container {
-        width: 80%;
-        max-width: 350px;
-        margin: 25px 0;
-    }
-    .progress-bar-bg {
-        width: 100%;
-        height: 8px;
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 10px;
-        overflow: hidden;
-    }
-    .progress-bar-fill {
-        height: 100%;
-        background: linear-gradient(90deg, #667eea, #764ba2);
-        border-radius: 10px;
-        width: 0%;
-        transition: width 0.3s ease;
-    }
-    .progress-percentage {
-        font-size: 1.8rem;
-        font-weight: 800;
-        margin-top: 15px;
-        color: #667eea;
-    }
-
-    @media (max-width: 768px) {
-        body { padding: 10px; }
-        .create-post-container { padding: 24px; margin: 10px auto 90px; }
-        h2 { font-size: 1.6rem; }
-        .back-btn { top: 10px; left: 10px; width: 45px; height: 45px; }
-        .toast-message { white-space: normal; text-align: center; max-width: 90%; }
-    }
-
-    /* Keep all existing styles, add these new ones */
     
-    .trim-controls, .audio-controls {
-        background: #f1f5f9;
-        padding: 16px;
-        border-radius: 20px;
-        margin: 15px 0;
+    .back-btn {
+        display: inline-block;
+        margin-bottom: 20px;
+        color: white;
+        text-decoration: none;
+        background: rgba(0,0,0,0.5);
+        padding: 8px 16px;
+        border-radius: 30px;
     }
     
-    .trim-inputs {
-        display: flex;
-        gap: 12px;
-        margin-top: 10px;
+    .back-btn:hover {
+        background: rgba(0,0,0,0.7);
+        color: white;
     }
-    
-    .trim-input {
-        flex: 1;
-    }
-    
-    .trim-input label {
-        font-size: 0.75rem;
-        color: #64748b;
-        margin-bottom: 4px;
-        display: block;
-    }
-    
-    .trim-input input {
-        width: 100%;
-        padding: 8px 12px;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        font-size: 0.85rem;
-    }
-    
-    .checkbox-label {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        cursor: pointer;
-        padding: 12px;
-        background: #f8fafc;
-        border-radius: 12px;
-        margin: 10px 0;
-    }
-    
-    .checkbox-label input {
-        width: 18px;
-        height: 18px;
-        cursor: pointer;
-    }
-    
-    .video-duration-info {
-        font-size: 0.75rem;
-        color: #64748b;
-        margin-top: 8px;
-        text-align: center;
-    }
-    
-    /* Keep all other existing styles from your original */
 </style>
 {% endblock %}
 
 {% block content %}
-<a href="{% url 'social:feed' %}" class="back-btn">
-    <i class="fas fa-arrow-left"></i>
-</a>
-
-<!-- Loading Overlay -->
-<div class="loading-overlay" id="loadingOverlay">
-    <div class="loading-spinner"></div>
-    <div class="loading-message" id="loadingMessage">Uploading...</div>
-    <div class="progress-container">
-        <div class="progress-bar-bg">
-            <div class="progress-bar-fill" id="progressBarFill"></div>
+<div class="create-container">
+    <a href="{% url 'social:feed' %}" class="back-btn">← Back to Feed</a>
+    
+    <div class="create-card">
+        <h2 style="margin-bottom: 20px;">Create Post</h2>
+        
+        <div class="post-type-selector">
+            <button type="button" class="post-type-btn" data-type="text">📝 Text</button>
+            <button type="button" class="post-type-btn active" data-type="media">📷 Media</button>
+            <button type="button" class="post-type-btn" data-type="mixed">✨ Mixed</button>
         </div>
-        <div class="progress-percentage" id="progressPercentage">0%</div>
+        
+        <textarea id="content" placeholder="What's on your mind?"></textarea>
+        
+        <button class="file-picker-btn" id="uploadBtn">📁 Select Media</button>
+        <input type="file" id="fileInput" accept="video/*,image/*,audio/*" style="display: none;" multiple>
+        
+        <div class="file-preview-modal" id="filePreviewModal">
+            <div class="thumbnail-grid" id="thumbnailGrid"></div>
+        </div>
+        
+        <div class="trim-controls" id="trimControls">
+            <h4>✂️ Trim Video</h4>
+            <label>Start: <span id="startVal">0.0</span>s</label>
+            <input type="range" id="trimStart" class="trim-slider" step="0.1" min="0" value="0">
+            <label>End: <span id="endVal">0.0</span>s</label>
+            <input type="range" id="trimEnd" class="trim-slider" step="0.1" min="0" value="0">
+        </div>
+        
+        <div id="textOptions" style="display: none;">
+            <div class="style-options">
+                <h4>🎨 Background Template</h4>
+                <div class="template-selector" id="templateSelector"></div>
+                
+                <div class="style-row">
+                    <select id="textAlignment">
+                        <option value="left">Left</option>
+                        <option value="center" selected>Center</option>
+                        <option value="right">Right</option>
+                    </select>
+                    <input type="color" id="textColor" value="#ffffff">
+                </div>
+                
+                <select id="textFont" style="width:100%; padding:8px; border-radius:8px;">
+                    <option value="default">Default Font</option>
+                    <option value="bold">Bold</option>
+                    <option value="handwriting">Handwriting</option>
+                </select>
+                
+                <input type="text" id="songName" placeholder="Song name" value="Original Audio" style="width:100%; margin-top:10px; padding:8px; border-radius:8px; background:rgba(0,0,0,0.5); border:none; color:white;">
+            </div>
+        </div>
+        
+        <button class="submit-btn" id="submitBtn">🚀 Post</button>
     </div>
-    <div class="loading-submessage" id="loadingSubmessage">Please wait...</div>
 </div>
 
-<div class="create-post-container">
-    <h2>Create <span>Post</span></h2>
-    
-    <!-- Post Type Selector -->
-    <div class="post-type-selector">
-        <button class="post-type-btn active" id="textPostBtn">
-            <i class="fas fa-font"></i> Text
-        </button>
-        <button class="post-type-btn" id="mediaPostBtn">
-            <i class="fas fa-image"></i> Image/Video
-        </button>
+<div class="progress-overlay" id="progressOverlay">
+    <div class="spinner"></div>
+    <h3>Uploading to Cloudinary...</h3>
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
     </div>
-
-    <!-- TEXT POST SECTION -->
-    <div id="textPostSection">
-        <div class="mb-3">
-            <label class="form-label"><i class="fas fa-pen-fancy"></i> Your Message</label>
-            <textarea class="form-control" rows="3" id="postText" placeholder="What's on your mind?" maxlength="500"></textarea>
-            <div class="char-count"><span id="charCount">0</span>/500 characters</div>
-        </div>
-        <button class="publish-btn" id="publishTextBtn">
-            <i class="fas fa-paper-plane"></i> Publish Text Post
-        </button>
-    </div>
-
-    <!-- MEDIA POST SECTION -->
-    <div id="mediaPostSection" style="display: none;">
-        <div class="mb-3">
-            <label class="form-label"><i class="fas fa-cloud-upload-alt"></i> Select Video</label>
-            <div class="upload-area" id="uploadArea">
-                <i class="fas fa-cloud-upload-alt"></i>
-                <p>Click to upload or drag and drop</p>
-                <small>Videos: MP4, WebM, MOV (Max 100MB)</small>
-            </div>
-            <input type="file" id="mediaInput" accept="video/*" style="display: none;">
-        </div>
-
-        <!-- Video Preview -->
-        <div class="media-preview" id="mediaPreview">
-            <video id="previewVideo" controls style="display: none; width: 100%;"></video>
-        </div>
-
-        <!-- Video Duration Info -->
-        <div class="video-duration-info" id="durationInfo" style="display: none;">
-            <i class="fas fa-clock"></i> Duration: <span id="videoDuration">0</span> seconds
-        </div>
-
-        <!-- Trim Controls -->
-        <div class="trim-controls" id="trimControls" style="display: none;">
-            <label class="form-label"><i class="fas fa-cut"></i> Trim Video (Optional)</label>
-            <div class="trim-inputs">
-                <div class="trim-input">
-                    <label>Start Time (seconds)</label>
-                    <input type="number" id="startTime" min="0" step="0.5" value="0">
-                </div>
-                <div class="trim-input">
-                    <label>End Time (seconds)</label>
-                    <input type="number" id="endTime" min="0" step="0.5" placeholder="End">
-                </div>
-            </div>
-        </div>
-
-        <!-- Audio Controls -->
-        <div class="audio-controls" id="audioControls" style="display: none;">
-            <label class="checkbox-label">
-                <input type="checkbox" id="muteAudio">
-                <span><i class="fas fa-volume-mute"></i> Mute audio</span>
-            </label>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label"><i class="fas fa-caption"></i> Caption (Optional)</label>
-            <textarea class="form-control" rows="2" id="mediaCaption" placeholder="Add a caption..." maxlength="500"></textarea>
-        </div>
-
-        <button class="publish-btn" id="publishMediaBtn" disabled>
-            <i class="fas fa-upload"></i> Upload Video
-        </button>
-    </div>
+    <div class="progress-text" id="progressText">Preparing upload...</div>
 </div>
 
 <script>
-// CSRF Token
-function getCookie(name) {
-    let value = "; " + document.cookie;
-    let parts = value.split("; " + name + "=");
-    if (parts.length == 2) return parts.pop().split(";").shift();
-}
-const csrftoken = getCookie('csrftoken');
-
-// DOM elements
-const textPostSection = document.getElementById('textPostSection');
-const mediaPostSection = document.getElementById('mediaPostSection');
-const textPostBtn = document.getElementById('textPostBtn');
-const mediaPostBtn = document.getElementById('mediaPostBtn');
-const publishTextBtn = document.getElementById('publishTextBtn');
-const publishMediaBtn = document.getElementById('publishMediaBtn');
-const uploadArea = document.getElementById('uploadArea');
-const mediaInput = document.getElementById('mediaInput');
-const mediaPreview = document.getElementById('mediaPreview');
-const previewVideo = document.getElementById('previewVideo');
-const mediaCaption = document.getElementById('mediaCaption');
-const postText = document.getElementById('postText');
-const charCount = document.getElementById('charCount');
-const startTimeInput = document.getElementById('startTime');
-const endTimeInput = document.getElementById('endTime');
-const muteAudioCheckbox = document.getElementById('muteAudio');
-const trimControls = document.getElementById('trimControls');
-const audioControls = document.getElementById('audioControls');
-const durationInfo = document.getElementById('durationInfo');
-const videoDurationSpan = document.getElementById('videoDuration');
-
-let selectedVideoFile = null;
-let videoDuration = 0;
-
-// Tab switching
-function showTextPost() {
-    textPostSection.style.display = 'block';
-    mediaPostSection.style.display = 'none';
-    textPostBtn.classList.add('active');
-    mediaPostBtn.classList.remove('active');
-}
-
-function showMediaPost() {
-    textPostSection.style.display = 'none';
-    mediaPostSection.style.display = 'block';
-    mediaPostBtn.classList.add('active');
-    textPostBtn.classList.remove('active');
-}
-
-textPostBtn.onclick = showTextPost;
-mediaPostBtn.onclick = showMediaPost;
-
-// Character count for text post
-postText.oninput = () => {
-    charCount.innerText = postText.value.length;
-};
-
-// Text post submission
-publishTextBtn.onclick = async () => {
-    const content = postText.value.trim();
-    if (!content) {
-        showToast('Please enter some text', 'error');
-        return;
-    }
-    showLoading('Creating text post...');
-    try {
-        const res = await fetch('{% url "social:create_post" %}', {
-            method: 'POST',
-            headers: { 'X-CSRFToken': csrftoken, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content })
+    // EXACT pattern from working feed app
+    const fileInput = document.getElementById('fileInput');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const thumbnailGrid = document.getElementById('thumbnailGrid');
+    const filePreviewModal = document.getElementById('filePreviewModal');
+    const trimControls = document.getElementById('trimControls');
+    const trimStart = document.getElementById('trimStart');
+    const trimEnd = document.getElementById('trimEnd');
+    const startVal = document.getElementById('startVal');
+    const endVal = document.getElementById('endVal');
+    const submitBtn = document.getElementById('submitBtn');
+    const progressOverlay = document.getElementById('progressOverlay');
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+    const contentField = document.getElementById('content');
+    
+    let selectedFiles = [];
+    let currentFile = null;
+    let objectUrl = null;
+    let currentVideoDuration = 0;
+    
+    // Post type selection
+    const postTypeBtns = document.querySelectorAll('.post-type-btn');
+    const textOptions = document.getElementById('textOptions');
+    
+    postTypeBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            postTypeBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            const type = btn.dataset.type;
+            if (type === 'text') {
+                textOptions.style.display = 'block';
+                filePreviewModal.classList.remove('active');
+                contentField.placeholder = "What's on your mind?";
+                contentField.required = true;
+            } else if (type === 'media') {
+                textOptions.style.display = 'none';
+                contentField.placeholder = "Add a caption (optional)";
+                contentField.required = false;
+            } else {
+                textOptions.style.display = 'block';
+                contentField.placeholder = "What's on your mind? (optional)";
+                contentField.required = false;
+            }
         });
-        const data = await res.json();
-        hideLoading();
-        if (data.status === 'success') {
-            showToast('Post created!');
-            setTimeout(() => window.location.href = data.redirect_url || '{% url "social:feed" %}', 1000);
-        } else {
-            showToast(data.message || 'Error creating post', 'error');
-        }
-    } catch (error) {
-        hideLoading();
-        showToast('Network error', 'error');
-    }
-};
-
-// Video file handling
-function handleVideoFile(file) {
-    if (!file.type.startsWith('video/')) {
-        showToast('Please select a video file', 'error');
-        return;
-    }
+    });
     
-    if (file.size > 100 * 1024 * 1024) {
-        showToast('Video too large (max 100MB)', 'error');
-        return;
-    }
-    
-    selectedVideoFile = file;
-    
-    // Preview video
-    const url = URL.createObjectURL(file);
-    previewVideo.style.display = 'block';
-    previewVideo.src = url;
-    mediaPreview.style.display = 'block';
-    
-    // Get video duration
-    previewVideo.onloadedmetadata = () => {
-        videoDuration = previewVideo.duration;
-        videoDurationSpan.textContent = videoDuration.toFixed(1);
-        durationInfo.style.display = 'block';
-        trimControls.style.display = 'block';
-        audioControls.style.display = 'block';
-        
-        // Set max values for trim inputs
-        startTimeInput.max = videoDuration;
-        endTimeInput.max = videoDuration;
-        endTimeInput.placeholder = videoDuration.toFixed(1);
-        
-        publishMediaBtn.disabled = false;
+    // Upload button
+    uploadBtn.onclick = () => {
+        fileInput.click();
     };
     
-    publishMediaBtn.disabled = true; // Wait for metadata
-}
-
-// File picker
-uploadArea.onclick = () => mediaInput.click();
-mediaInput.onchange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-        handleVideoFile(e.target.files[0]);
-    }
-    mediaInput.value = '';
-};
-
-// Drag and drop
-uploadArea.ondragover = (e) => { e.preventDefault(); uploadArea.style.background = '#e2e8f0'; };
-uploadArea.ondragleave = (e) => { e.preventDefault(); uploadArea.style.background = '#f8fafc'; };
-uploadArea.ondrop = (e) => {
-    e.preventDefault();
-    uploadArea.style.background = '#f8fafc';
-    const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith('video/')) {
-        handleVideoFile(file);
-    } else {
-        showToast('Please drop a video file', 'error');
-    }
-};
-
-// Validate trim inputs
-startTimeInput.onchange = () => {
-    let start = parseFloat(startTimeInput.value);
-    let end = endTimeInput.value ? parseFloat(endTimeInput.value) : videoDuration;
-    
-    if (start < 0) startTimeInput.value = 0;
-    if (start >= videoDuration) startTimeInput.value = videoDuration - 1;
-    
-    if (endTimeInput.value && parseFloat(endTimeInput.value) > videoDuration) {
-        endTimeInput.value = videoDuration;
-    }
-    if (endTimeInput.value && parseFloat(endTimeInput.value) <= start) {
-        endTimeInput.value = start + 1;
-    }
-};
-
-endTimeInput.onchange = () => {
-    let end = parseFloat(endTimeInput.value);
-    let start = parseFloat(startTimeInput.value);
-    
-    if (end > videoDuration) endTimeInput.value = videoDuration;
-    if (end <= start) endTimeInput.value = start + 1;
-};
-
-// Video upload submission with Cloudinary-only processing
-publishMediaBtn.onclick = async () => {
-    if (!selectedVideoFile) return;
-    
-    showLoading('Uploading to Cloudinary...');
-    
-    const formData = new FormData();
-    formData.append('video', selectedVideoFile);
-    formData.append('content', mediaCaption.value);
-    
-    // Add trim parameters if specified
-    let startTime = parseFloat(startTimeInput.value);
-    let endTime = endTimeInput.value ? parseFloat(endTimeInput.value) : null;
-    
-    if (startTime > 0) {
-        formData.append('start_time', startTime);
-    }
-    if (endTime && endTime < videoDuration) {
-        formData.append('end_time', endTime);
-    }
-    
-    // Add mute audio if checked
-    if (muteAudioCheckbox.checked) {
-        formData.append('mute_audio', 'true');
-    }
-    
-    // Simulate upload progress
-    let progress = 0;
-    const progressInterval = setInterval(() => {
-        progress += 5;
-        if (progress <= 90) {
-            document.getElementById('progressBarFill').style.width = progress + '%';
-            document.getElementById('progressPercentage').innerText = progress + '%';
-        }
-    }, 500);
-    
-    try {
-        const res = await fetch('{% url "social:process_video_vp9" %}', {
-            method: 'POST',
-            headers: { 'X-CSRFToken': csrftoken },
-            body: formData
+    // Generate thumbnail (from feed app)
+    function generateThumbnail(file) {
+        return new Promise((resolve) => {
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.readAsDataURL(file);
+            } else if (file.type.startsWith('video/')) {
+                const video = document.createElement('video');
+                const url = URL.createObjectURL(file);
+                video.src = url;
+                video.currentTime = 1;
+                video.addEventListener('loadeddata', () => {
+                    setTimeout(() => {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = 200;
+                        canvas.height = 200;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                        const thumbnail = canvas.toDataURL('image/jpeg', 0.5);
+                        URL.revokeObjectURL(url);
+                        resolve(thumbnail);
+                    }, 100);
+                });
+            } else {
+                resolve(null);
+            }
         });
+    }
+    
+    // Update thumbnail grid (from feed app)
+    async function updateThumbnailGrid() {
+        if (selectedFiles.length === 0) {
+            thumbnailGrid.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">No files selected</div>';
+            filePreviewModal.classList.remove('active');
+            return;
+        }
         
-        clearInterval(progressInterval);
-        document.getElementById('progressBarFill').style.width = '100%';
-        document.getElementById('progressPercentage').innerText = '100%';
+        filePreviewModal.classList.add('active');
+        thumbnailGrid.innerHTML = '';
         
-        const data = await res.json();
-        
-        if (data.success) {
-            document.getElementById('loadingMessage').innerText = 'Processing complete!';
-            document.getElementById('loadingSubmessage').innerHTML = 'Redirecting...';
-            showToast('Video uploaded! VP9 conversion in progress.', 'success');
+        for (let i = 0; i < Math.min(selectedFiles.length, 12); i++) {
+            const file = selectedFiles[i];
+            const thumbnail = await generateThumbnail(file);
+            const fileSizeMB = (file.size / (1024 * 1024)).toFixed(1);
             
-            // Store media ID for status checking
-            if (data.media_id) {
-                sessionStorage.setItem('lastUploadedMediaId', data.media_id);
+            const thumbnailItem = document.createElement('div');
+            thumbnailItem.className = 'thumbnail-item';
+            
+            if (thumbnail) {
+                thumbnailItem.innerHTML = `
+                    <img src="${thumbnail}" alt="${file.name}">
+                    <div class="thumbnail-overlay">
+                        ${file.type.split('/')[0]} • ${fileSizeMB}MB
+                    </div>
+                    <button class="remove-file" data-index="${i}">✕</button>
+                `;
+            } else {
+                thumbnailItem.innerHTML = `
+                    <div style="background: #333; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 30px;">
+                        🎵
+                    </div>
+                    <div class="thumbnail-overlay">
+                        Audio • ${fileSizeMB}MB
+                    </div>
+                    <button class="remove-file" data-index="${i}">✕</button>
+                `;
             }
             
-            setTimeout(() => {
-                window.location.href = data.redirect_url || '{% url "social:feed" %}';
-            }, 1500);
-        } else {
-            hideLoading();
-            showToast(data.error || 'Upload failed', 'error');
+            thumbnailItem.onclick = (function(f) {
+                return function(e) {
+                    if (e.target.classList.contains('remove-file')) return;
+                    currentFile = f;
+                    objectUrl = URL.createObjectURL(f);
+                    showPreview(f);
+                };
+            })(file);
+            
+            thumbnailGrid.appendChild(thumbnailItem);
         }
-    } catch (error) {
-        clearInterval(progressInterval);
-        hideLoading();
-        console.error('Upload error:', error);
-        showToast('Network error during upload', 'error');
+        
+        // Add remove handlers
+        document.querySelectorAll('.remove-file').forEach(btn => {
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                const index = parseInt(btn.dataset.index);
+                selectedFiles.splice(index, 1);
+                updateThumbnailGrid();
+                if (selectedFiles.filter(f => f.type.startsWith('video/')).length === 0) {
+                    trimControls.classList.remove('active');
+                }
+            };
+        });
     }
-};
-
-// Loading functions
-function showLoading(message) {
-    const overlay = document.getElementById('loadingOverlay');
-    document.getElementById('loadingMessage').innerText = message || 'Processing...';
-    document.getElementById('loadingSubmessage').innerText = 'Please wait...';
-    document.getElementById('progressBarFill').style.width = '0%';
-    document.getElementById('progressPercentage').innerText = '0%';
-    overlay.style.display = 'flex';
-}
-
-function hideLoading() {
-    document.getElementById('loadingOverlay').style.display = 'none';
-}
-
-function showToast(message, type = 'success') {
-    document.querySelectorAll('.toast-message').forEach(t => t.remove());
-    const toast = document.createElement('div');
-    toast.className = 'toast-message';
-    toast.innerHTML = `${type === 'success' ? '✅' : '❌'} ${message}`;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
-}
-
-// Initialize
-document.addEventListener('DOMContentLoaded', function() {
-    mediaPreview.style.display = 'none';
-    publishMediaBtn.disabled = true;
-    trimControls.style.display = 'none';
-    audioControls.style.display = 'none';
-    durationInfo.style.display = 'none';
-});
+    
+    // Show preview (from feed app)
+    function showPreview(file) {
+        if (file.type.startsWith('video/')) {
+            const video = document.createElement('video');
+            video.src = objectUrl;
+            video.controls = true;
+            video.style.maxWidth = '100%';
+            video.style.maxHeight = '300px';
+            
+            video.onloadedmetadata = () => {
+                currentVideoDuration = video.duration;
+                trimStart.max = video.duration;
+                trimEnd.max = video.duration;
+                trimEnd.value = video.duration;
+                endVal.textContent = video.duration.toFixed(1);
+                trimControls.classList.add('active');
+            };
+            
+            // Show in a modal or alert - for simplicity, just activate trim
+            alert(`Video loaded: ${file.name}\nDuration: ${(video.duration || 0).toFixed(1)}s\nYou can now set trim points below.`);
+        }
+    }
+    
+    // File input change (from feed app)
+    fileInput.onchange = function() {
+        const files = Array.from(this.files);
+        const remaining = 4 - selectedFiles.length;
+        const newFiles = files.slice(0, remaining);
+        
+        // Filter by size
+        const validFiles = newFiles.filter(f => (f.size / (1024 * 1024)) <= 90);
+        
+        if (validFiles.length < newFiles.length) {
+            alert('Some files exceed 90MB limit and were skipped');
+        }
+        
+        selectedFiles = [...selectedFiles, ...validFiles];
+        updateThumbnailGrid();
+        fileInput.value = '';
+    };
+    
+    // Trim controls
+    trimStart.oninput = () => {
+        startVal.textContent = parseFloat(trimStart.value).toFixed(1);
+    };
+    
+    trimEnd.oninput = () => {
+        endVal.textContent = parseFloat(trimEnd.value).toFixed(1);
+    };
+    
+    // Get CSRF token (from feed app)
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    // Submit post (EXACT pattern from feed app)
+    submitBtn.onclick = async () => {
+        const activeType = document.querySelector('.post-type-btn.active').dataset.type;
+        const content = contentField.value.trim();
+        
+        // Validate
+        if (activeType === 'text' && !content) {
+            alert('Please enter text content');
+            return;
+        }
+        
+        if (activeType === 'media' && selectedFiles.length === 0) {
+            alert('Please select media files');
+            return;
+        }
+        
+        // Use first file if multiple
+        const fileToUpload = selectedFiles[0];
+        
+        if (!fileToUpload && activeType !== 'text') {
+            alert('No file selected');
+            return;
+        }
+        
+        const formData = new FormData();
+        formData.append('content', content);
+        formData.append('post_type', activeType);
+        formData.append('text_alignment', document.getElementById('textAlignment').value);
+        formData.append('text_color', document.getElementById('textColor').value);
+        formData.append('text_font', document.getElementById('textFont').value);
+        formData.append('song_name', document.getElementById('songName').value);
+        formData.append('background_template', '');
+        formData.append('trim_start', trimStart.value);
+        formData.append('trim_end', trimEnd.value);
+        
+        if (fileToUpload) {
+            formData.append('file_data', fileToUpload);
+            formData.append('file_name', fileToUpload.name);
+            formData.append('file_type', fileToUpload.type);
+        }
+        
+        // Show progress
+        progressOverlay.style.display = 'flex';
+        submitBtn.disabled = true;
+        
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+            if (progress < 90) {
+                progress += Math.random() * 10;
+                if (progress > 90) progress = 90;
+                progressFill.style.width = progress + '%';
+                progressText.textContent = `Uploading... ${Math.floor(progress)}%`;
+            }
+        }, 200);
+        
+        try {
+            const response = await fetch('{% url "social:create_post" %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            });
+            
+            clearInterval(progressInterval);
+            
+            const data = await response.json();
+            
+            if (data.success || data.status === 'success') {
+                progressFill.style.width = '100%';
+                progressText.textContent = 'Complete! Redirecting...';
+                
+                setTimeout(() => {
+                    window.location.href = data.redirect_url || '{% url "social:feed" %}';
+                }, 500);
+            } else {
+                throw new Error(data.error || 'Upload failed');
+            }
+        } catch (error) {
+            clearInterval(progressInterval);
+            progressOverlay.style.display = 'none';
+            submitBtn.disabled = false;
+            alert('Error: ' + error.message);
+        }
+    };
+    
+    // Load templates
+    fetch('{% url "social:get_templates" %}')
+        .then(r => r.json())
+        .then(data => {
+            const container = document.getElementById('templateSelector');
+            if (data.templates && data.templates.length) {
+                data.templates.forEach(t => {
+                    const div = document.createElement('div');
+                    div.className = 'template-option';
+                    div.innerHTML = `
+                        <div class="template-preview" style="background: ${t.gradient_css || '#333'};"></div>
+                        <div style="font-size: 11px;">${t.name}</div>
+                    `;
+                    div.onclick = () => {
+                        document.querySelectorAll('.template-option').forEach(opt => opt.classList.remove('selected'));
+                        div.classList.add('selected');
+                    };
+                    container.appendChild(div);
+                });
+            }
+        });
 </script>
 {% endblock %}
