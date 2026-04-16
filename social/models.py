@@ -520,7 +520,10 @@ class Follow(models.Model):
         return f"{self.follower.username} follows {self.following.username}"
 
 
+# social/models.py - Update the existing Notification model
+
 class Notification(models.Model):
+    """Social notifications for interactions"""
     NOTIFICATION_TYPES = [
         ('like', '❤️ Liked your post'),
         ('repost', '🔄 Reposted your post'),
@@ -528,12 +531,15 @@ class Notification(models.Model):
         ('follow', '👤 Followed you'),
         ('mention', '@ Mentioned you'),
         ('post', '📝 New post from someone you follow'),
+        ('chat_message', '💬 New message'),  # ADD THIS
     ]
     
     recipient = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='social_notifications')
-    sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='sent_notifications')
-    notification_type = models.CharField(max_length=10, choices=NOTIFICATION_TYPES)
+    sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='sent_notifications', null=True, blank=True)
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
     post = models.ForeignKey(Post, on_delete=models.CASCADE, null=True, blank=True)
+    chat_id = models.IntegerField(null=True, blank=True)  # ADD THIS for chat notifications
+    message = models.TextField(blank=True, null=True)  # ADD THIS for custom message
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     
@@ -545,6 +551,8 @@ class Notification(models.Model):
         ]
     
     def __str__(self):
+        if self.notification_type == 'chat_message':
+            return f"Chat message for {self.recipient.username}"
         return f"{self.sender.username} {self.get_notification_type_display()}"
 
 

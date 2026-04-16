@@ -1232,3 +1232,374 @@ from django.db.models import Q
 from users.models import CustomUser
 @login_required
 def search_users_api(request):
+
+=== chat/forms.py ===
+from django import forms
+from .models import Chat, ChatMessage
+class CreateChatForm(forms.Form):
+username = forms.CharField(max_length=150, required=True)
+initial_message = forms.CharField(widget=forms.Textarea, required=False)
+class SendMessageForm(forms.Form):
+content = forms.CharField(max_length=2000, required=False)
+message_type = forms.CharField(max_length=10, required=False)
+voice_note = forms.FileField(required=False)
+voice_duration = forms.IntegerField(required=False, min_value=0)
+def clean(self):
+cleaned_data = super().clean()
+content = cleaned_data.get('content')
+voice_note = cleaned_data.get('voice_note')
+message_type = cleaned_data.get('message_type', 'text')
+if message_type == 'text' and not content:
+raise forms.ValidationError("Message content is required")
+if message_type == 'voice' and not voice_note:
+raise forms.ValidationError("Voice note file is required")
+return cleaned_data
+class AddParticipantForm(forms.Form):
+username = forms.CharField(max_length=150, required=True)
+message = forms.CharField(widget=forms.Textarea, required=False)
+class ConvertToGroupForm(forms.Form):
+group_name = forms.CharField(max_length=200, required=True)
+message = forms.CharField(widget=forms.Textarea, required=False)
+
+=== chat/models.py ===
+from django.db import models
+from django.utils import timezone
+from users.models import CustomUser
+from cloudinary.models import CloudinaryField
+class Chat(models.Model):
+CHAT_TYPES = [
+('dm', 'Direct Message'),
+('group', 'Group Chat'),
+]
+chat_type = models.CharField(max_length=10, choices=CHAT_TYPES, default='dm')
+name = models.CharField(max_length=200, blank=True, null=True)
+created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='created_chats')
+participants = models.ManyToManyField(CustomUser, related_name='chats')
+admins = models.ManyToManyField(CustomUser, related_name='admin_chats', blank=True)
+created_at = models.DateTimeField(auto_now_add=True)
+updated_at = models.DateTimeField(auto_now=True)
+is_active = models.BooleanField(default=True)
+last_message = models.TextField(blank=True, null=True)
+last_message_time = models.DateTimeField(null=True, blank=True)
+last_message_sender = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='last_message_in_chat')
+models.Index(fields=['updated_at']),
+models.Index(fields=['chat_type']),
+]
+if self.name:
+return self.name
+if self.chat_type == 'dm':
+other_users = self.participants.exclude(id=self.created_by.id)
+if other_users.exists():
+return f"DM: {other_users.first().username}"
+return f"Chat {self.id}"
+def get_display_name(self, user):
+if self.chat_type == 'dm':
+other = self.participants.exclude(id=user.id).first()
+if other and hasattr(other, 'userprofile') and other.userprofile.profile_picture:
+return other.userprofile.profile_picture.url
+return None
+@property
+def participant_count(self):
+return self.participants.count()
+def add_participant(self, user, added_by=None):
+if user in self.participants.all():
+if user in self.admins.all() and self.admins.count() == 1:
+return False
+self.participants.remove(user)
+if user in self.admins.all():
+self.admins.remove(user)
+ChatMessage.objects.create(
+chat=self,
+sender=removed_by or self.created_by,
+message_type='system',
+content=f"{user.userprofile.display_name or user.username} was removed from the chat"
+)
+return True
+return False
+class ChatMessage(models.Model):
+MESSAGE_TYPES = [
+('text', 'Text'),
+('voice', 'Voice Note'),
+('system', 'System Message'),
+]
+chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name='messages')
+sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='sent_messages')
+message_type = models.CharField(max_length=10, default='text')
+content = models.TextField(blank=True)
+voice_note = CloudinaryField(
+'voice_note',
+blank=True,
+null=True,
+resource_type='video',
+folder='chat/voice_notes/'
+)
+voice_duration = models.IntegerField(null=True, blank=True)
+read_by = models.ManyToManyField(CustomUser, related_name='read_messages', blank=True)
+created_at = models.DateTimeField(auto_now_add=True)
+is_deleted = models.BooleanField(default=False)
+models.Index(fields=['chat', '-created_at']),
+models.Index(fields=['sender', '-created_at']),
+]
+return f"{self.sender.username}: {self.content[:50]}" if self.content else "Voice note"
+def mark_as_read(self, user):
+return self.read_by.count() == self.chat.participants.exclude(id=self.sender.id).count()
+def get_voice_url(self):
+self.status = 'accepted'
+self.responded_at = timezone.now()
+self.save()
+if self.request_type == 'add_to_group':
+self.chat.add_participant(self.target_user, self.requester)
+elif self.request_type == 'convert_to_group':
+self.chat.chat_type = 'group'
+self.chat.name = self.message or f"Group with {self.chat.participants.count()} members"
+self.chat.save()
+ChatMessage.objects.create(
+chat=self.chat,
+sender=self.requester,
+message_type='system',
+content=f"Chat converted to group by {self.requester.userprofile.display_name or self.requester.username}"
+)
+return True
+def reject(self):
+
+=== chat/urls.py ===
+from django.urls import path
+from . import views
+app_name = 'chat'
+urlpatterns = [
+path('', views.chat_list, name='chat_list'),
+path('api/list/', views.chat_list_api, name='chat_list_api'),
+path('<int:chat_id>/', views.chat_detail, name='chat_detail'),
+path('<int:chat_id>/api/', views.chat_messages_api, name='chat_messages_api'),
+path('create/', views.create_chat, name='create_chat'),
+path('<int:chat_id>/send/', views.send_message, name='send_message'),
+path('<int:chat_id>/add-participant/', views.add_participant, name='add_participant'),
+path('<int:chat_id>/convert-to-group/', views.convert_to_group, name='convert_to_group'),
+path('<int:chat_id>/leave/', views.leave_chat, name='leave_chat'),
+path('requests/', views.get_requests, name='get_requests'),
+path('requests/<int:request_id>/respond/', views.respond_to_request, name='respond_to_request'),
+]
+
+=== chat/views.py ===
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST, require_GET
+from django.views.decorators.csrf import csrf_exempt
+from django.db.models import Q, Max, F
+from django.core.paginator import Paginator
+from django.utils import timezone
+import cloudinary.uploader
+import json
+import logging
+from .models import Chat, ChatMessage, ChatRequest
+from .forms import CreateChatForm, SendMessageForm, AddParticipantForm, ConvertToGroupForm
+from users.models import CustomUser
+from users.models import Notification
+logger = logging.getLogger(__name__)
+@login_required
+def chat_list(request):
+chats = Chat.objects.filter(
+participants=request.user,
+is_active=True
+)
+total_unread = 0
+chats_data = []
+for chat in chats:
+unread = chat.messages.filter(
+~Q(read_by=request.user),
+~Q(sender=request.user),
+is_deleted=False
+).count()
+total_unread += unread
+last_message = chat.messages.filter(is_deleted=False).last()
+chats_data.append({
+'id': chat.id,
+'name': chat.get_display_name(request.user),
+'unread_count': unread,
+'last_message': {
+'content': last_message.content if last_message and last_message.message_type == 'text' else
+('Voice note' if last_message and last_message.message_type == 'voice' else None),
+'time': last_message.created_at.isoformat() if last_message else None,
+} if last_message else None,
+})
+return JsonResponse({
+'chats': chats_data,
+'total_unread': total_unread
+})
+@login_required
+def chat_detail(request, chat_id):
+chat = get_object_or_404(Chat, id=chat_id, participants=request.user, is_active=True)
+page = int(request.GET.get('page', 1))
+limit = int(request.GET.get('limit', 50))
+since = request.GET.get('since')
+messages_qs = chat.messages.filter(is_deleted=False).select_related('sender', 'sender__userprofile')
+if since:
+since_time = timezone.datetime.fromisoformat(since.replace('Z', '+00:00'))
+messages_qs = messages_qs.filter(created_at__gt=since_time)
+messages = messages_qs.order_by('created_at')
+else:
+paginator = Paginator(messages_qs.order_by('-created_at'), limit)
+messages = paginator.get_page(page)
+messages_data = []
+for msg in messages:
+is_read = msg.read_by.filter(id=request.user.id).exists()
+read_count = msg.read_by.count()
+total_participants = chat.participants.exclude(id=msg.sender.id).count()
+if msg.sender == request.user:
+if read_count >= total_participants and total_participants > 0:
+status = 'read'
+elif read_count > 0:
+status = 'delivered'
+else:
+status = 'sent'
+else:
+status = None
+messages_data.append({
+'id': msg.id,
+'sender': msg.sender.username,
+'sender_name': msg.sender.userprofile.display_name or msg.sender.username,
+'sender_avatar': msg.sender.userprofile.profile_picture.url if msg.sender.userprofile.profile_picture else None,
+'message_type': msg.message_type,
+'content': msg.content,
+'voice_url': msg.get_voice_url(),
+'voice_duration': msg.voice_duration,
+'created_at': msg.created_at.isoformat(),
+'is_sender': msg.sender == request.user,
+'status': status,
+})
+unread_messages = chat.messages.filter(
+~Q(sender=request.user),
+~Q(read_by=request.user),
+is_deleted=False
+)
+for msg in unread_messages:
+msg.read_by.add(request.user)
+participants_data = []
+for participant in chat.participants.select_related('userprofile'):
+participants_data.append({
+'id': participant.id,
+'username': participant.username,
+'display_name': participant.userprofile.display_name or participant.username,
+'avatar': participant.userprofile.profile_picture.url if participant.userprofile.profile_picture else None,
+'is_admin': participant in chat.admins.all(),
+'is_self': participant == request.user,
+})
+return JsonResponse({
+'chat': {
+'id': chat.id,
+'name': chat.get_display_name(request.user),
+'chat_type': chat.chat_type,
+'participant_count': chat.participant_count,
+'created_by': chat.created_by.username,
+},
+'messages': messages_data,
+'participants': participants_data,
+'has_more': not since and messages.has_next() if not since else False,
+'next_page': messages.next_page_number() if not since and messages.has_next() else None,
+})
+@login_required
+@require_POST
+@csrf_exempt
+def send_message(request, chat_id):
+form = CreateChatForm(request.POST)
+if not form.is_valid():
+return JsonResponse({'error': form.errors}, status=400)
+data = form.cleaned_data
+target_user = get_object_or_404(CustomUser, username=data['username'])
+if target_user == request.user:
+return JsonResponse({'error': 'Cannot create chat with yourself'}, status=400)
+existing_chat = Chat.objects.filter(
+chat_type='dm',
+participants=request.user
+).filter(participants=target_user).first()
+if existing_chat:
+return JsonResponse({
+'success': True,
+'chat_id': existing_chat.id,
+'existing': True
+})
+chat = Chat.objects.create(
+chat_type='dm',
+created_by=request.user
+)
+chat.participants.add(request.user, target_user)
+chat.admins.add(request.user)
+if data.get('initial_message'):
+message = ChatMessage.objects.create(
+chat=chat,
+sender=request.user,
+message_type='text',
+content=data['initial_message']
+)
+chat.last_message = data['initial_message']
+chat.last_message_time = timezone.now()
+chat.last_message_sender = request.user
+chat.save()
+Notification.objects.create(
+user=target_user,
+message=f"{request.user.username} started a chat with you",
+notification_type='chat_message'
+)
+return JsonResponse({
+'success': True,
+'chat_id': chat.id,
+'existing': False
+})
+@login_required
+@require_POST
+def add_participant(request, chat_id):
+chat = get_object_or_404(Chat, id=chat_id, participants=request.user, is_active=True)
+if chat.chat_type != 'dm':
+return JsonResponse({'error': 'Chat is already a group'}, status=400)
+form = ConvertToGroupForm(request.POST)
+if not form.is_valid():
+return JsonResponse({'error': form.errors}, status=400)
+data = form.cleaned_data
+chat.chat_type = 'group'
+chat.name = data['group_name']
+chat.save()
+chat.admins.add(request.user)
+for participant in chat.participants.exclude(id=request.user.id):
+chat.admins.add(participant)
+ChatMessage.objects.create(
+chat=chat,
+sender=request.user,
+message_type='system',
+content=f"Chat converted to group '{data['group_name']}' by {request.user.userprofile.display_name or request.user.username}"
+)
+return JsonResponse({
+'success': True,
+'chat_id': chat.id,
+'converted': True
+})
+@login_required
+@require_GET
+def get_requests(request):
+chat_request = get_object_or_404(ChatRequest, id=request_id, target_user=request.user)
+action = request.POST.get('action')
+if action not in ['accept', 'reject']:
+return JsonResponse({'error': 'Invalid action'}, status=400)
+if action == 'accept':
+chat_request.accept()
+return JsonResponse({'success': True, 'message': 'Request accepted'})
+else:
+chat_request.reject()
+return JsonResponse({'success': True, 'message': 'Request rejected'})
+@login_required
+@require_POST
+def leave_chat(request, chat_id):
+chat = get_object_or_404(Chat, id=chat_id, participants=request.user, is_active=True)
+if request.user not in chat.admins.all():
+return JsonResponse({'error': 'Only admins can make others admin'}, status=403)
+username = request.POST.get('username')
+target_user = get_object_or_404(CustomUser, username=username)
+if target_user not in chat.participants.all():
+return JsonResponse({'error': 'User not in chat'}, status=400)
+chat.admins.add(target_user)
+ChatMessage.objects.create(
+chat=chat,
+sender=request.user,
+message_type='system',
+content=f"{target_user.userprofile.display_name or target_user.username} is now an admin"
+)
+return JsonResponse({'success': True})

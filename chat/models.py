@@ -98,58 +98,103 @@ class Chat(models.Model):
         return False
 
 
+# chat/models.py - Update ChatMessage model
+
 class ChatMessage(models.Model):
     MESSAGE_TYPES = [
         ('text', 'Text'),
         ('voice', 'Voice Note'),
+        ('image', 'Image'),
+        ('video', 'Video'),  # NEW
         ('system', 'System Message'),
     ]
     
     chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name='messages')
     sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='sent_messages')
-    message_type = models.CharField(max_length=10, default='text')
-    content = models.TextField(blank=True)  # For text messages and system messages
+    message_type = models.CharField(max_length=10, choices=MESSAGE_TYPES, default='text')
+    content = models.TextField(blank=True)
+    
+    # Voice notes
     voice_note = CloudinaryField(
         'voice_note',
         blank=True,
         null=True,
-        resource_type='video',  # Cloudinary handles audio
+        resource_type='video',
         folder='chat/voice_notes/'
     )
-    voice_duration = models.IntegerField(null=True, blank=True)  # Duration in seconds
+    voice_duration = models.IntegerField(null=True, blank=True)
+    
+    # Images
+    image = CloudinaryField(
+        'image',
+        blank=True,
+        null=True,
+        resource_type='image',
+        folder='chat/images/'
+    )
+    
+    # Videos (NEW)
+    video = CloudinaryField(
+        'video',
+        blank=True,
+        null=True,
+        resource_type='video',
+        folder='chat/videos/'
+    )
+    video_duration = models.FloatField(null=True, blank=True)
+    video_thumbnail = models.CharField(max_length=500, blank=True, null=True)  # Store thumbnail URL
+    
     read_by = models.ManyToManyField(CustomUser, related_name='read_messages', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
     
     class Meta:
-        ordering = ['created_at']
         indexes = [
             models.Index(fields=['chat', '-created_at']),
             models.Index(fields=['sender', '-created_at']),
         ]
     
     def __str__(self):
-        return f"{self.sender.username}: {self.content[:50]}" if self.content else "Voice note"
+        if self.message_type == 'image':
+            return f"{self.sender.username}: 📷 Image"
+        elif self.message_type == 'video':
+            return f"{self.sender.username}: 🎬 Video"
+        elif self.message_type == 'voice':
+            return f"{self.sender.username}: 🎙️ Voice note"
+        return f"{self.sender.username}: {self.content[:50]}" if self.content else "Message"
     
     def mark_as_read(self, user):
-        """Mark message as read by user"""
         if user != self.sender and user not in self.read_by.all():
             self.read_by.add(user)
     
-    @property
     def is_read_by_all(self):
-        """Check if all participants have read this message"""
-        return self.read_by.count() == self.chat.participants.exclude(id=self.sender.id).count()
+        total_others = self.chat.participants.exclude(id=self.sender.id).count()
+        return self.read_by.count() >= total_others if total_others > 0 else True
     
-    def get_voice_url(self):
-        """Get voice note URL with transformations"""
-        if self.voice_note:
-            return self.voice_note.build_url(
-                transformation=[
-                    {'quality': 'auto'},
-                    {'format': 'opus'}
-                ]
-            )
+    def get_media_url(self):
+        if self.image:
+            return self.image.url
+        elif self.video:
+            return self.video.url
+        elif self.voice_note:
+            return self.voice_note.url
+        return None
+    
+
+    
+    def get_thumbnail_url(self):
+        """Get video thumbnail URL"""
+        if self.message_type == 'video' and self.video:
+            try:
+                return self.video.build_url(
+                    transformation=[
+                        {'start_offset': '0', 'flags': 'video_snapshot'},
+                        {'width': 300, 'height': 300, 'crop': 'fill'}
+                    ],
+                    format='jpg'
+                )
+            except:
+                return None
         return None
 
 
