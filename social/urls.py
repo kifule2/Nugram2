@@ -46,10 +46,9 @@ urlpatterns = [
     path('api/upload-audio/', views.upload_audio, name='upload_audio'),
     path('follow/<str:username>/', views.toggle_follow, name='toggle_follow'),
     path('post/<int:post_id>/repost/', views.repost, name='repost'),
+
+    path('api/notification-counts/', views.get_notification_counts, name='notification_counts'),
+
+    path('api/mark-all-notifications-read/', views.mark_all_notifications_read, name='mark_all_notifications_read'),
 ]
 
-# Note: If you don't have these views yet, add them to views.py:
-# - post_detail
-# - get_comments  
-# - add_comment
-# - video_fallback_url

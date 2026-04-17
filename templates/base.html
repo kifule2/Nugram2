@@ -78,13 +78,35 @@
         .top-icon-btn:hover { background: rgba(59,130,246,0.2); color: var(--blue); }
 
         .avatar-btn {
-            width: 38px; height: 38px;
+            width: 38px;
+            height: 38px;
             border-radius: 12px;
             object-fit: cover;
             border: 1px solid rgba(59,130,246,0.5);
+            background: linear-gradient(135deg, var(--blue), var(--indigo));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+            color: white;
+            text-decoration: none;
+            overflow: hidden;
+        }
+        .avatar-btn img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .avatar-btn span {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
         }
 
-        .notif-badge, .chat-badge {
+        .notif-badge, .chat-badge, .social-badge {
             position: absolute;
             top: -4px;
             right: -4px;
@@ -309,15 +331,15 @@
         <div class="top-actions">
             {% if user.is_authenticated %}
             <button class="top-icon-btn" id="searchBtn"><i class="fas fa-search"></i></button>
-            <a href="{% url 'social:notifications' %}" class="top-icon-btn" style="position:relative;">
+            <a href="{% url 'social:notifications' %}" class="top-icon-btn" id="notificationsBell" style="position:relative;">
                 <i class="far fa-bell"></i>
                 <span class="notif-badge" id="notifBadge"></span>
             </a>
-            <a href="{% url 'users:user_profile' user.username %}">
+            <a href="{% url 'users:user_profile' user.username %}" class="avatar-btn" id="profileAvatarBtn">
                 {% if user.userprofile.profile_picture %}
-                    <img src="{{ user.userprofile.profile_picture.url }}" class="avatar-btn">
+                    <img src="{{ user.userprofile.profile_picture.url }}" alt="{{ user.username }}">
                 {% else %}
-                    <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=3b82f6&color=fff&size=38&bold=true" class="avatar-btn">
+                    <span>{{ user.username|first|upper }}{{ user.username|slice:"1:2"|upper }}</span>
                 {% endif %}
             </a>
             <a href="{% url 'users:logout' %}" class="top-icon-btn"><i class="fas fa-sign-out-alt"></i></a>
@@ -353,7 +375,10 @@
 
     <nav id="chrome-dock">
         <a href="{% url 'home' %}" class="dock-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}"><i class="fas fa-home"></i></a>
-        <a href="{% url 'social:feed' %}" class="dock-item {% if request.resolver_match.app_name == 'social' %}active{% endif %}"><i class="fas fa-play-circle"></i></a>
+        <a href="{% url 'social:feed' %}" class="dock-item {% if request.resolver_match.app_name == 'social' %}active{% endif %}" id="socialDockIcon">
+            <i class="fas fa-play-circle"></i>
+            <span class="social-badge" id="socialBadge"></span>
+        </a>
         {% if user.is_authenticated %}
         <a href="{% url 'airdrop:dashboard' %}" class="mine-btn"><i class="fas fa-pickaxe"></i></a>
         {% else %}
@@ -623,58 +648,88 @@
             return div.innerHTML;
         }
 
-        // Chat Badge Update Function
-        async function updateChatBadge() {
-            {% if user.is_authenticated %}
+        // Update all badges (notifications, messages, social)
+        async function updateAllBadges() {
+            const isAuthenticated = document.getElementById('profileAvatarBtn') !== null;
+            
+            if (!isAuthenticated) {
+                return;
+            }
+            
             try {
-                const response = await fetch('/chat/api/list/');
+                const response = await fetch('/social/api/notification-counts/');
+                
+                if (response.status === 302 || response.status === 401) {
+                    return;
+                }
+                
                 const data = await response.json();
                 
+                // Update notification bell badge
+                const notifBadge = document.getElementById('notifBadge');
+                if (data.unread_notifications > 0) {
+                    notifBadge.textContent = data.unread_notifications > 99 ? '99+' : data.unread_notifications;
+                    notifBadge.style.display = 'block';
+                } else {
+                    notifBadge.style.display = 'none';
+                }
+                
+                // Update chat badge
                 const chatBadge = document.getElementById('chatBadge');
-                if (data.total_unread > 0) {
-                    chatBadge.textContent = data.total_unread > 99 ? '99+' : data.total_unread;
+                if (data.unread_messages > 0) {
+                    chatBadge.textContent = data.unread_messages > 99 ? '99+' : data.unread_messages;
                     chatBadge.style.display = 'block';
                 } else {
                     chatBadge.style.display = 'none';
                 }
-            } catch (error) {
-                console.error('Failed to fetch chat unread count:', error);
-            }
-            {% endif %}
-        }
-
-        // Update notifications badge
-        async function updateNotifBadge() {
-            {% if user.is_authenticated %}
-            try {
-                const response = await fetch('/social/api/unread-notifications/');
-                const data = await response.json();
-                const badge = document.getElementById('notifBadge');
-                if (data.count > 0) {
-                    badge.textContent = data.count > 99 ? '99+' : data.count;
-                    badge.style.display = 'block';
+                
+                // Update social badge (new posts)
+                const socialBadge = document.getElementById('socialBadge');
+                if (data.new_posts > 0) {
+                    socialBadge.textContent = data.new_posts > 99 ? '99+' : data.new_posts;
+                    socialBadge.style.display = 'block';
                 } else {
-                    badge.style.display = 'none';
+                    socialBadge.style.display = 'none';
                 }
             } catch (error) {
-                console.error('Failed to fetch notifications:', error);
+                console.error('Failed to fetch badge counts:', error);
             }
-            {% endif %}
         }
+
+        // Clear notification badge when clicking bell
+        document.getElementById('notificationsBell')?.addEventListener('click', function() {
+            const badge = document.getElementById('notifBadge');
+            if (badge) {
+                badge.style.display = 'none';
+            }
+        });
+
+        // Clear social badge when clicking social dock icon
+        document.getElementById('socialDockIcon')?.addEventListener('click', function() {
+            const badge = document.getElementById('socialBadge');
+            if (badge) {
+                badge.style.display = 'none';
+            }
+        });
+
+        // Clear chat badge when clicking chat dock icon
+        document.getElementById('chatDockIcon')?.addEventListener('click', function() {
+            const badge = document.getElementById('chatBadge');
+            if (badge) {
+                badge.style.display = 'none';
+            }
+        });
 
         // Initial badge updates
         if ({% if user.is_authenticated %}true{% else %}false{% endif %}) {
-            updateChatBadge();
-            updateNotifBadge();
+            updateAllBadges();
             
             // Update every 30 seconds
-            setInterval(updateChatBadge, 30000);
-            setInterval(updateNotifBadge, 30000);
+            setInterval(updateAllBadges, 30000);
         }
 
         window.showToast = showToast;
-        window.updateChatBadge = updateChatBadge;
-        window.updateNotifBadge = updateNotifBadge;
+        window.updateAllBadges = updateAllBadges;
     </script>
     {% block extra_scripts %}{% endblock %}
 </body>

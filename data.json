@@ -1,0 +1,3642 @@
+[
+{
+  "model": "users.customuser",
+  "pk": 1,
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$S3DWgprWTqgMuFS65XAgPg$3wg1xUygnOejAb+EWdUZ7CNzy7r0FaC0ladr2OlS0S4=",
+    "last_login": "2025-08-05T09:37:58.161Z",
+    "is_superuser": false,
+    "username": "DenisKadidi",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-08-05T09:37:55.438Z",
+    "is_agent": false,
+    "is_verified": false,
+    "email": "musinguzi2050@gmail.com",
+    "referred_by": null,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.customuser",
+  "pk": 2,
+  "fields": {
+    "password": "pbkdf2_sha256$1200000$HNOpJXpDst7j8Ex4l6mkyB$Aw2Lz524/01Lz4c2hp4WD7/O9kAicMPwZcWJEqnQlko=",
+    "last_login": "2026-04-17T07:52:25.079Z",
+    "is_superuser": false,
+    "username": "mutwe",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-03-11T16:01:46.628Z",
+    "is_agent": false,
+    "is_verified": false,
+    "email": "mutwe@gmail.com",
+    "referred_by": null,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.customuser",
+  "pk": 3,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$MVlA0AsjWAFt2QBAa79hBF$6HvSmN63Q6P/Q4H8pi1KiPg1P1/hrZP0k4fG4ANQe/c=",
+    "last_login": "2026-04-15T09:05:16.083Z",
+    "is_superuser": false,
+    "username": "rukujju",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-03-13T08:23:44.245Z",
+    "is_agent": false,
+    "is_verified": false,
+    "email": "rukujju@gmail.com",
+    "referred_by": null,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.customuser",
+  "pk": 4,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$SyINkryZv56uPQcESYW8BC$H3mdbFpwmdh2o/XGygjIdhtPsAhsnIlhOaw03R9TOBo=",
+    "last_login": "2026-03-13T08:48:03.441Z",
+    "is_superuser": false,
+    "username": "MusinguziDenis",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-03-13T08:48:01.060Z",
+    "is_agent": false,
+    "is_verified": false,
+    "email": "kadidisawa@gmail.com",
+    "referred_by": null,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.customuser",
+  "pk": 5,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$uFB3EfzE4TwZc99rEvNbNZ$v00NjvhtuS1gOBIzcGBC6t0r2JJqVH/u0yqzSgrrH90=",
+    "last_login": "2026-04-14T08:43:42.449Z",
+    "is_superuser": false,
+    "username": "nasasiraJohn",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-03-13T09:30:07.933Z",
+    "is_agent": false,
+    "is_verified": false,
+    "email": "nssrjohn@gmail.com",
+    "referred_by": null,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.customuser",
+  "pk": 6,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$ZmrmUsxKW5lQ2e1MuyjNdu$l6TK0SqleQ3WKMlSzjFD/YBhReVFjc7iBsEaRjiMOg0=",
+    "last_login": "2026-04-12T15:35:37.471Z",
+    "is_superuser": false,
+    "username": "Drkeiz",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-03-13T11:09:30.512Z",
+    "is_agent": false,
+    "is_verified": false,
+    "email": "drkeiz31@gmail.com",
+    "referred_by": null,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.customuser",
+  "pk": 7,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$U1QPkQHiQDFBhnmsRK3rV0$wZG1lpWbI6pDHvAdgp+7NfS2kZGq1CyRutY4JTThqtc=",
+    "last_login": "2026-03-16T15:43:27.825Z",
+    "is_superuser": false,
+    "username": "mutemaAlex",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-03-13T12:01:45.243Z",
+    "is_agent": false,
+    "is_verified": false,
+    "email": "rojasipene34@gmail.com",
+    "referred_by": null,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.customuser",
+  "pk": 8,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$X3BeiQZYeGroPiGXKnHoIa$ouGwYtJwWcsQ9UaLL0ZspDdAa7ITlPcUqBLqxCGtnw4=",
+    "last_login": "2026-03-13T18:25:26.885Z",
+    "is_superuser": false,
+    "username": "Stoneforex",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-03-13T18:25:26.233Z",
+    "is_agent": false,
+    "is_verified": false,
+    "email": "stoneforex12@gmail.com",
+    "referred_by": null,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.customuser",
+  "pk": 9,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$r0lctDJawpF23GEGsD74oZ$wO2Tf1zmQ7O7WV3Eru0JbSQUGPGMcA1aF7T+J4J/d2g=",
+    "last_login": "2026-03-15T17:53:21.703Z",
+    "is_superuser": false,
+    "username": "kabandaali",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-03-15T17:53:20.002Z",
+    "is_agent": false,
+    "is_verified": false,
+    "email": "kabandaali@gmail.com",
+    "referred_by": null,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.customuser",
+  "pk": 10,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$TImDdsWT17RivpjGmeq2MF$DlU4i4CQmGLaBJsPD2c4ugWy8ctuQX85/P0LIffqbAs=",
+    "last_login": "2026-03-16T17:54:41.410Z",
+    "is_superuser": false,
+    "username": "Shoot256",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-03-15T20:49:05.695Z",
+    "is_agent": false,
+    "is_verified": false,
+    "email": "princeug194@gmail.com",
+    "referred_by": null,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.customuser",
+  "pk": 11,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$upJXTTlN7LkPvfNoo737ue$XN3mLM/PyROzTi2H6P7ilgKJUG4fU/QxGPQbSgV/rQE=",
+    "last_login": "2026-03-16T08:42:43.725Z",
+    "is_superuser": false,
+    "username": "Arafat",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-03-16T08:42:43.064Z",
+    "is_agent": false,
+    "is_verified": false,
+    "email": "kiggunduarafat70@gmail.com",
+    "referred_by": null,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.customuser",
+  "pk": 12,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$Uf9IFwC6abvf6sBFtzg5bx$QEye/JCf7CQ17Pv8lfi4a213flKFXReSBahIhwTA2Jw=",
+    "last_login": "2026-03-20T06:52:38.858Z",
+    "is_superuser": false,
+    "username": "jit",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-03-20T06:52:37.782Z",
+    "is_agent": false,
+    "is_verified": false,
+    "email": "jitisaac44@gmail.com",
+    "referred_by": null,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.customuser",
+  "pk": 13,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$7kvQ1yeTQNmvxHRvTqnXqr$jnR+55At6RxfdrWZE30uqPRNCndaAKkFnnbJ6O0lIU0=",
+    "last_login": "2026-03-20T11:05:45.578Z",
+    "is_superuser": false,
+    "username": "kingwise",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-03-20T11:05:44.107Z",
+    "is_agent": false,
+    "is_verified": false,
+    "email": "arajabumagala@gmail.com",
+    "referred_by": [
+      "mutwe"
+    ],
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.customuser",
+  "pk": 14,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$zukolZ85gyuppHpQJ8IDN7$fyvOD1/ob8U5expAuyQvBd78Ge743e/5vqZed99XelA=",
+    "last_login": "2026-03-20T11:11:04.961Z",
+    "is_superuser": false,
+    "username": "Wask",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-03-20T11:11:01.810Z",
+    "is_agent": false,
+    "is_verified": false,
+    "email": "waskronnie@gmail.com",
+    "referred_by": [
+      "mutwe"
+    ],
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.customuser",
+  "pk": 15,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$YHzDPibLCEtiSZymYy3NYW$9ucH9+GLFkXdlunXLFyexOMtGR5W1w8T9kY6r6BizBQ=",
+    "last_login": "2026-03-21T10:00:05.127Z",
+    "is_superuser": false,
+    "username": "Jb",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-03-21T10:00:03.933Z",
+    "is_agent": false,
+    "is_verified": false,
+    "email": "phillipsjb884@gmail.com",
+    "referred_by": [
+      "mutwe"
+    ],
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.customuser",
+  "pk": 16,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$4CnGwcCR06ysiGUNcmJJz1$CZZ+FjcfSkA/32b1i4bmfricOZ9+550K7wjqKMQCeak=",
+    "last_login": "2026-04-10T14:27:00.178Z",
+    "is_superuser": false,
+    "username": "kivabulaya",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-10T14:26:58.644Z",
+    "is_agent": false,
+    "is_verified": false,
+    "email": "walswabul2017@gmail.com",
+    "referred_by": [
+      "mutwe"
+    ],
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.customuser",
+  "pk": 17,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$tSk1gMfkO87hS5EliAu3ha$KTqoOoiKJ+qoKYVLZ2XnFeBssosA5lhs/VVyLvwdb9Y=",
+    "last_login": "2026-04-13T15:40:39.739Z",
+    "is_superuser": false,
+    "username": "koppa",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-11T16:04:53.630Z",
+    "is_agent": false,
+    "is_verified": false,
+    "email": "koppakmc@gmail.com",
+    "referred_by": [
+      "mutwe"
+    ],
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.customuser",
+  "pk": 18,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$eOTpcD2eDydUYbwC4RCGNM$2ov+0TmVkMfpbxGd+AmfUf6TR+1I4NKfDWnSHTzWmCQ=",
+    "last_login": "2026-04-16T11:29:34.157Z",
+    "is_superuser": false,
+    "username": "Clever",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-13T15:39:17.025Z",
+    "is_agent": false,
+    "is_verified": false,
+    "email": "Clevermoses2532@gmail.com",
+    "referred_by": [
+      "koppa"
+    ],
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.customuser",
+  "pk": 19,
+  "fields": {
+    "password": "pbkdf2_sha256$600000$L7LdYqclz5g4wEJaJgnoD9$z2LP5WUbQ5037lQyQMNSMbPpRM9JDv8z8X0uChokL1Q=",
+    "last_login": "2026-04-14T12:49:38.108Z",
+    "is_superuser": false,
+    "username": "Ivan",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-04-14T12:49:37.467Z",
+    "is_agent": false,
+    "is_verified": false,
+    "email": "ivanreal002@gmail.com",
+    "referred_by": null,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.customuser",
+  "pk": 20,
+  "fields": {
+    "password": "pbkdf2_sha256$1200000$rDRTjt9Ixne7BIY5I0jFEH$iqujYiR32b0E+S7Id8IcN8oXViZwKpmXtWPn9I6g16Q=",
+    "last_login": null,
+    "is_superuser": true,
+    "username": "kifule",
+    "first_name": "",
+    "last_name": "",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-04-17T10:21:51.816Z",
+    "is_agent": false,
+    "is_verified": false,
+    "email": "kifuleeyalagubwa@gmail.com",
+    "referred_by": null,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.userprofile",
+  "pk": 1,
+  "fields": {
+    "user": [
+      "DenisKadidi"
+    ],
+    "profile_picture": "image/upload/profile_pics/default.png",
+    "cover_photo": "image/upload/cover_photos/default_cover.webp",
+    "bio": "",
+    "display_name": "DenisKadidi",
+    "gender": "",
+    "birthday": null,
+    "work": "",
+    "phone_number": "",
+    "location": "",
+    "show_birthday": false,
+    "show_phone": false,
+    "show_email": false,
+    "token_balance": "0.00",
+    "ugx_balance": "0.00",
+    "verified": false,
+    "created_at": "2026-03-16T13:33:41.101Z",
+    "updated_at": "2026-03-16T13:33:41.139Z",
+    "followers": []
+  }
+},
+{
+  "model": "users.userprofile",
+  "pk": 2,
+  "fields": {
+    "user": [
+      "mutwe"
+    ],
+    "profile_picture": "image/upload/profile_pics/default.png",
+    "cover_photo": "image/upload/cover_photos/default_cover.webp",
+    "bio": "",
+    "display_name": "mutwe",
+    "gender": "",
+    "birthday": null,
+    "work": "",
+    "phone_number": "",
+    "location": "",
+    "show_birthday": false,
+    "show_phone": false,
+    "show_email": false,
+    "token_balance": "0.00",
+    "ugx_balance": "0.00",
+    "verified": false,
+    "created_at": "2026-03-16T13:33:41.101Z",
+    "updated_at": "2026-04-11T06:59:26.303Z",
+    "followers": []
+  }
+},
+{
+  "model": "users.userprofile",
+  "pk": 3,
+  "fields": {
+    "user": [
+      "rukujju"
+    ],
+    "profile_picture": "image/upload/profile_pics/default.png",
+    "cover_photo": "image/upload/cover_photos/default_cover.webp",
+    "bio": "",
+    "display_name": "rukujju",
+    "gender": "",
+    "birthday": null,
+    "work": "",
+    "phone_number": "",
+    "location": "",
+    "show_birthday": false,
+    "show_phone": false,
+    "show_email": false,
+    "token_balance": "0.00",
+    "ugx_balance": "0.00",
+    "verified": false,
+    "created_at": "2026-03-16T13:33:41.101Z",
+    "updated_at": "2026-03-16T13:33:41.139Z",
+    "followers": []
+  }
+},
+{
+  "model": "users.userprofile",
+  "pk": 4,
+  "fields": {
+    "user": [
+      "MusinguziDenis"
+    ],
+    "profile_picture": "image/upload/profile_pics/default.png",
+    "cover_photo": "image/upload/cover_photos/default_cover.webp",
+    "bio": "",
+    "display_name": "MusinguziDenis",
+    "gender": "",
+    "birthday": null,
+    "work": "",
+    "phone_number": "",
+    "location": "",
+    "show_birthday": false,
+    "show_phone": false,
+    "show_email": false,
+    "token_balance": "0.00",
+    "ugx_balance": "0.00",
+    "verified": false,
+    "created_at": "2026-03-16T13:33:41.101Z",
+    "updated_at": "2026-03-16T13:33:41.139Z",
+    "followers": []
+  }
+},
+{
+  "model": "users.userprofile",
+  "pk": 5,
+  "fields": {
+    "user": [
+      "nasasiraJohn"
+    ],
+    "profile_picture": "image/upload/profile_pics/default.png",
+    "cover_photo": "image/upload/cover_photos/default_cover.webp",
+    "bio": "",
+    "display_name": "nasasiraJohn",
+    "gender": "",
+    "birthday": null,
+    "work": "",
+    "phone_number": "",
+    "location": "",
+    "show_birthday": false,
+    "show_phone": false,
+    "show_email": false,
+    "token_balance": "0.00",
+    "ugx_balance": "0.00",
+    "verified": false,
+    "created_at": "2026-03-16T13:33:41.101Z",
+    "updated_at": "2026-03-16T13:33:41.139Z",
+    "followers": []
+  }
+},
+{
+  "model": "users.userprofile",
+  "pk": 6,
+  "fields": {
+    "user": [
+      "Drkeiz"
+    ],
+    "profile_picture": "image/upload/profile_pics/default.png",
+    "cover_photo": "image/upload/cover_photos/default_cover.webp",
+    "bio": "",
+    "display_name": "Drkeiz",
+    "gender": "",
+    "birthday": null,
+    "work": "",
+    "phone_number": "",
+    "location": "",
+    "show_birthday": false,
+    "show_phone": false,
+    "show_email": false,
+    "token_balance": "0.00",
+    "ugx_balance": "0.00",
+    "verified": false,
+    "created_at": "2026-03-16T13:33:41.101Z",
+    "updated_at": "2026-03-16T13:33:41.139Z",
+    "followers": []
+  }
+},
+{
+  "model": "users.userprofile",
+  "pk": 7,
+  "fields": {
+    "user": [
+      "mutemaAlex"
+    ],
+    "profile_picture": "image/upload/profile_pics/default.png",
+    "cover_photo": "image/upload/cover_photos/default_cover.webp",
+    "bio": "",
+    "display_name": "mutemaAlex",
+    "gender": "",
+    "birthday": null,
+    "work": "",
+    "phone_number": "",
+    "location": "",
+    "show_birthday": false,
+    "show_phone": false,
+    "show_email": false,
+    "token_balance": "0.00",
+    "ugx_balance": "0.00",
+    "verified": false,
+    "created_at": "2026-03-16T13:33:41.101Z",
+    "updated_at": "2026-03-16T13:33:41.139Z",
+    "followers": []
+  }
+},
+{
+  "model": "users.userprofile",
+  "pk": 8,
+  "fields": {
+    "user": [
+      "Stoneforex"
+    ],
+    "profile_picture": "image/upload/profile_pics/default.png",
+    "cover_photo": "image/upload/cover_photos/default_cover.webp",
+    "bio": "",
+    "display_name": "Stoneforex",
+    "gender": "",
+    "birthday": null,
+    "work": "",
+    "phone_number": "",
+    "location": "",
+    "show_birthday": false,
+    "show_phone": false,
+    "show_email": false,
+    "token_balance": "0.00",
+    "ugx_balance": "0.00",
+    "verified": false,
+    "created_at": "2026-03-16T13:33:41.101Z",
+    "updated_at": "2026-03-16T13:33:41.139Z",
+    "followers": []
+  }
+},
+{
+  "model": "users.userprofile",
+  "pk": 9,
+  "fields": {
+    "user": [
+      "kabandaali"
+    ],
+    "profile_picture": "image/upload/profile_pics/default.png",
+    "cover_photo": "image/upload/cover_photos/default_cover.webp",
+    "bio": "",
+    "display_name": "kabandaali",
+    "gender": "",
+    "birthday": null,
+    "work": "",
+    "phone_number": "",
+    "location": "",
+    "show_birthday": false,
+    "show_phone": false,
+    "show_email": false,
+    "token_balance": "0.00",
+    "ugx_balance": "0.00",
+    "verified": false,
+    "created_at": "2026-03-16T13:33:41.101Z",
+    "updated_at": "2026-03-16T13:33:41.139Z",
+    "followers": []
+  }
+},
+{
+  "model": "users.userprofile",
+  "pk": 10,
+  "fields": {
+    "user": [
+      "Shoot256"
+    ],
+    "profile_picture": "image/upload/profile_pics/default.png",
+    "cover_photo": "image/upload/cover_photos/default_cover.webp",
+    "bio": "",
+    "display_name": "Shoot256",
+    "gender": "",
+    "birthday": null,
+    "work": "",
+    "phone_number": "",
+    "location": "",
+    "show_birthday": false,
+    "show_phone": false,
+    "show_email": false,
+    "token_balance": "0.00",
+    "ugx_balance": "0.00",
+    "verified": false,
+    "created_at": "2026-03-16T13:33:41.101Z",
+    "updated_at": "2026-03-16T13:33:41.139Z",
+    "followers": []
+  }
+},
+{
+  "model": "users.userprofile",
+  "pk": 11,
+  "fields": {
+    "user": [
+      "Arafat"
+    ],
+    "profile_picture": "image/upload/profile_pics/default.png",
+    "cover_photo": "image/upload/cover_photos/default_cover.webp",
+    "bio": "",
+    "display_name": "Arafat",
+    "gender": "",
+    "birthday": null,
+    "work": "",
+    "phone_number": "",
+    "location": "",
+    "show_birthday": false,
+    "show_phone": false,
+    "show_email": false,
+    "token_balance": "0.00",
+    "ugx_balance": "0.00",
+    "verified": false,
+    "created_at": "2026-03-16T13:33:41.101Z",
+    "updated_at": "2026-03-16T13:33:41.139Z",
+    "followers": []
+  }
+},
+{
+  "model": "users.userprofile",
+  "pk": 12,
+  "fields": {
+    "user": [
+      "jit"
+    ],
+    "profile_picture": "image/upload/nusu/defaults/default_profile",
+    "cover_photo": "image/upload/nusu/defaults/default_cover",
+    "bio": "",
+    "display_name": "jit",
+    "gender": "",
+    "birthday": null,
+    "work": "",
+    "phone_number": "",
+    "location": "",
+    "show_birthday": false,
+    "show_phone": false,
+    "show_email": false,
+    "token_balance": "0.00",
+    "ugx_balance": "0.00",
+    "verified": false,
+    "created_at": "2026-03-20T06:52:38.799Z",
+    "updated_at": "2026-03-20T06:52:38.799Z",
+    "followers": []
+  }
+},
+{
+  "model": "users.userprofile",
+  "pk": 13,
+  "fields": {
+    "user": [
+      "kingwise"
+    ],
+    "profile_picture": "image/upload/nusu/defaults/default_profile",
+    "cover_photo": "image/upload/nusu/defaults/default_cover",
+    "bio": "",
+    "display_name": "kingwise",
+    "gender": "",
+    "birthday": null,
+    "work": "",
+    "phone_number": "",
+    "location": "",
+    "show_birthday": false,
+    "show_phone": false,
+    "show_email": false,
+    "token_balance": "0.00",
+    "ugx_balance": "0.00",
+    "verified": false,
+    "created_at": "2026-03-20T11:05:45.424Z",
+    "updated_at": "2026-03-20T11:05:45.425Z",
+    "followers": []
+  }
+},
+{
+  "model": "users.userprofile",
+  "pk": 14,
+  "fields": {
+    "user": [
+      "Wask"
+    ],
+    "profile_picture": "image/upload/nusu/defaults/default_profile",
+    "cover_photo": "image/upload/nusu/defaults/default_cover",
+    "bio": "",
+    "display_name": "Wask",
+    "gender": "",
+    "birthday": null,
+    "work": "",
+    "phone_number": "",
+    "location": "",
+    "show_birthday": false,
+    "show_phone": false,
+    "show_email": false,
+    "token_balance": "0.00",
+    "ugx_balance": "0.00",
+    "verified": false,
+    "created_at": "2026-03-20T11:11:04.776Z",
+    "updated_at": "2026-03-20T11:11:04.776Z",
+    "followers": []
+  }
+},
+{
+  "model": "users.userprofile",
+  "pk": 15,
+  "fields": {
+    "user": [
+      "Jb"
+    ],
+    "profile_picture": "image/upload/nusu/defaults/default_profile",
+    "cover_photo": "image/upload/nusu/defaults/default_cover",
+    "bio": "",
+    "display_name": "Jb",
+    "gender": "",
+    "birthday": null,
+    "work": "",
+    "phone_number": "",
+    "location": "",
+    "show_birthday": false,
+    "show_phone": false,
+    "show_email": false,
+    "token_balance": "0.00",
+    "ugx_balance": "0.00",
+    "verified": false,
+    "created_at": "2026-03-21T10:00:04.999Z",
+    "updated_at": "2026-03-21T10:00:04.999Z",
+    "followers": []
+  }
+},
+{
+  "model": "users.userprofile",
+  "pk": 16,
+  "fields": {
+    "user": [
+      "kivabulaya"
+    ],
+    "profile_picture": "image/upload/nusu/defaults/default_profile",
+    "cover_photo": "image/upload/nusu/defaults/default_cover",
+    "bio": "",
+    "display_name": "kivabulaya",
+    "gender": "",
+    "birthday": null,
+    "work": "",
+    "phone_number": "",
+    "location": "",
+    "show_birthday": false,
+    "show_phone": false,
+    "show_email": false,
+    "token_balance": "0.00",
+    "ugx_balance": "0.00",
+    "verified": false,
+    "created_at": "2026-04-10T14:27:00.047Z",
+    "updated_at": "2026-04-10T14:27:00.047Z",
+    "followers": []
+  }
+},
+{
+  "model": "users.userprofile",
+  "pk": 17,
+  "fields": {
+    "user": [
+      "koppa"
+    ],
+    "profile_picture": "image/upload/nusu/defaults/default_profile",
+    "cover_photo": "image/upload/nusu/defaults/default_cover",
+    "bio": "",
+    "display_name": "koppa",
+    "gender": "",
+    "birthday": null,
+    "work": "",
+    "phone_number": "",
+    "location": "",
+    "show_birthday": false,
+    "show_phone": false,
+    "show_email": false,
+    "token_balance": "0.00",
+    "ugx_balance": "0.00",
+    "verified": false,
+    "created_at": "2026-04-11T16:04:54.340Z",
+    "updated_at": "2026-04-11T16:04:54.340Z",
+    "followers": []
+  }
+},
+{
+  "model": "users.userprofile",
+  "pk": 18,
+  "fields": {
+    "user": [
+      "Clever"
+    ],
+    "profile_picture": "image/upload/nusu/defaults/default_profile",
+    "cover_photo": "image/upload/nusu/defaults/default_cover",
+    "bio": "",
+    "display_name": "Clever",
+    "gender": "",
+    "birthday": null,
+    "work": "",
+    "phone_number": "",
+    "location": "",
+    "show_birthday": false,
+    "show_phone": false,
+    "show_email": false,
+    "token_balance": "0.00",
+    "ugx_balance": "0.00",
+    "verified": false,
+    "created_at": "2026-04-13T15:39:18.446Z",
+    "updated_at": "2026-04-13T15:39:18.447Z",
+    "followers": []
+  }
+},
+{
+  "model": "users.userprofile",
+  "pk": 19,
+  "fields": {
+    "user": [
+      "Ivan"
+    ],
+    "profile_picture": "image/upload/nusu/defaults/default_profile",
+    "cover_photo": "image/upload/nusu/defaults/default_cover",
+    "bio": "",
+    "display_name": "Ivan",
+    "gender": "",
+    "birthday": null,
+    "work": "",
+    "phone_number": "",
+    "location": "",
+    "show_birthday": false,
+    "show_phone": false,
+    "show_email": false,
+    "token_balance": "0.00",
+    "ugx_balance": "0.00",
+    "verified": false,
+    "created_at": "2026-04-14T12:49:38.058Z",
+    "updated_at": "2026-04-14T12:49:38.058Z",
+    "followers": []
+  }
+},
+{
+  "model": "users.userprofile",
+  "pk": 20,
+  "fields": {
+    "user": [
+      "kifule"
+    ],
+    "profile_picture": "image/upload/nusu/defaults/default_profile",
+    "cover_photo": "image/upload/nusu/defaults/default_cover",
+    "bio": "",
+    "display_name": "kifule",
+    "gender": "",
+    "birthday": null,
+    "work": "",
+    "phone_number": "",
+    "location": "",
+    "show_birthday": false,
+    "show_phone": false,
+    "show_email": false,
+    "token_balance": "0.00",
+    "ugx_balance": "0.00",
+    "verified": false,
+    "created_at": "2026-04-17T10:21:52.510Z",
+    "updated_at": "2026-04-17T10:21:52.510Z",
+    "followers": []
+  }
+},
+{
+  "model": "social.post",
+  "pk": 1,
+  "fields": {
+    "user": [
+      "mutwe"
+    ],
+    "content": "Hello guys welcome",
+    "post_type": "text",
+    "created_at": "2026-03-16T13:36:05.908Z",
+    "updated_at": "2026-03-16T13:36:05.908Z",
+    "is_repost": false,
+    "original_post": null,
+    "is_reply": false,
+    "parent_post": null,
+    "background_template": null,
+    "text_alignment": "center",
+    "text_size": 1.8,
+    "text_color": "#ffffff",
+    "text_font": "default",
+    "video_duration": null,
+    "song_name": "Original Audio",
+    "trim_start": 0.0,
+    "trim_end": null,
+    "views": [
+      [
+        "rukujju"
+      ],
+      [
+        "nasasiraJohn"
+      ],
+      [
+        "Drkeiz"
+      ],
+      [
+        "mutemaAlex"
+      ],
+      [
+        "Shoot256"
+      ],
+      [
+        "jit"
+      ],
+      [
+        "kingwise"
+      ],
+      [
+        "Wask"
+      ],
+      [
+        "kivabulaya"
+      ],
+      [
+        "koppa"
+      ],
+      [
+        "Ivan"
+      ]
+    ]
+  }
+},
+{
+  "model": "social.post",
+  "pk": 5,
+  "fields": {
+    "user": [
+      "Shoot256"
+    ],
+    "content": "Fotrufhfhegdhfhfusheifjfhturhdpqnbruxbrfhrirjfbr",
+    "post_type": "text",
+    "created_at": "2026-03-16T16:22:06.665Z",
+    "updated_at": "2026-03-16T16:22:06.665Z",
+    "is_repost": false,
+    "original_post": null,
+    "is_reply": false,
+    "parent_post": null,
+    "background_template": null,
+    "text_alignment": "center",
+    "text_size": 1.8,
+    "text_color": "#ffffff",
+    "text_font": "default",
+    "video_duration": null,
+    "song_name": "Original Audio",
+    "trim_start": 0.0,
+    "trim_end": null,
+    "views": [
+      [
+        "mutwe"
+      ],
+      [
+        "nasasiraJohn"
+      ],
+      [
+        "Drkeiz"
+      ],
+      [
+        "jit"
+      ],
+      [
+        "kingwise"
+      ],
+      [
+        "Wask"
+      ],
+      [
+        "kivabulaya"
+      ],
+      [
+        "koppa"
+      ],
+      [
+        "Ivan"
+      ]
+    ]
+  }
+},
+{
+  "model": "social.post",
+  "pk": 6,
+  "fields": {
+    "user": [
+      "mutwe"
+    ],
+    "content": "new updates coming soon guys",
+    "post_type": "text",
+    "created_at": "2026-03-19T12:42:39.106Z",
+    "updated_at": "2026-03-19T12:42:39.106Z",
+    "is_repost": false,
+    "original_post": null,
+    "is_reply": false,
+    "parent_post": null,
+    "background_template": null,
+    "text_alignment": "center",
+    "text_size": 1.8,
+    "text_color": "#ffffff",
+    "text_font": "default",
+    "video_duration": null,
+    "song_name": "Original Audio",
+    "trim_start": 0.0,
+    "trim_end": null,
+    "views": [
+      [
+        "nasasiraJohn"
+      ],
+      [
+        "Drkeiz"
+      ],
+      [
+        "Shoot256"
+      ],
+      [
+        "jit"
+      ],
+      [
+        "kingwise"
+      ],
+      [
+        "Wask"
+      ],
+      [
+        "kivabulaya"
+      ],
+      [
+        "koppa"
+      ],
+      [
+        "Ivan"
+      ]
+    ]
+  }
+},
+{
+  "model": "social.post",
+  "pk": 7,
+  "fields": {
+    "user": [
+      "jit"
+    ],
+    "content": "RT: new updates coming soon guys",
+    "post_type": "text",
+    "created_at": "2026-03-20T06:54:50.909Z",
+    "updated_at": "2026-03-20T06:54:50.909Z",
+    "is_repost": true,
+    "original_post": 6,
+    "is_reply": false,
+    "parent_post": null,
+    "background_template": null,
+    "text_alignment": "center",
+    "text_size": 1.8,
+    "text_color": "#ffffff",
+    "text_font": "default",
+    "video_duration": null,
+    "song_name": "Original Audio",
+    "trim_start": 0.0,
+    "trim_end": null,
+    "views": [
+      [
+        "mutwe"
+      ],
+      [
+        "nasasiraJohn"
+      ],
+      [
+        "Drkeiz"
+      ],
+      [
+        "Shoot256"
+      ],
+      [
+        "kingwise"
+      ],
+      [
+        "Wask"
+      ],
+      [
+        "kivabulaya"
+      ],
+      [
+        "koppa"
+      ],
+      [
+        "Ivan"
+      ]
+    ]
+  }
+},
+{
+  "model": "social.post",
+  "pk": 8,
+  "fields": {
+    "user": [
+      "Shoot256"
+    ],
+    "content": "Creative actors are better",
+    "post_type": "mixed",
+    "created_at": "2026-03-20T10:58:14.828Z",
+    "updated_at": "2026-03-20T10:58:14.828Z",
+    "is_repost": false,
+    "original_post": null,
+    "is_reply": false,
+    "parent_post": null,
+    "background_template": null,
+    "text_alignment": "center",
+    "text_size": 1.8,
+    "text_color": "#ffffff",
+    "text_font": "default",
+    "video_duration": null,
+    "song_name": "Original Audio",
+    "trim_start": 0.0,
+    "trim_end": null,
+    "views": [
+      [
+        "mutwe"
+      ],
+      [
+        "nasasiraJohn"
+      ],
+      [
+        "Drkeiz"
+      ],
+      [
+        "kingwise"
+      ],
+      [
+        "Wask"
+      ],
+      [
+        "kivabulaya"
+      ],
+      [
+        "koppa"
+      ],
+      [
+        "Ivan"
+      ]
+    ]
+  }
+},
+{
+  "model": "social.post",
+  "pk": 9,
+  "fields": {
+    "user": [
+      "Shoot256"
+    ],
+    "content": "",
+    "post_type": "text",
+    "created_at": "2026-03-20T10:58:55.083Z",
+    "updated_at": "2026-03-20T10:58:55.083Z",
+    "is_repost": false,
+    "original_post": null,
+    "is_reply": false,
+    "parent_post": null,
+    "background_template": null,
+    "text_alignment": "center",
+    "text_size": 1.8,
+    "text_color": "#ffffff",
+    "text_font": "default",
+    "video_duration": null,
+    "song_name": "Original Audio",
+    "trim_start": 0.0,
+    "trim_end": null,
+    "views": [
+      [
+        "mutwe"
+      ],
+      [
+        "nasasiraJohn"
+      ],
+      [
+        "Drkeiz"
+      ],
+      [
+        "kingwise"
+      ],
+      [
+        "Wask"
+      ],
+      [
+        "kivabulaya"
+      ],
+      [
+        "koppa"
+      ],
+      [
+        "Ivan"
+      ]
+    ]
+  }
+},
+{
+  "model": "social.post",
+  "pk": 11,
+  "fields": {
+    "user": [
+      "mutwe"
+    ],
+    "content": "Good morning guys more updates coming soon sit tight",
+    "post_type": "text",
+    "created_at": "2026-04-12T07:23:54.036Z",
+    "updated_at": "2026-04-12T07:23:54.036Z",
+    "is_repost": false,
+    "original_post": null,
+    "is_reply": false,
+    "parent_post": null,
+    "background_template": null,
+    "text_alignment": "center",
+    "text_size": 1.8,
+    "text_color": "#ffffff",
+    "text_font": "default",
+    "video_duration": null,
+    "song_name": "Original Audio",
+    "trim_start": 0.0,
+    "trim_end": null,
+    "views": [
+      [
+        "nasasiraJohn"
+      ],
+      [
+        "Drkeiz"
+      ],
+      [
+        "koppa"
+      ],
+      [
+        "Ivan"
+      ]
+    ]
+  }
+},
+{
+  "model": "social.post",
+  "pk": 12,
+  "fields": {
+    "user": [
+      "Drkeiz"
+    ],
+    "content": "🥰🥰🥰🥰🥰",
+    "post_type": "text",
+    "created_at": "2026-04-12T15:31:56.533Z",
+    "updated_at": "2026-04-12T15:31:56.533Z",
+    "is_repost": false,
+    "original_post": null,
+    "is_reply": true,
+    "parent_post": 1,
+    "background_template": null,
+    "text_alignment": "center",
+    "text_size": 1.8,
+    "text_color": "#ffffff",
+    "text_font": "default",
+    "video_duration": null,
+    "song_name": "Original Audio",
+    "trim_start": 0.0,
+    "trim_end": null,
+    "views": []
+  }
+},
+{
+  "model": "social.post",
+  "pk": 13,
+  "fields": {
+    "user": [
+      "Drkeiz"
+    ],
+    "content": "https://vm.tiktok.com/ZGduEpA6E/",
+    "post_type": "text",
+    "created_at": "2026-04-12T15:36:01.868Z",
+    "updated_at": "2026-04-12T15:36:01.868Z",
+    "is_repost": false,
+    "original_post": null,
+    "is_reply": false,
+    "parent_post": null,
+    "background_template": null,
+    "text_alignment": "center",
+    "text_size": 1.8,
+    "text_color": "#ffffff",
+    "text_font": "default",
+    "video_duration": null,
+    "song_name": "Original Audio",
+    "trim_start": 0.0,
+    "trim_end": null,
+    "views": [
+      [
+        "mutwe"
+      ],
+      [
+        "nasasiraJohn"
+      ],
+      [
+        "koppa"
+      ],
+      [
+        "Ivan"
+      ]
+    ]
+  }
+},
+{
+  "model": "social.post",
+  "pk": 14,
+  "fields": {
+    "user": [
+      "mutwe"
+    ],
+    "content": "Hey",
+    "post_type": "text",
+    "created_at": "2026-04-17T07:55:49.039Z",
+    "updated_at": "2026-04-17T07:55:49.039Z",
+    "is_repost": false,
+    "original_post": null,
+    "is_reply": true,
+    "parent_post": 13,
+    "background_template": null,
+    "text_alignment": "center",
+    "text_size": 1.8,
+    "text_color": "#ffffff",
+    "text_font": "default",
+    "video_duration": null,
+    "song_name": "Original Audio",
+    "trim_start": 0.0,
+    "trim_end": null,
+    "views": []
+  }
+},
+{
+  "model": "social.like",
+  "pk": 2,
+  "fields": {
+    "user": [
+      "rukujju"
+    ],
+    "post": 1,
+    "created_at": "2026-03-16T13:40:13.053Z"
+  }
+},
+{
+  "model": "social.like",
+  "pk": 3,
+  "fields": {
+    "user": [
+      "Drkeiz"
+    ],
+    "post": 1,
+    "created_at": "2026-03-29T11:00:52.905Z"
+  }
+},
+{
+  "model": "social.like",
+  "pk": 5,
+  "fields": {
+    "user": [
+      "Drkeiz"
+    ],
+    "post": 11,
+    "created_at": "2026-04-12T15:28:40.336Z"
+  }
+},
+{
+  "model": "social.like",
+  "pk": 6,
+  "fields": {
+    "user": [
+      "Drkeiz"
+    ],
+    "post": 6,
+    "created_at": "2026-04-12T15:40:16.748Z"
+  }
+},
+{
+  "model": "social.like",
+  "pk": 7,
+  "fields": {
+    "user": [
+      "mutwe"
+    ],
+    "post": 7,
+    "created_at": "2026-04-14T08:41:26.437Z"
+  }
+},
+{
+  "model": "social.like",
+  "pk": 8,
+  "fields": {
+    "user": [
+      "koppa"
+    ],
+    "post": 11,
+    "created_at": "2026-04-14T12:48:20.062Z"
+  }
+},
+{
+  "model": "social.like",
+  "pk": 9,
+  "fields": {
+    "user": [
+      "koppa"
+    ],
+    "post": 7,
+    "created_at": "2026-04-14T12:48:40.852Z"
+  }
+},
+{
+  "model": "social.like",
+  "pk": 10,
+  "fields": {
+    "user": [
+      "koppa"
+    ],
+    "post": 1,
+    "created_at": "2026-04-14T12:48:57.618Z"
+  }
+},
+{
+  "model": "social.follow",
+  "pk": 1,
+  "fields": {
+    "follower": [
+      "mutwe"
+    ],
+    "following": [
+      "rukujju"
+    ],
+    "created_at": "2026-03-16T13:36:15.836Z"
+  }
+},
+{
+  "model": "social.follow",
+  "pk": 6,
+  "fields": {
+    "follower": [
+      "mutwe"
+    ],
+    "following": [
+      "Shoot256"
+    ],
+    "created_at": "2026-03-17T07:54:47.927Z"
+  }
+},
+{
+  "model": "social.follow",
+  "pk": 7,
+  "fields": {
+    "follower": [
+      "mutwe"
+    ],
+    "following": [
+      "Drkeiz"
+    ],
+    "created_at": "2026-03-17T07:54:56.927Z"
+  }
+},
+{
+  "model": "social.follow",
+  "pk": 8,
+  "fields": {
+    "follower": [
+      "Drkeiz"
+    ],
+    "following": [
+      "Shoot256"
+    ],
+    "created_at": "2026-03-17T10:27:51.726Z"
+  }
+},
+{
+  "model": "social.follow",
+  "pk": 9,
+  "fields": {
+    "follower": [
+      "Drkeiz"
+    ],
+    "following": [
+      "mutwe"
+    ],
+    "created_at": "2026-03-17T10:27:59.824Z"
+  }
+},
+{
+  "model": "social.follow",
+  "pk": 11,
+  "fields": {
+    "follower": [
+      "Shoot256"
+    ],
+    "following": [
+      "Drkeiz"
+    ],
+    "created_at": "2026-03-17T22:11:29.020Z"
+  }
+},
+{
+  "model": "social.follow",
+  "pk": 13,
+  "fields": {
+    "follower": [
+      "Shoot256"
+    ],
+    "following": [
+      "mutwe"
+    ],
+    "created_at": "2026-03-17T22:11:33.850Z"
+  }
+},
+{
+  "model": "social.follow",
+  "pk": 20,
+  "fields": {
+    "follower": [
+      "kingwise"
+    ],
+    "following": [
+      "mutwe"
+    ],
+    "created_at": "2026-03-20T11:08:20.190Z"
+  }
+},
+{
+  "model": "social.follow",
+  "pk": 21,
+  "fields": {
+    "follower": [
+      "kivabulaya"
+    ],
+    "following": [
+      "mutwe"
+    ],
+    "created_at": "2026-04-10T14:43:52.161Z"
+  }
+},
+{
+  "model": "social.follow",
+  "pk": 22,
+  "fields": {
+    "follower": [
+      "mutwe"
+    ],
+    "following": [
+      "kingwise"
+    ],
+    "created_at": "2026-04-11T06:09:29.699Z"
+  }
+},
+{
+  "model": "social.follow",
+  "pk": 23,
+  "fields": {
+    "follower": [
+      "mutwe"
+    ],
+    "following": [
+      "kivabulaya"
+    ],
+    "created_at": "2026-04-11T06:09:31.520Z"
+  }
+},
+{
+  "model": "social.follow",
+  "pk": 24,
+  "fields": {
+    "follower": [
+      "mutwe"
+    ],
+    "following": [
+      "DenisKadidi"
+    ],
+    "created_at": "2026-04-11T06:48:44.096Z"
+  }
+},
+{
+  "model": "social.follow",
+  "pk": 25,
+  "fields": {
+    "follower": [
+      "rukujju"
+    ],
+    "following": [
+      "Arafat"
+    ],
+    "created_at": "2026-04-11T12:55:16.418Z"
+  }
+},
+{
+  "model": "social.follow",
+  "pk": 26,
+  "fields": {
+    "follower": [
+      "mutwe"
+    ],
+    "following": [
+      "koppa"
+    ],
+    "created_at": "2026-04-12T06:27:27.286Z"
+  }
+},
+{
+  "model": "social.follow",
+  "pk": 27,
+  "fields": {
+    "follower": [
+      "Clever"
+    ],
+    "following": [
+      "koppa"
+    ],
+    "created_at": "2026-04-13T15:39:59.887Z"
+  }
+},
+{
+  "model": "social.follow",
+  "pk": 28,
+  "fields": {
+    "follower": [
+      "koppa"
+    ],
+    "following": [
+      "Clever"
+    ],
+    "created_at": "2026-04-13T15:46:51.353Z"
+  }
+},
+{
+  "model": "social.follow",
+  "pk": 29,
+  "fields": {
+    "follower": [
+      "koppa"
+    ],
+    "following": [
+      "mutwe"
+    ],
+    "created_at": "2026-04-13T15:46:53.183Z"
+  }
+},
+{
+  "model": "social.follow",
+  "pk": 30,
+  "fields": {
+    "follower": [
+      "nasasiraJohn"
+    ],
+    "following": [
+      "mutwe"
+    ],
+    "created_at": "2026-04-14T08:37:32.449Z"
+  }
+},
+{
+  "model": "social.follow",
+  "pk": 31,
+  "fields": {
+    "follower": [
+      "mutwe"
+    ],
+    "following": [
+      "nasasiraJohn"
+    ],
+    "created_at": "2026-04-14T08:43:25.768Z"
+  }
+},
+{
+  "model": "social.follow",
+  "pk": 32,
+  "fields": {
+    "follower": [
+      "Ivan"
+    ],
+    "following": [
+      "mutwe"
+    ],
+    "created_at": "2026-04-14T12:51:26.881Z"
+  }
+},
+{
+  "model": "social.notification",
+  "pk": 1,
+  "fields": {
+    "recipient": [
+      "rukujju"
+    ],
+    "sender": [
+      "mutwe"
+    ],
+    "notification_type": "follow",
+    "post": null,
+    "chat_id": null,
+    "message": null,
+    "is_read": true,
+    "created_at": "2026-03-16T13:36:16.131Z"
+  }
+},
+{
+  "model": "social.notification",
+  "pk": 3,
+  "fields": {
+    "recipient": [
+      "mutwe"
+    ],
+    "sender": [
+      "rukujju"
+    ],
+    "notification_type": "like",
+    "post": 1,
+    "chat_id": null,
+    "message": null,
+    "is_read": true,
+    "created_at": "2026-03-16T13:40:13.230Z"
+  }
+},
+{
+  "model": "social.notification",
+  "pk": 8,
+  "fields": {
+    "recipient": [
+      "Shoot256"
+    ],
+    "sender": [
+      "mutwe"
+    ],
+    "notification_type": "follow",
+    "post": null,
+    "chat_id": null,
+    "message": null,
+    "is_read": true,
+    "created_at": "2026-03-17T07:54:47.959Z"
+  }
+},
+{
+  "model": "social.notification",
+  "pk": 9,
+  "fields": {
+    "recipient": [
+      "Drkeiz"
+    ],
+    "sender": [
+      "mutwe"
+    ],
+    "notification_type": "follow",
+    "post": null,
+    "chat_id": null,
+    "message": null,
+    "is_read": true,
+    "created_at": "2026-03-17T07:54:56.952Z"
+  }
+},
+{
+  "model": "social.notification",
+  "pk": 10,
+  "fields": {
+    "recipient": [
+      "Shoot256"
+    ],
+    "sender": [
+      "Drkeiz"
+    ],
+    "notification_type": "follow",
+    "post": null,
+    "chat_id": null,
+    "message": null,
+    "is_read": true,
+    "created_at": "2026-03-17T10:27:51.763Z"
+  }
+},
+{
+  "model": "social.notification",
+  "pk": 11,
+  "fields": {
+    "recipient": [
+      "mutwe"
+    ],
+    "sender": [
+      "Drkeiz"
+    ],
+    "notification_type": "follow",
+    "post": null,
+    "chat_id": null,
+    "message": null,
+    "is_read": true,
+    "created_at": "2026-03-17T10:27:59.887Z"
+  }
+},
+{
+  "model": "social.notification",
+  "pk": 13,
+  "fields": {
+    "recipient": [
+      "Drkeiz"
+    ],
+    "sender": [
+      "Shoot256"
+    ],
+    "notification_type": "follow",
+    "post": null,
+    "chat_id": null,
+    "message": null,
+    "is_read": true,
+    "created_at": "2026-03-17T22:11:29.046Z"
+  }
+},
+{
+  "model": "social.notification",
+  "pk": 15,
+  "fields": {
+    "recipient": [
+      "mutwe"
+    ],
+    "sender": [
+      "Shoot256"
+    ],
+    "notification_type": "follow",
+    "post": null,
+    "chat_id": null,
+    "message": null,
+    "is_read": true,
+    "created_at": "2026-03-17T22:11:33.885Z"
+  }
+},
+{
+  "model": "social.notification",
+  "pk": 16,
+  "fields": {
+    "recipient": [
+      "mutwe"
+    ],
+    "sender": [
+      "jit"
+    ],
+    "notification_type": "repost",
+    "post": 6,
+    "chat_id": null,
+    "message": null,
+    "is_read": true,
+    "created_at": "2026-03-20T06:54:50.942Z"
+  }
+},
+{
+  "model": "social.notification",
+  "pk": 24,
+  "fields": {
+    "recipient": [
+      "mutwe"
+    ],
+    "sender": [
+      "kingwise"
+    ],
+    "notification_type": "follow",
+    "post": null,
+    "chat_id": null,
+    "message": null,
+    "is_read": true,
+    "created_at": "2026-03-20T11:08:20.226Z"
+  }
+},
+{
+  "model": "social.notification",
+  "pk": 25,
+  "fields": {
+    "recipient": [
+      "mutwe"
+    ],
+    "sender": [
+      "Wask"
+    ],
+    "notification_type": "follow",
+    "post": null,
+    "chat_id": null,
+    "message": null,
+    "is_read": true,
+    "created_at": "2026-03-20T11:11:04.850Z"
+  }
+},
+{
+  "model": "social.notification",
+  "pk": 26,
+  "fields": {
+    "recipient": [
+      "mutwe"
+    ],
+    "sender": [
+      "Jb"
+    ],
+    "notification_type": "follow",
+    "post": null,
+    "chat_id": null,
+    "message": null,
+    "is_read": true,
+    "created_at": "2026-03-21T10:00:05.062Z"
+  }
+},
+{
+  "model": "social.notification",
+  "pk": 27,
+  "fields": {
+    "recipient": [
+      "mutwe"
+    ],
+    "sender": [
+      "Drkeiz"
+    ],
+    "notification_type": "like",
+    "post": 1,
+    "chat_id": null,
+    "message": null,
+    "is_read": true,
+    "created_at": "2026-03-29T11:00:52.938Z"
+  }
+},
+{
+  "model": "social.notification",
+  "pk": 28,
+  "fields": {
+    "recipient": [
+      "mutwe"
+    ],
+    "sender": [
+      "kivabulaya"
+    ],
+    "notification_type": "follow",
+    "post": null,
+    "chat_id": null,
+    "message": null,
+    "is_read": true,
+    "created_at": "2026-04-10T14:27:00.111Z"
+  }
+},
+{
+  "model": "social.notification",
+  "pk": 29,
+  "fields": {
+    "recipient": [
+      "mutwe"
+    ],
+    "sender": [
+      "kivabulaya"
+    ],
+    "notification_type": "follow",
+    "post": null,
+    "chat_id": null,
+    "message": null,
+    "is_read": true,
+    "created_at": "2026-04-10T14:43:52.197Z"
+  }
+},
+{
+  "model": "social.notification",
+  "pk": 30,
+  "fields": {
+    "recipient": [
+      "kingwise"
+    ],
+    "sender": [
+      "mutwe"
+    ],
+    "notification_type": "follow",
+    "post": null,
+    "chat_id": null,
+    "message": null,
+    "is_read": false,
+    "created_at": "2026-04-11T06:09:29.732Z"
+  }
+},
+{
+  "model": "social.notification",
+  "pk": 31,
+  "fields": {
+    "recipient": [
+      "kivabulaya"
+    ],
+    "sender": [
+      "mutwe"
+    ],
+    "notification_type": "follow",
+    "post": null,
+    "chat_id": null,
+    "message": null,
+    "is_read": false,
+    "created_at": "2026-04-11T06:09:31.537Z"
+  }
+},
+{
+  "model": "social.notification",
+  "pk": 32,
+  "fields": {
+    "recipient": [
+      "DenisKadidi"
+    ],
+    "sender": [
+      "mutwe"
+    ],
+    "notification_type": "follow",
+    "post": null,
+    "chat_id": null,
+    "message": null,
+    "is_read": false,
+    "created_at": "2026-04-11T06:48:44.126Z"
+  }
+},
+{
+  "model": "social.notification",
+  "pk": 33,
+  "fields": {
+    "recipient": [
+      "Arafat"
+    ],
+    "sender": [
+      "rukujju"
+    ],
+    "notification_type": "follow",
+    "post": null,
+    "chat_id": null,
+    "message": null,
+    "is_read": false,
+    "created_at": "2026-04-11T12:55:16.466Z"
+  }
+},
+{
+  "model": "social.notification",
+  "pk": 34,
+  "fields": {
+    "recipient": [
+      "mutwe"
+    ],
+    "sender": [
+      "koppa"
+    ],
+    "notification_type": "follow",
+    "post": null,
+    "chat_id": null,
+    "message": null,
+    "is_read": true,
+    "created_at": "2026-04-11T16:04:54.387Z"
+  }
+},
+{
+  "model": "social.notification",
+  "pk": 35,
+  "fields": {
+    "recipient": [
+      "koppa"
+    ],
+    "sender": [
+      "mutwe"
+    ],
+    "notification_type": "follow",
+    "post": null,
+    "chat_id": null,
+    "message": null,
+    "is_read": false,
+    "created_at": "2026-04-12T06:27:27.315Z"
+  }
+},
+{
+  "model": "social.notification",
+  "pk": 36,
+  "fields": {
+    "recipient": [
+      "mutwe"
+    ],
+    "sender": [
+      "Drkeiz"
+    ],
+    "notification_type": "like",
+    "post": 11,
+    "chat_id": null,
+    "message": null,
+    "is_read": false,
+    "created_at": "2026-04-12T15:28:40.370Z"
+  }
+},
+{
+  "model": "social.notification",
+  "pk": 37,
+  "fields": {
+    "recipient": [
+      "mutwe"
+    ],
+    "sender": [
+      "Drkeiz"
+    ],
+    "notification_type": "like",
+    "post": 6,
+    "chat_id": null,
+    "message": null,
+    "is_read": false,
+    "created_at": "2026-04-12T15:40:16.779Z"
+  }
+},
+{
+  "model": "social.notification",
+  "pk": 38,
+  "fields": {
+    "recipient": [
+      "koppa"
+    ],
+    "sender": [
+      "Clever"
+    ],
+    "notification_type": "follow",
+    "post": null,
+    "chat_id": null,
+    "message": null,
+    "is_read": false,
+    "created_at": "2026-04-13T15:39:18.521Z"
+  }
+},
+{
+  "model": "social.notification",
+  "pk": 39,
+  "fields": {
+    "recipient": [
+      "koppa"
+    ],
+    "sender": [
+      "Clever"
+    ],
+    "notification_type": "follow",
+    "post": null,
+    "chat_id": null,
+    "message": null,
+    "is_read": false,
+    "created_at": "2026-04-13T15:39:59.913Z"
+  }
+},
+{
+  "model": "social.notification",
+  "pk": 40,
+  "fields": {
+    "recipient": [
+      "Clever"
+    ],
+    "sender": [
+      "koppa"
+    ],
+    "notification_type": "follow",
+    "post": null,
+    "chat_id": null,
+    "message": null,
+    "is_read": false,
+    "created_at": "2026-04-13T15:46:51.381Z"
+  }
+},
+{
+  "model": "social.notification",
+  "pk": 41,
+  "fields": {
+    "recipient": [
+      "mutwe"
+    ],
+    "sender": [
+      "koppa"
+    ],
+    "notification_type": "follow",
+    "post": null,
+    "chat_id": null,
+    "message": null,
+    "is_read": false,
+    "created_at": "2026-04-13T15:46:53.235Z"
+  }
+},
+{
+  "model": "social.notification",
+  "pk": 42,
+  "fields": {
+    "recipient": [
+      "mutwe"
+    ],
+    "sender": [
+      "nasasiraJohn"
+    ],
+    "notification_type": "follow",
+    "post": null,
+    "chat_id": null,
+    "message": null,
+    "is_read": false,
+    "created_at": "2026-04-14T08:37:32.491Z"
+  }
+},
+{
+  "model": "social.notification",
+  "pk": 43,
+  "fields": {
+    "recipient": [
+      "jit"
+    ],
+    "sender": [
+      "mutwe"
+    ],
+    "notification_type": "like",
+    "post": 7,
+    "chat_id": null,
+    "message": null,
+    "is_read": false,
+    "created_at": "2026-04-14T08:41:26.475Z"
+  }
+},
+{
+  "model": "social.notification",
+  "pk": 44,
+  "fields": {
+    "recipient": [
+      "nasasiraJohn"
+    ],
+    "sender": [
+      "mutwe"
+    ],
+    "notification_type": "follow",
+    "post": null,
+    "chat_id": null,
+    "message": null,
+    "is_read": false,
+    "created_at": "2026-04-14T08:43:25.798Z"
+  }
+},
+{
+  "model": "social.notification",
+  "pk": 45,
+  "fields": {
+    "recipient": [
+      "mutwe"
+    ],
+    "sender": [
+      "koppa"
+    ],
+    "notification_type": "like",
+    "post": 11,
+    "chat_id": null,
+    "message": null,
+    "is_read": false,
+    "created_at": "2026-04-14T12:48:20.095Z"
+  }
+},
+{
+  "model": "social.notification",
+  "pk": 46,
+  "fields": {
+    "recipient": [
+      "jit"
+    ],
+    "sender": [
+      "koppa"
+    ],
+    "notification_type": "like",
+    "post": 7,
+    "chat_id": null,
+    "message": null,
+    "is_read": false,
+    "created_at": "2026-04-14T12:48:40.882Z"
+  }
+},
+{
+  "model": "social.notification",
+  "pk": 47,
+  "fields": {
+    "recipient": [
+      "mutwe"
+    ],
+    "sender": [
+      "koppa"
+    ],
+    "notification_type": "like",
+    "post": 1,
+    "chat_id": null,
+    "message": null,
+    "is_read": false,
+    "created_at": "2026-04-14T12:48:57.914Z"
+  }
+},
+{
+  "model": "social.notification",
+  "pk": 49,
+  "fields": {
+    "recipient": [
+      "mutwe"
+    ],
+    "sender": [
+      "Ivan"
+    ],
+    "notification_type": "follow",
+    "post": null,
+    "chat_id": null,
+    "message": null,
+    "is_read": false,
+    "created_at": "2026-04-14T12:51:26.913Z"
+  }
+},
+{
+  "model": "social.notification",
+  "pk": 50,
+  "fields": {
+    "recipient": [
+      "Drkeiz"
+    ],
+    "sender": [
+      "mutwe"
+    ],
+    "notification_type": "reply",
+    "post": 14,
+    "chat_id": null,
+    "message": null,
+    "is_read": false,
+    "created_at": "2026-04-17T07:55:49.076Z"
+  }
+},
+{
+  "model": "social.feedcache",
+  "pk": 4,
+  "fields": {
+    "user": [
+      "rukujju"
+    ],
+    "last_seen_post": 1,
+    "updated_at": "2026-03-16T14:14:19.743Z"
+  }
+},
+{
+  "model": "social.feedcache",
+  "pk": 5,
+  "fields": {
+    "user": [
+      "mutwe"
+    ],
+    "last_seen_post": 13,
+    "updated_at": "2026-04-17T06:59:11.527Z"
+  }
+},
+{
+  "model": "social.feedcache",
+  "pk": 6,
+  "fields": {
+    "user": [
+      "mutemaAlex"
+    ],
+    "last_seen_post": 1,
+    "updated_at": "2026-03-16T15:43:48.912Z"
+  }
+},
+{
+  "model": "social.feedcache",
+  "pk": 8,
+  "fields": {
+    "user": [
+      "Shoot256"
+    ],
+    "last_seen_post": 9,
+    "updated_at": "2026-04-01T22:45:17.805Z"
+  }
+},
+{
+  "model": "social.feedcache",
+  "pk": 9,
+  "fields": {
+    "user": [
+      "Drkeiz"
+    ],
+    "last_seen_post": 13,
+    "updated_at": "2026-04-16T14:20:34.627Z"
+  }
+},
+{
+  "model": "social.feedcache",
+  "pk": 10,
+  "fields": {
+    "user": [
+      "jit"
+    ],
+    "last_seen_post": 7,
+    "updated_at": "2026-03-20T06:55:35.566Z"
+  }
+},
+{
+  "model": "social.feedcache",
+  "pk": 11,
+  "fields": {
+    "user": [
+      "kingwise"
+    ],
+    "last_seen_post": 9,
+    "updated_at": "2026-03-20T11:07:19.079Z"
+  }
+},
+{
+  "model": "social.feedcache",
+  "pk": 12,
+  "fields": {
+    "user": [
+      "Wask"
+    ],
+    "last_seen_post": 9,
+    "updated_at": "2026-03-20T11:11:10.617Z"
+  }
+},
+{
+  "model": "social.feedcache",
+  "pk": 13,
+  "fields": {
+    "user": [
+      "Jb"
+    ],
+    "last_seen_post": null,
+    "updated_at": "2026-03-21T10:00:11.909Z"
+  }
+},
+{
+  "model": "social.feedcache",
+  "pk": 14,
+  "fields": {
+    "user": [
+      "kivabulaya"
+    ],
+    "last_seen_post": 9,
+    "updated_at": "2026-04-10T14:43:44.851Z"
+  }
+},
+{
+  "model": "social.feedcache",
+  "pk": 15,
+  "fields": {
+    "user": [
+      "koppa"
+    ],
+    "last_seen_post": 13,
+    "updated_at": "2026-04-16T11:28:37.435Z"
+  }
+},
+{
+  "model": "social.feedcache",
+  "pk": 16,
+  "fields": {
+    "user": [
+      "nasasiraJohn"
+    ],
+    "last_seen_post": 13,
+    "updated_at": "2026-04-14T08:37:10.808Z"
+  }
+},
+{
+  "model": "social.feedcache",
+  "pk": 17,
+  "fields": {
+    "user": [
+      "Ivan"
+    ],
+    "last_seen_post": 13,
+    "updated_at": "2026-04-14T12:51:13.749Z"
+  }
+},
+{
+  "model": "airdrop.userminingstate",
+  "pk": 1,
+  "fields": {
+    "user": [
+      "DenisKadidi"
+    ],
+    "is_mining": true,
+    "last_tap": "2025-08-05T11:21:35.537Z",
+    "total_points": 0.33839623611111114,
+    "current_rate": 1.0,
+    "session_start": "2025-08-05T11:21:35.537Z"
+  }
+},
+{
+  "model": "airdrop.userminingstate",
+  "pk": 2,
+  "fields": {
+    "user": [
+      "mutwe"
+    ],
+    "is_mining": true,
+    "last_tap": "2026-04-16T09:13:58.292Z",
+    "total_points": 264.0,
+    "current_rate": 1.0,
+    "session_start": "2026-04-16T09:13:58.292Z"
+  }
+},
+{
+  "model": "airdrop.userminingstate",
+  "pk": 3,
+  "fields": {
+    "user": [
+      "rukujju"
+    ],
+    "is_mining": true,
+    "last_tap": "2026-04-15T09:05:21.537Z",
+    "total_points": 24.0,
+    "current_rate": 1.0,
+    "session_start": "2026-04-15T09:05:21.537Z"
+  }
+},
+{
+  "model": "airdrop.userminingstate",
+  "pk": 4,
+  "fields": {
+    "user": [
+      "MusinguziDenis"
+    ],
+    "is_mining": true,
+    "last_tap": "2026-03-14T10:06:56.966Z",
+    "total_points": 24.0,
+    "current_rate": 1.0,
+    "session_start": "2026-03-14T10:06:56.966Z"
+  }
+},
+{
+  "model": "airdrop.userminingstate",
+  "pk": 5,
+  "fields": {
+    "user": [
+      "nasasiraJohn"
+    ],
+    "is_mining": true,
+    "last_tap": "2026-04-14T08:37:00.711Z",
+    "total_points": 27.653185999444446,
+    "current_rate": 1.0,
+    "session_start": "2026-04-14T08:37:00.711Z"
+  }
+},
+{
+  "model": "airdrop.userminingstate",
+  "pk": 6,
+  "fields": {
+    "user": [
+      "Drkeiz"
+    ],
+    "is_mining": true,
+    "last_tap": "2026-04-15T18:01:25.462Z",
+    "total_points": 456.3864500069445,
+    "current_rate": 1.0,
+    "session_start": "2026-04-15T18:01:25.462Z"
+  }
+},
+{
+  "model": "airdrop.userminingstate",
+  "pk": 7,
+  "fields": {
+    "user": [
+      "mutemaAlex"
+    ],
+    "is_mining": false,
+    "last_tap": null,
+    "total_points": 48.0,
+    "current_rate": 1.0,
+    "session_start": null
+  }
+},
+{
+  "model": "airdrop.userminingstate",
+  "pk": 8,
+  "fields": {
+    "user": [
+      "Stoneforex"
+    ],
+    "is_mining": true,
+    "last_tap": "2026-03-13T18:26:42.165Z",
+    "total_points": 0.0,
+    "current_rate": 1.0,
+    "session_start": "2026-03-13T18:26:42.165Z"
+  }
+},
+{
+  "model": "airdrop.userminingstate",
+  "pk": 9,
+  "fields": {
+    "user": [
+      "kabandaali"
+    ],
+    "is_mining": true,
+    "last_tap": "2026-03-15T17:53:53.143Z",
+    "total_points": 0.0,
+    "current_rate": 1.0,
+    "session_start": "2026-03-15T17:53:53.143Z"
+  }
+},
+{
+  "model": "airdrop.userminingstate",
+  "pk": 10,
+  "fields": {
+    "user": [
+      "Shoot256"
+    ],
+    "is_mining": true,
+    "last_tap": "2026-04-07T10:19:07.115Z",
+    "total_points": 264.0,
+    "current_rate": 1.0,
+    "session_start": "2026-04-07T10:19:07.115Z"
+  }
+},
+{
+  "model": "airdrop.userminingstate",
+  "pk": 11,
+  "fields": {
+    "user": [
+      "Arafat"
+    ],
+    "is_mining": true,
+    "last_tap": "2026-03-16T08:42:50.297Z",
+    "total_points": 0.0,
+    "current_rate": 1.0,
+    "session_start": "2026-03-16T08:42:50.297Z"
+  }
+},
+{
+  "model": "airdrop.userminingstate",
+  "pk": 12,
+  "fields": {
+    "user": [
+      "jit"
+    ],
+    "is_mining": true,
+    "last_tap": "2026-03-20T06:55:23.136Z",
+    "total_points": 0.0,
+    "current_rate": 1.0,
+    "session_start": "2026-03-20T06:55:23.136Z"
+  }
+},
+{
+  "model": "airdrop.userminingstate",
+  "pk": 13,
+  "fields": {
+    "user": [
+      "kingwise"
+    ],
+    "is_mining": false,
+    "last_tap": null,
+    "total_points": 0.0,
+    "current_rate": 1.0,
+    "session_start": null
+  }
+},
+{
+  "model": "airdrop.userminingstate",
+  "pk": 14,
+  "fields": {
+    "user": [
+      "kivabulaya"
+    ],
+    "is_mining": false,
+    "last_tap": null,
+    "total_points": 24.0,
+    "current_rate": 1.0,
+    "session_start": null
+  }
+},
+{
+  "model": "airdrop.userminingstate",
+  "pk": 15,
+  "fields": {
+    "user": [
+      "koppa"
+    ],
+    "is_mining": true,
+    "last_tap": "2026-04-15T14:50:36.299Z",
+    "total_points": 48.0,
+    "current_rate": 1.0,
+    "session_start": "2026-04-15T14:50:36.299Z"
+  }
+},
+{
+  "model": "airdrop.userminingstate",
+  "pk": 16,
+  "fields": {
+    "user": [
+      "Clever"
+    ],
+    "is_mining": true,
+    "last_tap": "2026-04-16T11:29:44.354Z",
+    "total_points": 24.0,
+    "current_rate": 1.0,
+    "session_start": "2026-04-16T11:29:44.354Z"
+  }
+},
+{
+  "model": "airdrop.userminingstate",
+  "pk": 17,
+  "fields": {
+    "user": [
+      "Ivan"
+    ],
+    "is_mining": true,
+    "last_tap": "2026-04-14T12:50:27.675Z",
+    "total_points": 0.0,
+    "current_rate": 1.0,
+    "session_start": "2026-04-14T12:50:27.675Z"
+  }
+},
+{
+  "model": "tasks.socialprofile",
+  "pk": 1,
+  "fields": {
+    "user": [
+      "Drkeiz"
+    ],
+    "platform": "tiktok",
+    "handle": "https://vm.tiktok.com/ZGduEpA6E/",
+    "is_verified": false,
+    "verified_at": null,
+    "created_at": "2026-04-12T15:33:15.492Z",
+    "updated_at": "2026-04-12T15:33:15.492Z"
+  }
+},
+{
+  "model": "tasks.socialprofile",
+  "pk": 2,
+  "fields": {
+    "user": [
+      "Drkeiz"
+    ],
+    "platform": "youtube",
+    "handle": "https://vm.tiktok.com/ZGduEpA6E/",
+    "is_verified": false,
+    "verified_at": null,
+    "created_at": "2026-04-12T15:34:14.224Z",
+    "updated_at": "2026-04-12T15:34:14.224Z"
+  }
+},
+{
+  "model": "chat.chat",
+  "pk": 1,
+  "fields": {
+    "chat_type": "dm",
+    "name": null,
+    "created_by": [
+      "mutwe"
+    ],
+    "created_at": "2026-04-11T05:44:38.329Z",
+    "updated_at": "2026-04-16T18:40:07.326Z",
+    "is_active": true,
+    "last_message": "Is the camera and buttery dede",
+    "last_message_time": "2026-04-16T18:40:07.296Z",
+    "last_message_sender": [
+      "kivabulaya"
+    ],
+    "participants": [
+      [
+        "mutwe"
+      ],
+      [
+        "kivabulaya"
+      ]
+    ],
+    "admins": [
+      [
+        "mutwe"
+      ]
+    ]
+  }
+},
+{
+  "model": "chat.chat",
+  "pk": 2,
+  "fields": {
+    "chat_type": "dm",
+    "name": null,
+    "created_by": [
+      "mutwe"
+    ],
+    "created_at": "2026-04-11T07:00:44.643Z",
+    "updated_at": "2026-04-11T07:02:26.752Z",
+    "is_active": true,
+    "last_message": "Voice note",
+    "last_message_time": "2026-04-11T07:02:26.739Z",
+    "last_message_sender": [
+      "mutwe"
+    ],
+    "participants": [
+      [
+        "mutwe"
+      ],
+      [
+        "rukujju"
+      ]
+    ],
+    "admins": [
+      [
+        "mutwe"
+      ]
+    ]
+  }
+},
+{
+  "model": "chat.chat",
+  "pk": 3,
+  "fields": {
+    "chat_type": "dm",
+    "name": null,
+    "created_by": [
+      "rukujju"
+    ],
+    "created_at": "2026-04-11T12:55:18.152Z",
+    "updated_at": "2026-04-11T12:56:38.161Z",
+    "is_active": true,
+    "last_message": "Olyotya muganda wange",
+    "last_message_time": "2026-04-11T12:56:38.134Z",
+    "last_message_sender": [
+      "rukujju"
+    ],
+    "participants": [
+      [
+        "rukujju"
+      ],
+      [
+        "Arafat"
+      ]
+    ],
+    "admins": [
+      [
+        "rukujju"
+      ]
+    ]
+  }
+},
+{
+  "model": "chat.chat",
+  "pk": 4,
+  "fields": {
+    "chat_type": "dm",
+    "name": null,
+    "created_by": [
+      "koppa"
+    ],
+    "created_at": "2026-04-11T16:07:07.871Z",
+    "updated_at": "2026-04-13T15:44:06.943Z",
+    "is_active": true,
+    "last_message": "hoiam doing",
+    "last_message_time": "2026-04-13T15:44:06.917Z",
+    "last_message_sender": [
+      "koppa"
+    ],
+    "participants": [
+      [
+        "mutwe"
+      ],
+      [
+        "koppa"
+      ]
+    ],
+    "admins": [
+      [
+        "koppa"
+      ]
+    ]
+  }
+},
+{
+  "model": "chat.chat",
+  "pk": 5,
+  "fields": {
+    "chat_type": "dm",
+    "name": null,
+    "created_by": [
+      "mutwe"
+    ],
+    "created_at": "2026-04-13T05:13:43.811Z",
+    "updated_at": "2026-04-15T18:03:39.918Z",
+    "is_active": true,
+    "last_message": "kkk bro",
+    "last_message_time": "2026-04-15T18:03:39.887Z",
+    "last_message_sender": [
+      "Drkeiz"
+    ],
+    "participants": [
+      [
+        "mutwe"
+      ],
+      [
+        "Drkeiz"
+      ]
+    ],
+    "admins": [
+      [
+        "mutwe"
+      ]
+    ]
+  }
+},
+{
+  "model": "chat.chat",
+  "pk": 6,
+  "fields": {
+    "chat_type": "dm",
+    "name": null,
+    "created_by": [
+      "Clever"
+    ],
+    "created_at": "2026-04-13T15:40:06.847Z",
+    "updated_at": "2026-04-16T11:31:46.661Z",
+    "is_active": true,
+    "last_message": "yyyyyyyyyyyyooooooooooooooooooooooooooooooooooooo",
+    "last_message_time": "2026-04-16T11:31:46.636Z",
+    "last_message_sender": [
+      "Clever"
+    ],
+    "participants": [
+      [
+        "koppa"
+      ],
+      [
+        "Clever"
+      ]
+    ],
+    "admins": [
+      [
+        "Clever"
+      ]
+    ]
+  }
+},
+{
+  "model": "chat.chat",
+  "pk": 7,
+  "fields": {
+    "chat_type": "dm",
+    "name": null,
+    "created_by": [
+      "nasasiraJohn"
+    ],
+    "created_at": "2026-04-14T08:37:34.964Z",
+    "updated_at": "2026-04-15T07:04:08.573Z",
+    "is_active": true,
+    "last_message": "Praise God ,Bob waiting for your first post",
+    "last_message_time": "2026-04-15T07:04:08.545Z",
+    "last_message_sender": [
+      "mutwe"
+    ],
+    "participants": [
+      [
+        "mutwe"
+      ],
+      [
+        "nasasiraJohn"
+      ]
+    ],
+    "admins": [
+      [
+        "nasasiraJohn"
+      ]
+    ]
+  }
+},
+{
+  "model": "chat.chat",
+  "pk": 8,
+  "fields": {
+    "chat_type": "dm",
+    "name": null,
+    "created_by": [
+      "Ivan"
+    ],
+    "created_at": "2026-04-14T12:51:34.600Z",
+    "updated_at": "2026-04-14T15:52:42.882Z",
+    "is_active": true,
+    "last_message": "Store kyi",
+    "last_message_time": "2026-04-14T15:52:42.852Z",
+    "last_message_sender": [
+      "mutwe"
+    ],
+    "participants": [
+      [
+        "mutwe"
+      ],
+      [
+        "Ivan"
+      ]
+    ],
+    "admins": [
+      [
+        "Ivan"
+      ]
+    ]
+  }
+},
+{
+  "model": "chat.chatmessage",
+  "pk": 1,
+  "fields": {
+    "chat": 2,
+    "sender": [
+      "mutwe"
+    ],
+    "message_type": "text",
+    "content": "hello hello",
+    "voice_note": null,
+    "voice_duration": null,
+    "image": null,
+    "video": null,
+    "video_duration": null,
+    "video_thumbnail": null,
+    "created_at": "2026-04-11T07:00:57.996Z",
+    "is_deleted": false,
+    "read_by": [
+      [
+        "rukujju"
+      ]
+    ]
+  }
+},
+{
+  "model": "chat.chatmessage",
+  "pk": 2,
+  "fields": {
+    "chat": 2,
+    "sender": [
+      "mutwe"
+    ],
+    "message_type": "voice",
+    "content": "",
+    "voice_note": "video/upload/chat/voice_notes/chat_2/exumwitfmabpgnrgwesn",
+    "voice_duration": 8,
+    "image": null,
+    "video": null,
+    "video_duration": null,
+    "video_thumbnail": null,
+    "created_at": "2026-04-11T07:01:14.951Z",
+    "is_deleted": false,
+    "read_by": [
+      [
+        "rukujju"
+      ]
+    ]
+  }
+},
+{
+  "model": "chat.chatmessage",
+  "pk": 3,
+  "fields": {
+    "chat": 2,
+    "sender": [
+      "mutwe"
+    ],
+    "message_type": "voice",
+    "content": "",
+    "voice_note": "video/upload/chat/voice_notes/chat_2/f5hoo8n4iht33yrs7iqo",
+    "voice_duration": 5,
+    "image": null,
+    "video": null,
+    "video_duration": null,
+    "video_thumbnail": null,
+    "created_at": "2026-04-11T07:02:26.739Z",
+    "is_deleted": false,
+    "read_by": [
+      [
+        "rukujju"
+      ]
+    ]
+  }
+},
+{
+  "model": "chat.chatmessage",
+  "pk": 4,
+  "fields": {
+    "chat": 1,
+    "sender": [
+      "mutwe"
+    ],
+    "message_type": "text",
+    "content": "Hello swabul,nze emma",
+    "voice_note": null,
+    "voice_duration": null,
+    "image": null,
+    "video": null,
+    "video_duration": null,
+    "video_thumbnail": null,
+    "created_at": "2026-04-11T12:50:20.030Z",
+    "is_deleted": false,
+    "read_by": [
+      [
+        "kivabulaya"
+      ]
+    ]
+  }
+},
+{
+  "model": "chat.chatmessage",
+  "pk": 5,
+  "fields": {
+    "chat": 3,
+    "sender": [
+      "rukujju"
+    ],
+    "message_type": "text",
+    "content": "Olyotya muganda wange",
+    "voice_note": null,
+    "voice_duration": null,
+    "image": null,
+    "video": null,
+    "video_duration": null,
+    "video_thumbnail": null,
+    "created_at": "2026-04-11T12:56:38.134Z",
+    "is_deleted": false,
+    "read_by": []
+  }
+},
+{
+  "model": "chat.chatmessage",
+  "pk": 6,
+  "fields": {
+    "chat": 4,
+    "sender": [
+      "koppa"
+    ],
+    "message_type": "text",
+    "content": "hello",
+    "voice_note": null,
+    "voice_duration": null,
+    "image": null,
+    "video": null,
+    "video_duration": null,
+    "video_thumbnail": null,
+    "created_at": "2026-04-11T16:07:26.131Z",
+    "is_deleted": false,
+    "read_by": [
+      [
+        "mutwe"
+      ]
+    ]
+  }
+},
+{
+  "model": "chat.chatmessage",
+  "pk": 7,
+  "fields": {
+    "chat": 4,
+    "sender": [
+      "mutwe"
+    ],
+    "message_type": "text",
+    "content": "Howre you",
+    "voice_note": null,
+    "voice_duration": null,
+    "image": null,
+    "video": null,
+    "video_duration": null,
+    "video_thumbnail": null,
+    "created_at": "2026-04-12T06:27:00.983Z",
+    "is_deleted": false,
+    "read_by": [
+      [
+        "koppa"
+      ]
+    ]
+  }
+},
+{
+  "model": "chat.chatmessage",
+  "pk": 8,
+  "fields": {
+    "chat": 5,
+    "sender": [
+      "mutwe"
+    ],
+    "message_type": "text",
+    "content": "Gwe store kyi ,nze emma",
+    "voice_note": null,
+    "voice_duration": null,
+    "image": null,
+    "video": null,
+    "video_duration": null,
+    "video_thumbnail": null,
+    "created_at": "2026-04-13T05:23:15.174Z",
+    "is_deleted": false,
+    "read_by": [
+      [
+        "Drkeiz"
+      ]
+    ]
+  }
+},
+{
+  "model": "chat.chatmessage",
+  "pk": 9,
+  "fields": {
+    "chat": 6,
+    "sender": [
+      "Clever"
+    ],
+    "message_type": "text",
+    "content": "yo yo yo",
+    "voice_note": null,
+    "voice_duration": null,
+    "image": null,
+    "video": null,
+    "video_duration": null,
+    "video_thumbnail": null,
+    "created_at": "2026-04-13T15:40:23.862Z",
+    "is_deleted": false,
+    "read_by": [
+      [
+        "koppa"
+      ]
+    ]
+  }
+},
+{
+  "model": "chat.chatmessage",
+  "pk": 10,
+  "fields": {
+    "chat": 6,
+    "sender": [
+      "koppa"
+    ],
+    "message_type": "text",
+    "content": "wagwan",
+    "voice_note": null,
+    "voice_duration": null,
+    "image": null,
+    "video": null,
+    "video_duration": null,
+    "video_thumbnail": null,
+    "created_at": "2026-04-13T15:43:40.778Z",
+    "is_deleted": false,
+    "read_by": [
+      [
+        "Clever"
+      ]
+    ]
+  }
+},
+{
+  "model": "chat.chatmessage",
+  "pk": 11,
+  "fields": {
+    "chat": 4,
+    "sender": [
+      "koppa"
+    ],
+    "message_type": "text",
+    "content": "hoiam doing",
+    "voice_note": null,
+    "voice_duration": null,
+    "image": null,
+    "video": null,
+    "video_duration": null,
+    "video_thumbnail": null,
+    "created_at": "2026-04-13T15:44:06.917Z",
+    "is_deleted": false,
+    "read_by": [
+      [
+        "mutwe"
+      ]
+    ]
+  }
+},
+{
+  "model": "chat.chatmessage",
+  "pk": 12,
+  "fields": {
+    "chat": 5,
+    "sender": [
+      "Drkeiz"
+    ],
+    "message_type": "text",
+    "content": "yes man tell me",
+    "voice_note": null,
+    "voice_duration": null,
+    "image": null,
+    "video": null,
+    "video_duration": null,
+    "video_thumbnail": null,
+    "created_at": "2026-04-13T17:06:28.615Z",
+    "is_deleted": false,
+    "read_by": [
+      [
+        "mutwe"
+      ]
+    ]
+  }
+},
+{
+  "model": "chat.chatmessage",
+  "pk": 13,
+  "fields": {
+    "chat": 7,
+    "sender": [
+      "nasasiraJohn"
+    ],
+    "message_type": "text",
+    "content": "Praise God, emma",
+    "voice_note": null,
+    "voice_duration": null,
+    "image": null,
+    "video": null,
+    "video_duration": null,
+    "video_thumbnail": null,
+    "created_at": "2026-04-14T08:37:47.249Z",
+    "is_deleted": false,
+    "read_by": [
+      [
+        "mutwe"
+      ]
+    ]
+  }
+},
+{
+  "model": "chat.chatmessage",
+  "pk": 14,
+  "fields": {
+    "chat": 5,
+    "sender": [
+      "mutwe"
+    ],
+    "message_type": "text",
+    "content": "Am coming today",
+    "voice_note": null,
+    "voice_duration": null,
+    "image": null,
+    "video": null,
+    "video_duration": null,
+    "video_thumbnail": null,
+    "created_at": "2026-04-14T08:39:45.278Z",
+    "is_deleted": false,
+    "read_by": [
+      [
+        "Drkeiz"
+      ]
+    ]
+  }
+},
+{
+  "model": "chat.chatmessage",
+  "pk": 15,
+  "fields": {
+    "chat": 8,
+    "sender": [
+      "Ivan"
+    ],
+    "message_type": "text",
+    "content": "Hello,my nigga",
+    "voice_note": null,
+    "voice_duration": null,
+    "image": null,
+    "video": null,
+    "video_duration": null,
+    "video_thumbnail": null,
+    "created_at": "2026-04-14T12:52:24.406Z",
+    "is_deleted": false,
+    "read_by": [
+      [
+        "mutwe"
+      ]
+    ]
+  }
+},
+{
+  "model": "chat.chatmessage",
+  "pk": 16,
+  "fields": {
+    "chat": 8,
+    "sender": [
+      "mutwe"
+    ],
+    "message_type": "text",
+    "content": "Store kyi",
+    "voice_note": null,
+    "voice_duration": null,
+    "image": null,
+    "video": null,
+    "video_duration": null,
+    "video_thumbnail": null,
+    "created_at": "2026-04-14T15:52:42.852Z",
+    "is_deleted": false,
+    "read_by": []
+  }
+},
+{
+  "model": "chat.chatmessage",
+  "pk": 17,
+  "fields": {
+    "chat": 1,
+    "sender": [
+      "kivabulaya"
+    ],
+    "message_type": "text",
+    "content": "Gwe mutwe",
+    "voice_note": null,
+    "voice_duration": null,
+    "image": null,
+    "video": null,
+    "video_duration": null,
+    "video_thumbnail": null,
+    "created_at": "2026-04-15T04:18:25.863Z",
+    "is_deleted": false,
+    "read_by": [
+      [
+        "mutwe"
+      ]
+    ]
+  }
+},
+{
+  "model": "chat.chatmessage",
+  "pk": 18,
+  "fields": {
+    "chat": 1,
+    "sender": [
+      "kivabulaya"
+    ],
+    "message_type": "text",
+    "content": "Njagala sim",
+    "voice_note": null,
+    "voice_duration": null,
+    "image": null,
+    "video": null,
+    "video_duration": null,
+    "video_thumbnail": null,
+    "created_at": "2026-04-15T04:18:36.541Z",
+    "is_deleted": false,
+    "read_by": [
+      [
+        "mutwe"
+      ]
+    ]
+  }
+},
+{
+  "model": "chat.chatmessage",
+  "pk": 19,
+  "fields": {
+    "chat": 1,
+    "sender": [
+      "mutwe"
+    ],
+    "message_type": "text",
+    "content": "Kale ,i got a note 8(samsung ) come today and message me when your at richard's place at 5pm",
+    "voice_note": null,
+    "voice_duration": null,
+    "image": null,
+    "video": null,
+    "video_duration": null,
+    "video_thumbnail": null,
+    "created_at": "2026-04-15T07:03:20.624Z",
+    "is_deleted": false,
+    "read_by": [
+      [
+        "kivabulaya"
+      ]
+    ]
+  }
+},
+{
+  "model": "chat.chatmessage",
+  "pk": 20,
+  "fields": {
+    "chat": 7,
+    "sender": [
+      "mutwe"
+    ],
+    "message_type": "text",
+    "content": "Praise God ,Bob waiting for your first post",
+    "voice_note": null,
+    "voice_duration": null,
+    "image": null,
+    "video": null,
+    "video_duration": null,
+    "video_thumbnail": null,
+    "created_at": "2026-04-15T07:04:08.545Z",
+    "is_deleted": false,
+    "read_by": []
+  }
+},
+{
+  "model": "chat.chatmessage",
+  "pk": 21,
+  "fields": {
+    "chat": 5,
+    "sender": [
+      "Drkeiz"
+    ],
+    "message_type": "text",
+    "content": "kkk bro",
+    "voice_note": null,
+    "voice_duration": null,
+    "image": null,
+    "video": null,
+    "video_duration": null,
+    "video_thumbnail": null,
+    "created_at": "2026-04-15T18:03:39.887Z",
+    "is_deleted": false,
+    "read_by": [
+      [
+        "mutwe"
+      ]
+    ]
+  }
+},
+{
+  "model": "chat.chatmessage",
+  "pk": 22,
+  "fields": {
+    "chat": 6,
+    "sender": [
+      "Clever"
+    ],
+    "message_type": "text",
+    "content": "yyyyyyyyyyyyooooooooooooooooooooooooooooooooooooo",
+    "voice_note": null,
+    "voice_duration": null,
+    "image": null,
+    "video": null,
+    "video_duration": null,
+    "video_thumbnail": null,
+    "created_at": "2026-04-16T11:31:46.636Z",
+    "is_deleted": false,
+    "read_by": []
+  }
+},
+{
+  "model": "chat.chatmessage",
+  "pk": 23,
+  "fields": {
+    "chat": 1,
+    "sender": [
+      "kivabulaya"
+    ],
+    "message_type": "text",
+    "content": "Is the camera and buttery dede",
+    "voice_note": null,
+    "voice_duration": null,
+    "image": null,
+    "video": null,
+    "video_duration": null,
+    "video_thumbnail": null,
+    "created_at": "2026-04-16T18:40:07.296Z",
+    "is_deleted": false,
+    "read_by": [
+      [
+        "mutwe"
+      ]
+    ]
+  }
+}
+]

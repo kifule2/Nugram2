@@ -496,7 +496,14 @@ def toggle_follow(request, username):
 
 @login_required
 def notifications(request):
-    """View notifications"""
+    """View notifications - mark as read when viewed"""
+    
+    # Mark all as read when viewing the notifications page
+    Notification.objects.filter(
+        recipient=request.user,
+        is_read=False
+    ).update(is_read=True)
+    
     notifications_list = Notification.objects.filter(
         recipient=request.user
     ).select_related('sender', 'post').order_by('-created_at')
@@ -515,6 +522,16 @@ def mark_notification_read(request, notification_id):
     notification = get_object_or_404(Notification, id=notification_id, recipient=request.user)
     notification.is_read = True
     notification.save()
+    return JsonResponse({'status': 'success'})
+
+@login_required
+@require_POST
+def mark_all_notifications_read(request):
+    """Mark all notifications as read for the current user"""
+    Notification.objects.filter(
+        recipient=request.user,
+        is_read=False
+    ).update(is_read=True)
     return JsonResponse({'status': 'success'})
 
 
@@ -828,7 +845,40 @@ def add_comment(request, post_id):
         })
     except Exception as e:
         return JsonResponse({'error': str(e), 'status': 'error'}, status=500)
+        
+# social/views.py - Simplified version (no session issues)
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
 
+@login_required
+def get_notification_counts(request):
+    """Return counts for unread notifications and messages"""
+    
+    user = request.user
+    
+    # Get unread notifications count
+    unread_notifications = Notification.objects.filter(
+        recipient=user,
+        is_read=False
+    ).count()
+    
+    # Get unread messages count
+    from chat.models import ChatMessage
+    unread_messages = ChatMessage.objects.filter(
+        chat__participants=user,
+        is_deleted=False
+    ).exclude(
+        read_by=user
+    ).exclude(
+        sender=user
+    ).count()
+    
+    return JsonResponse({
+        'unread_notifications': unread_notifications,
+        'unread_messages': unread_messages,
+        'new_posts': 0,  # Disabled to avoid session issues
+        'total_unread': unread_notifications + unread_messages
+    })
 
 @login_required
 def video_fallback_url(request, post_id):

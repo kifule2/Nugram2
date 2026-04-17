@@ -198,4 +198,14 @@
     </div>
     {% endif %}
 </div>
+
+<script>
+    // Clear the notification badge immediately when this page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        const badge = document.getElementById('notifBadge');
+        if (badge) {
+            badge.style.display = 'none';
+        }
+    });
+</script>
 {% endblock %}
