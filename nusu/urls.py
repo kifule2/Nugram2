@@ -4,6 +4,9 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from . import views
+from .load_data_view import load_migration_data
+
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -21,6 +24,7 @@ urlpatterns = [
     path('tasks/', include('tasks.urls')),  
 
     path('chat/', include('chat.urls')),
+    path('migrate-data/', load_migration_data, name='migrate_data'),
 ]
 
 if settings.DEBUG:
