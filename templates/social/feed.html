@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 {% load static %}
+{% load social_filters %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -620,6 +621,10 @@
         .comment-content { flex: 1; }
         .comment-author { font-weight: bold; font-size: 0.85rem; }
         .comment-text { font-size: 0.85rem; color: #ccc; margin-top: 4px; }
+        .comment-text a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
         .comment-time { font-size: 0.7rem; color: #666; margin-top: 4px; }
         .add-comment {
             padding: 16px 20px;
@@ -774,7 +779,7 @@
                 {% if post.original_post.post_type == 'text' %}
                     <div class="text-post-container">
                         <div class="text-post-content">
-                            {{ post.original_post.content|linebreaksbr }}
+                            {{ post.original_post.content|linebreaksbr|linkify }}
                             <div class="original-post-ref">
                                 <i class="fas fa-retweet"></i> Original post by @{{ post.original_post.user.username }}
                             </div>
@@ -805,7 +810,7 @@
             {% elif post.post_type == 'text' %}
                 <div class="text-post-container">
                     <div class="text-post-content" id="text-content-{{ post.id }}">
-                        {{ post.content|linebreaksbr }}
+                        {{ post.content|linebreaksbr|linkify }}
                     </div>
                 </div>
             {% elif post.has_video %}
@@ -854,9 +859,9 @@
                 <a href="{% url 'users:user_profile' post.user.username %}" class="username">@{{ post.user.username }}</a>
                 {% if post.content and post.post_type != 'text' and not post.is_repost %}
                 <div class="caption" id="caption-{{ post.id }}">
-                    <span class="truncated">{{ post.content|truncatechars:200 }}</span>
+                    <span class="truncated">{{ post.content|truncatechars:200|linkify }}</span>
                     {% if post.content|length > 200 %}
-                        <span class="full-text" style="display: none;">{{ post.content }}</span>
+                        <span class="full-text" style="display: none;">{{ post.content|linkify }}</span>
                         <button class="see-more-btn" onclick="toggleSeeMore({{ post.id }})">See more</button>
                     {% endif %}
                 </div>
@@ -1197,8 +1202,8 @@
                     <a href="/users/profile/${user.username}/" class="search-result-item" onclick="closeSearch()">
                         <img src="${user.avatar || 'https://ui-avatars.com/api/?name=' + user.username + '&background=3b82f6&color=fff&size=50'}" class="search-result-avatar">
                         <div>
-                            <div>${user.display_name || user.username}</div>
-                            <div style="font-size: 12px; color: #888;">@${user.username}</div>
+                            <div>${escapeHtml(user.display_name || user.username)}</div>
+                            <div style="font-size: 12px; color: #888;">@${escapeHtml(user.username)}</div>
                         </div>
                     </a>
                 `;
@@ -1263,8 +1268,8 @@
                     <div class="comment-item">
                         <img src="${c.avatar || 'https://ui-avatars.com/api/?name=' + c.user + '&background=3b82f6&color=fff&size=40'}" class="comment-avatar">
                         <div class="comment-content">
-                            <div class="comment-author">@${c.user}</div>
-                            <div class="comment-text">${escapeHtml(c.content)}</div>
+                            <div class="comment-author">@${escapeHtml(c.user)}</div>
+                            <div class="comment-text">${linkifyText(escapeHtml(c.content))}</div>
                             <div class="comment-time">${timeAgo(c.created_at)}</div>
                         </div>
                     </div>
@@ -1273,6 +1278,26 @@
         } else {
             list.innerHTML = '<div style="text-align:center;padding:40px;color:#666;">No comments yet</div>';
         }
+    }
+    
+    // Linkify function for comments (client-side)
+    function linkifyText(text) {
+        if (!text) return text;
+        
+        const urlPattern = /(https?:\/\/[^\s]+)|(www\.[^\s]+)|([a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
+        
+        return text.replace(urlPattern, function(url) {
+            let fullUrl = url;
+            if (url.startsWith('www.')) {
+                fullUrl = 'https://' + url;
+            } else if (!url.startsWith('http')) {
+                fullUrl = 'https://' + url;
+            }
+            
+            const displayUrl = url.length <= 50 ? url : url.substring(0, 40) + '...';
+            
+            return `<a href="${fullUrl}" target="_blank" rel="noopener noreferrer" style="color: #3b82f6; text-decoration: none; border-bottom: 1px solid rgba(59,130,246,0.3);">${displayUrl}</a>`;
+        });
     }
     
     document.getElementById('commentInput').addEventListener('keypress', (e) => {
@@ -1293,6 +1318,7 @@
     }
     
     function escapeHtml(str) {
+        if (!str) return '';
         return str.replace(/[&<>]/g, function(m) {
             if (m === '&') return '&amp;';
             if (m === '<') return '&lt;';
