@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'transactions',
     'tokens',
     'chat',
+     'pwa',
 ]
 
 MIDDLEWARE = [
@@ -96,7 +97,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [BASE_DIR / 'static']
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
 # At the bottom of settings.py
 # settings.py - Remove WhiteNoise compression
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
@@ -133,3 +136,74 @@ CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL', '')
 
 # Email configuration (if needed)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # Change for production
+
+# ========== PWA SETTINGS (Copy this entire block to settings.py) ==========
+
+# PWA app name - shows on home screen under your icon
+PWA_APP_NAME = 'Nugram'
+
+# PWA description - shows when installing
+PWA_APP_DESCRIPTION = "Nugram - Connect and Share"
+
+# Theme color - colors the top bar of the app
+PWA_APP_THEME_COLOR = '#6B46C1'  # Deep purple to match your icon
+
+# Background color - shows while the app is loading
+PWA_APP_BACKGROUND_COLOR = '#ffffff'
+
+# Display mode - 'standalone' removes browser address bar
+PWA_APP_DISPLAY = 'standalone'
+
+# Scope - which pages belong to your app
+PWA_APP_SCOPE = '/'
+
+# Screen orientation - 'any' allows both portrait and landscape
+PWA_APP_ORIENTATION = 'any'
+
+# Start URL - where the app opens first
+PWA_APP_START_URL = '/'
+
+# Status bar color - matches your theme
+PWA_APP_STATUS_BAR_COLOR = 'default'
+
+# Text direction - left to right
+PWA_APP_DIR = 'ltr'
+
+# Language - US English
+PWA_APP_LANG = 'en-US'
+
+# Your colored app icon (visible on home screen)
+PWA_APP_ICONS = [
+    {
+        'src': '/static/images/nugram.png',
+        'sizes': '1024x1024',
+        'type': 'image/png',
+        'purpose': 'any maskable'  # Works on all devices
+    },
+    {
+        'src': '/static/images/nugramblack.png',
+        'sizes': '1024x1024',
+        'type': 'image/png',
+        'purpose': 'monochrome'  # For Android 13+ themed icons
+    }
+]
+
+# iOS needs separate icon configuration
+PWA_APP_ICONS_APPLE = [
+    {
+        'src': '/static/images/nugram.png',
+        'sizes': '1024x1024',
+        'type': 'image/png'
+    }
+]
+
+# Splash screen for mobile devices (optional but recommended)
+PWA_APP_SPLASH_SCREEN = [
+    {
+        'src': '/static/images/nugram.png',
+        'media': '(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)'
+    }
+]
+
+# Disable console.log messages in browser (set to False for production)
+PWA_APP_DEBUG_MODE = False

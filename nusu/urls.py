@@ -25,6 +25,7 @@ urlpatterns = [
 
     path('chat/', include('chat.urls')),
     path('migrate-data/', load_migration_data, name='migrate_data'),
+    path('', include('pwa.urls')),
 ]
 
 if settings.DEBUG:
